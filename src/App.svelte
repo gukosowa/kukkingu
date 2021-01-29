@@ -1,13 +1,18 @@
-<div class="App">
-  <header
-    class="px-4 text-white h-16 bg-blue-600 flex items-center shadow-md border lg:focus:border-blue-500">
-    <div>calc</div>
-  </header>
+<div class="App h-screen flex flex-col">
+  <Header>sd</Header>
+  <div class="bg-gray-200 flex-grow">
+    <Storage />
+  </div>
 </div>
 
 <script>
   import '~css/main.css'
+
+  import Header from '~components/Header.svelte'
+  import Storage from './components/Storage.svelte'
+
   import { onMount } from 'svelte'
+
   let count = 0
   onMount(() => {
     const interval = setInterval(() => count++, 1000)
