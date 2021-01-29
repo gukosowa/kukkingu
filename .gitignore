@@ -1,3 +1,7 @@
-.snowpack
+.idea
+.git
+.build
 build
+web_modules
 node_modules
+coverage

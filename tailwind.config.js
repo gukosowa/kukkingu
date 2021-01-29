@@ -3,7 +3,10 @@ module.exports = {
     purgeLayersByDefault: true,
   },
   purge: {
-    content: ['./src/**/*.svelte'],
+    content: ['./src/**/*.html', './src/**/*.svelte'],
+    options: {
+      keyframes: true,
+    },
   },
   theme: {
     extend: {

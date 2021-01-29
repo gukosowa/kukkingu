@@ -1,9 +1,10 @@
 import App from './App.svelte'
 
-var app = new App({
+const app = new App({
   target: document.body
 })
 
+// noinspection JSUnusedGlobalSymbols
 export default app
 
 // Hot Module Replacement (HMR) - Remove this snippet to remove HMR.
