@@ -2,7 +2,7 @@ const path = require('path')
 
 module.exports = {
   resolve: {
-    extensions: ['.js', '.ts', '.json', '.svelte'],
+    extensions: ['.mjs', '.js', '.ts', '.json', '.svelte'],
     alias: {
       '~public': path.resolve(__dirname, './public'),
       '~src': path.resolve(__dirname, './src'),

@@ -1,11 +1,10 @@
-<i class={classes} style={cstyles} />
+<i class="relative {$$props.class} {icon}" style={cstyles} />
 
 <script>
   export let icon = ''
   export let size = '3rem'
 
   $: cstyles = cssVarStyles + '; ' + ($$props.style || '')
-  let classes = 'relative ' + ($$props.class || '') + ' ' + icon
 
   let styles = {
     'font-size': size,
