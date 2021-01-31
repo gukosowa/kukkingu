@@ -26,6 +26,8 @@ export const newRecipe = (name) => {
     name,
     original: 100,
     desired: 100,
+    note: '',
+    url: '',
     ingredients: [newIngredient()],
   }
 

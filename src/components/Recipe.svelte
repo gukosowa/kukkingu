@@ -1,14 +1,11 @@
 {#if recipe}
   <div class="flex items-baseline">
-    <Button on:click={() => openedRecipe.set(-1)}>
-      <Icon icon="fal fa-arrow-alt-left" size="1.2rem" />
-    </Button>
     <div class="flex-1 px-5 text-lg font-bold text-gray-700">
       {recipe?.name}
     </div>
   </div>
   <div class="flex flex-col">
-    <div class="my-3">
+    <div class="mb-3 mt-2">
       {#each recipe.ingredients as item, index}
         <div class="grid grid-cols-12 mb-2 gap-1" value={recipe.ingredients}>
           <SInput
@@ -50,7 +47,7 @@
               <div class="col-span-2 relative text-right">
                 <i
                   on:click={() => doOriginal(index)}
-                  class="fal fa-tape p-2 top-0 -mt-1 mr-10 absolute right-0 text-gray-600" />
+                  class="fal fa-ruler p-2 top-0 -mt-1 mr-10 absolute right-0 text-gray-600" />
                 <i
                   on:click={() => deleteIngredient(index)}
                   class="fal fa-minus-circle p-2 top-0 -mt-1 absolute right-0 text-gray-600" />
@@ -60,11 +57,29 @@
         </div>
       {/each}
     </div>
-    <div>
+    <div class="mb-5 mt-2 text-right">
       <Button on:click={addIngredient} color="green">
         <Icon icon="fal fa-plus" class="mr-1" size="1.2rem" />
         追加
       </Button>
+    </div>
+    <div class="flex mt-8">
+      <SInput
+        placeholder="レシピのURL"
+        class="flex-grow"
+        on:input={() => ($recipes[$openedRecipe].url = recipe.url)}
+        bind:value={recipe.url} />
+      {#if recipe.url}
+        <a href={recipe.url} class="ml-2" target="_blank" rel="noreferrer">
+          <Button class="whitespace-no-wrap">リンクを開く</Button></a>
+      {/if}
+    </div>
+    <div>
+      <textarea
+        placeholder="ノート"
+        class="mt-2 w-full focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
+        bind:value={recipe.note}
+        on:input={() => ($recipes[$openedRecipe].note = recipe.note)} />
     </div>
   </div>
 {/if}

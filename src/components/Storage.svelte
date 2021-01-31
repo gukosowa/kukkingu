@@ -1,5 +1,5 @@
 <div>
-  <div class="text-left pb-4 flex items-baseline">
+  <div class="text-left mb-5 flex items-baseline">
     <SInput
       class="flex-1 mx-2"
       bind:value={recipeName}
@@ -11,8 +11,8 @@
 
   {#each $recipes as item, index}
     <div>
-      <div class="flex items-baseline rounded-xl bg-gray-300 py-2 px-2 my-2">
-        <div class="flex-grow">
+      <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-2">
+        <div class="flex-grow pr-2">
           {#if item.rename}
             <SInput
               on:enter={() => rename(index)}
@@ -28,7 +28,7 @@
             </Button>
           {/if}
         </div>
-        <div class="flex-grow text-right">
+        <div class="flex-grow whitespace-no-wrap text-right">
           {#if item.rename}
             <Button color="green" tone={400} on:click={() => rename(index)}>
               <Icon icon="fal fa-check" size="1.2rem" />

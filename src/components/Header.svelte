@@ -1,7 +1,15 @@
 <header
   class="z-10 px-2 text-white h-16 bg-blue-600 fixed flex w-full items-center shadow-md border-b border-blue-700">
   <div class="w-full flex items-baseline">
-    <div class="flex-grow">材料コンバーター</div>
+    {#if !recipe}
+      <div class="flex-grow">材料コンバーター</div>
+    {:else}
+      <div class="flex-grow">
+        <Button on:click={() => openedRecipe.set(-1)}>
+          <Icon icon="fal fa-arrow-alt-left" size="1.2rem" />
+        </Button>
+      </div>
+    {/if}
 
     {#if !!recipe}
       <SInput
@@ -33,6 +41,7 @@
 
   import SInput from '~components/Input.svelte'
   import Icon from './Icon.svelte'
+  import Button from './Button.svelte'
 
   function onchange() {
     $recipes[$openedRecipe] = recipe
