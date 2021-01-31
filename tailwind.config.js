@@ -4,6 +4,7 @@ module.exports = {
   },
   purge: {
     content: ['./src/**/*.svelte'],
+    whitelistPatterns: [/bg-pink-/, /bg-green-/, /bg-red-/, /bg-gray-/],
   },
   theme: {
     extend: {
