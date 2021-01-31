@@ -1,12 +1,3 @@
-export const syncStorage = (key, value, fallback) => {
-  if (value === undefined || value === null) {
-    value = getStorage(key) || fallback
-  }
-  localStorage.setItem(key, JSON.stringify(value))
-  dispatchEvent(key, JSON.stringify(value))
-  return value
-}
-
 export const getStorage = (key, fallback) => {
   let k = localStorage.getItem(key)
   if (!k) {
@@ -18,10 +9,10 @@ export const getStorage = (key, fallback) => {
 }
 
 export const newRecipe = (name) => {
-  let recipes = getStorage('recipes', [])
+  let localRecipes = getStorage('recipes', [])
 
   if (!name) {
-    let defaultNames = recipes
+    let defaultNames = localRecipes
       .filter((r) => r.name.includes('new #'))
       .map((r) => +r.name.replace('new #', ''))
     if (defaultNames.length === 0) {
@@ -38,13 +29,11 @@ export const newRecipe = (name) => {
     ingredients: [newIngredient()],
   }
 
-  if (recipes.length) {
-    recipes.push(recipeObj)
+  if (localRecipes.length) {
+    return [...localRecipes, recipeObj]
   } else {
-    recipes = [recipeObj]
+    return [recipeObj]
   }
-
-  return syncStorage('recipes', recipes, [])
 }
 
 export const dispatchEvent = (event, body) => {

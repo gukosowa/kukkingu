@@ -5,12 +5,14 @@
   <div class="flex-1 text-right">
     {#if !!recipe}
       <SInput
+        inputClass="w-20"
         disabled={!recipe.original}
         placeholder="必要量"
         type="number"
         on:input={onchange}
         bind:value={recipe.original} />
       <SInput
+        inputClass="w-20"
         disabled={!recipe.desired}
         icon="fal fa-play-circle"
         placeholder="最低量"
@@ -22,21 +24,19 @@
 </header>
 
 <script>
+  import { openedRecipe, recipes } from '~src/store'
+
+  openedRecipe.subscribe((value) => {
+    console.log('change ndex', value)
+  })
+
+  let recipe
+  $: recipe = $recipes[$openedRecipe]
+
   import SInput from '~components/Input.svelte'
-  import { getStorage, syncStorage } from '~plugins/helper'
-
-  export let index = -1
-  $: recipe = getStorage('recipes', [])[index] || {}
-
-  $: valueOriginal = syncStorage('h-original', valueOriginal, 100)
-  $: valueDesired = syncStorage('h-desired', valueDesired, 100)
-
-  let valueOriginal = null
-  let valueDesired = null
 
   function onchange() {
-    const recipes = getStorage('recipes')
-    recipes[index] = recipe
-    syncStorage('recipes', recipes, [])
+    $recipes[$openedRecipe] = recipe
+    recipes.set($recipes)
   }
 </script>
