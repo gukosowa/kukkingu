@@ -1,7 +1,6 @@
 <div>
   <div class="text-left pb-4 flex items-baseline">
     <SInput
-      inputClass="flex-grow"
       class="flex-1 mx-2"
       bind:value={recipeName}
       on:enter={onCreateNew}

@@ -14,13 +14,22 @@
   <div class="flex flex-col">
     <div class="my-3">
       {#each recipe.ingredients as item, i}
-        <div class="grid grid-cols-3 mb-2 gap-4" value={recipe.ingredients}>
-          <SInput placeholder="材料" class="" bind:value={item.name} />
-          <SInput placeholder="分量" class="" bind:value={item.amount} />
-          <SInput placeholder="" class="" bind:value={item.amountType} />
+        <div class="grid grid-cols-6 mb-2 gap-1" value={recipe.ingredients}>
+          <SInput
+            placeholder="材料"
+            class="col-span-3"
+            bind:value={item.name} />
+          <SInput
+            placeholder="分量"
+            class="col-span-2"
+            bind:value={item.amount} />
+          <SInput
+            placeholder=""
+            class="col-span-1"
+            bind:value={item.amountType} />
 
           <div
-            class="col-span-3 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white">
+            class="col-span-6 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white">
             <div class="absolute left-0 top-0 text-xs ml-3 mt-1">必要な量</div>
             {item.name || '-'}
             {item.amount / 1 || '0'}
