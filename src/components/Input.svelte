@@ -11,6 +11,7 @@
       on:keypress={onKeyPress}
       disabled={!!disabled}
       use:init
+      use:selectTextOnFocus
       class="w-full {inputClass} focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md" />
   </label>
 </div>
@@ -40,6 +41,20 @@
   function init(el) {
     if (autofocus) {
       el.focus()
+    }
+  }
+
+  function selectTextOnFocus(node) {
+    const handleFocus = (event) => {
+      node && typeof node.select === 'function' && node.select()
+    }
+
+    node.addEventListener('focus', handleFocus)
+
+    return {
+      destroy() {
+        node.removeEventListener('focus', handleFocus)
+      },
     }
   }
 </script>
