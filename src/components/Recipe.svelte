@@ -6,10 +6,6 @@
     <div class="flex-1 px-5 text-lg font-bold text-gray-700">
       {recipe?.name}
     </div>
-    <Button color="yellow">
-      <Icon icon="fal fa-broom" class="mr-1" size="1.2rem" />
-      クリア
-    </Button>
   </div>
   <div class="flex flex-col">
     <div class="my-3">
@@ -22,10 +18,11 @@
           <SInput
             placeholder="分量"
             class="col-span-3"
+            type="number"
             bind:value={item.amount} />
           <label class="col-span-3"><select
               name="amountType"
-              class="focus:ring-indigo-500 w-full text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
+              class="focus:ring-indigo-500 bg-white w-full text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
               bind:value={item.amountType}>
               <option value="g">g</option>
               <option value="㏄">㏄</option>
