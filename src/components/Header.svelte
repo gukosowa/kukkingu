@@ -5,7 +5,7 @@
       <div class="flex-grow">材料コンバーター</div>
     {:else}
       <div class="flex-grow">
-        <Button on:click={() => openedRecipe.set(-1)}>
+        <Button class="shadow-none" on:click={() => openedRecipe.set(-1)}>
           <Icon icon="fal fa-arrow-alt-left" size="1.2rem" />
         </Button>
       </div>
@@ -16,6 +16,7 @@
         class="w-20"
         placeholder="必要量"
         type="number"
+        on:enter={focusNext}
         on:input={onchange}
         bind:value={recipe.original} />
       <Icon
@@ -27,6 +28,8 @@
         class="w-20"
         placeholder="最低量"
         type="number"
+        bind:elInput={elDesire}
+        on:enter={blur}
         on:input={onchange}
         bind:value={recipe.desired} />
     {/if}
@@ -35,6 +38,8 @@
 
 <script>
   import { openedRecipe, recipes } from '~src/store'
+
+  let elDesire
 
   let recipe
   $: recipe = $recipes[$openedRecipe]
@@ -46,5 +51,13 @@
   function onchange() {
     $recipes[$openedRecipe] = recipe
     recipes.set($recipes)
+  }
+
+  function focusNext() {
+    elDesire.focus()
+  }
+
+  function blur(ev) {
+    ev.detail.el.blur()
   }
 </script>

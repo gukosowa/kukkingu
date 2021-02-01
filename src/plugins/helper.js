@@ -24,11 +24,12 @@ export const newRecipe = (name) => {
 
   const recipeObj = {
     name,
+    edit: true,
     original: 100,
     desired: 100,
     note: '',
     url: '',
-    ingredients: [newIngredient()],
+    ingredients: [newIngredient('人', '2', '個')],
   }
 
   if (localRecipes.length) {

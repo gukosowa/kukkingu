@@ -7,6 +7,7 @@
       {type}
       {placeholder}
       {value}
+      bind:this={elInput}
       on:input={handleInput}
       on:keypress={onKeyPress}
       disabled={!!disabled}
@@ -29,13 +30,15 @@
   export let placeholder = ''
   export let autofocus = false
 
+  export let elInput = null
+
   const handleInput = (e) => {
     value = type.match(/^(number|range)$/) ? +e.target.value : e.target.value
     dispatch('input', value)
   }
 
   const onKeyPress = (e) => {
-    if (e.keyCode === 13) dispatch('enter', value)
+    if (e.keyCode === 13) dispatch('enter', { value, el: elInput })
   }
 
   function init(el) {
@@ -45,7 +48,7 @@
   }
 
   function selectTextOnFocus(node) {
-    const handleFocus = (event) => {
+    const handleFocus = () => {
       node && typeof node.select === 'function' && node.select()
     }
 
