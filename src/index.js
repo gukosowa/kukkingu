@@ -4,6 +4,10 @@ const app = new App({
   target: document.body,
 })
 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js')
+}
+
 // noinspection JSUnusedGlobalSymbols
 export default app
 
