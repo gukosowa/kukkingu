@@ -5,7 +5,7 @@
       <div class="flex-grow">材料コンバーター</div>
     {:else}
       <div class="flex-grow">
-        <Button class="shadow-none" on:click={() => openedRecipe.set(-1)}>
+        <Button class="shadow-none" on:click={() => home()}>
           <Icon icon="fal fa-arrow-alt-left" size="1.2rem" />
         </Button>
       </div>
@@ -59,5 +59,9 @@
 
   function blur(ev) {
     ev.detail.el.blur()
+  }
+
+  function home() {
+    openedRecipe.set(-1)
   }
 </script>

@@ -4,10 +4,6 @@ const app = new App({
   target: document.body,
 })
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js')
-}
-
 // noinspection JSUnusedGlobalSymbols
 export default app
 
@@ -18,4 +14,8 @@ if (import.meta.hot) {
   import.meta.hot.dispose(() => {
     app.$destroy()
   })
+} else {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+  }
 }

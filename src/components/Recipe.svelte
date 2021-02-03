@@ -3,15 +3,32 @@
     <div class="flex-1 px-5 text-lg font-bold text-gray-700">
       {recipe?.name}
     </div>
-    {#if recipe.edit}
-      <Button on:click={switchEdit} color="green">
-        <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
-        読
+
+    {#if !recipe.checklist}
+      <Button on:click={switchEdit} class="mr-1" color="green">
+        {#if recipe.edit}
+          <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
+          よし
+        {:else}
+          <Icon icon="fal fa-pen" class="mr-1" size="0.8rem" />
+          エディット
+        {/if}
       </Button>
     {:else}
-      <Button on:click={switchEdit} color="green">
-        <Icon icon="fal fa-pen" class="mr-1" size="0.8rem" />
-        書
+      <Button on:click={clearCheck} class="mr-1" color="gray">
+        <Icon icon="fal fa-broom" class="mr-1" size="0.8rem" />
+        クリア
+      </Button>
+    {/if}
+    {#if !recipe.edit}
+      <Button on:click={switchCheck} color="gray">
+        {#if recipe.checklist}
+          <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
+          よし
+        {:else}
+          <Icon icon="fal fa-shopping-cart" class="mr-1" size="0.8rem" />
+          チェック
+        {/if}
       </Button>
     {/if}
   </div>
@@ -66,9 +83,16 @@
                 {/if}
               </div>
               <div class="col-span-2 relative text-right">
-                <i
-                  on:click={() => doOriginal(index)}
-                  class="fal fa-ruler p-2 top-0 -mt-1 {recipe.edit ? 'mr-10' : ''} absolute right-0 text-gray-600" />
+                {#if recipe.checklist}
+                  <Checkbox
+                    class="absolute right-0 top-0 -mt-1"
+                    bind:value={item.checked}
+                    on:input={saveChange} />
+                {:else if !recipe.edit}
+                  <i
+                    on:click={() => doOriginal(index)}
+                    class="fal fa-ruler p-2 top-0 -mt-1 {recipe.edit ? 'mr-10' : ''} absolute right-0 text-gray-600" />
+                {/if}
                 {#if recipe.edit}
                   <i
                     on:click={() => deleteIngredient(index)}
@@ -135,6 +159,7 @@
   import SInput from './Input.svelte'
   import Icon from './Icon.svelte'
   import { newIngredient } from '~plugins/helper'
+  import Checkbox from './Checkbox.svelte'
 
   function addIngredient() {
     $recipes[$openedRecipe].ingredients.push(newIngredient())
@@ -147,7 +172,29 @@
 
   function switchEdit() {
     $recipes[$openedRecipe].edit = !$recipes[$openedRecipe].edit
+    $recipes[$openedRecipe].checklist = false
     recipes.set($recipes)
+  }
+
+  function switchCheck() {
+    $recipes[$openedRecipe].checklist = !$recipes[$openedRecipe].checklist
+    $recipes[$openedRecipe].edit = false
+    recipes.set($recipes)
+  }
+
+  function clearCheck() {
+    $recipes[$openedRecipe].ingredients.forEach((i) => {
+      i.checked = false
+    })
+
+    $recipes[$openedRecipe].edit = false
+    recipes.set($recipes)
+  }
+
+  function saveChange() {
+    setTimeout(() => {
+      recipes.set($recipes)
+    }, 0)
   }
 
   function focusNext() {
