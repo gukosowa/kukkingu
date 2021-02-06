@@ -10,6 +10,9 @@
 </div>
 
 <script>
+  // https://golb.hplar.ch/2019/07/ocr-with-tesseractjs.html
+  import 'https://unpkg.com/tesseract.js@2.1.3/dist/tesseract.min.js'
+
   import { openedRecipe } from '~src/store'
   import '~css/main.css'
 

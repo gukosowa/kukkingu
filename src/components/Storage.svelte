@@ -1,5 +1,5 @@
 <div>
-  <div class="text-left mb-5 flex items-baseline">
+  <div class="text-left mb-2 flex items-baseline">
     <SInput
       class="flex-1 mx-2"
       bind:value={recipeName}
@@ -30,6 +30,13 @@
         </div>
         <div class="flex-grow whitespace-no-wrap text-right">
           {#if item.rename}
+            <Button
+              color="red"
+              class="mr-1"
+              tone={300}
+              on:click={() => remove(index)}>
+              <Icon icon="fal fa-trash-alt" size="1.2rem" />
+            </Button>
             <Button color="green" tone={400} on:click={() => rename(index)}>
               <Icon icon="fal fa-check" size="1.2rem" />
             </Button>
@@ -38,9 +45,6 @@
               <Icon icon="fal fa-pen" size="1.2rem" />
             </Button>
           {/if}
-          <Button color="red" tone={300} on:click={() => remove(index)}>
-            <Icon icon="fal fa-trash-alt" size="1.2rem" />
-          </Button>
         </div>
       </div>
     </div>

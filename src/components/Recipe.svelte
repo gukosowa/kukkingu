@@ -1,6 +1,7 @@
 {#if recipe}
   <div class="flex items-center">
-    <div class="flex-1 px-5 text-lg font-bold text-gray-700">
+    <div
+      class="title flex-1 whitespace-no-wrap overflow-hidden text-xs px-1 font-bold text-gray-700">
       {recipe?.name}
     </div>
 
@@ -8,10 +9,10 @@
       <Button on:click={switchEdit} class="mr-1" color="green">
         {#if recipe.edit}
           <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
-          よし
+          表示モード
         {:else}
           <Icon icon="fal fa-pen" class="mr-1" size="0.8rem" />
-          エディット
+          編集モード
         {/if}
       </Button>
     {:else}
@@ -24,10 +25,10 @@
       <Button on:click={switchCheck} color="gray">
         {#if recipe.checklist}
           <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
-          よし
+          表示モード
         {:else}
           <Icon icon="fal fa-shopping-cart" class="mr-1" size="0.8rem" />
-          チェック
+          チェックリスト
         {/if}
       </Button>
     {/if}
@@ -50,17 +51,7 @@
               type="number"
               on:enter={focusNext}
               bind:value={item.amount} />
-            <label class="col-span-3"><select
-                name="amountType"
-                class="focus:ring-indigo-500 bg-white w-full text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
-                bind:value={item.amountType}>
-                <option value="g">g</option>
-                <option value="㏄">㏄</option>
-                <option value="大さじ">大さじ</option>
-                <option value="小さじ">小さじ</option>
-                <option value="個">個</option>
-              </select>
-            </label>
+            <AmountTypeModal class="col-span-3" bind:value={item.amountType} />
           {/if}
           <div
             class="col-span-12 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white">
@@ -160,6 +151,7 @@
   import Icon from './Icon.svelte'
   import { newIngredient } from '~plugins/helper'
   import Checkbox from './Checkbox.svelte'
+  import AmountTypeModal from './AmountTypeModal.svelte'
 
   function addIngredient() {
     $recipes[$openedRecipe].ingredients.push(newIngredient())
@@ -241,3 +233,10 @@
     })
   }
 </script>
+
+<style>
+  .title {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+</style>
