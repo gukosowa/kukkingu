@@ -1,4 +1,8 @@
 <div>
+  <ModalConfirm
+    bind:value={showDeleteConfirm}
+    on:confirm={() => remove()}
+    on:cancel={() => cancelRemove()} />
   <div class="text-left mb-2 flex items-baseline">
     <SInput
       class="flex-1 mx-2"
@@ -34,7 +38,7 @@
               color="red"
               class="mr-1"
               tone={300}
-              on:click={() => remove(index)}>
+              on:click={() => initRemove(index)}>
               <Icon icon="fal fa-trash-alt" size="1.2rem" />
             </Button>
             <Button color="green" tone={400} on:click={() => rename(index)}>
@@ -57,8 +61,11 @@
   import SInput from './Input.svelte'
   import { newRecipe } from '~plugins/helper'
   import Icon from './Icon.svelte'
+  import ModalConfirm from './ModalConfirm.svelte'
 
   let recipeName = ''
+  let showDeleteConfirm = false
+  let deleteIndex = null
 
   function onCreateNew() {
     recipes.set(newRecipe(recipeName))
@@ -87,8 +94,20 @@
     recipes.set($recipes)
   }
 
-  function remove(index) {
-    $recipes.splice(index, 1)
+  function initRemove(index) {
+    showDeleteConfirm = true
+    deleteIndex = index
+  }
+
+  function cancelRemove() {
+    showDeleteConfirm = false
+    deleteIndex = null
+  }
+
+  function remove() {
+    $recipes.splice(deleteIndex, 1)
     recipes.set($recipes)
+
+    cancelRemove()
   }
 </script>
