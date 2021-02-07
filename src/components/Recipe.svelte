@@ -80,9 +80,14 @@
                     bind:value={item.checked}
                     on:input={saveChange} />
                 {:else if !recipe.edit}
+                  <div
+                    class="text-xs whitespace-no-wrap absolute top-0 -mt-4 right-0 text-gray-700">
+                    元
+                    {item.amount || '0'}
+                  </div>
                   <i
                     on:click={() => doOriginal(index)}
-                    class="fal fa-ruler p-2 top-0 -mt-1 {recipe.edit ? 'mr-10' : ''} absolute right-0 text-gray-600" />
+                    class="cursor-pointer fal fa-ruler p-2 top-0 -mt-1 {recipe.edit ? 'mr-10' : ''} absolute right-0 text-gray-600" />
                 {/if}
                 {#if recipe.edit}
                   <i
