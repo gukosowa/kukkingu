@@ -71,6 +71,7 @@
                 {#if ['大さじ', '小さじ'].includes(item.amountType)}
                   <span
                     class="text-red-300"
+                    on:click={() => clickAmountType(item._inputAmountType)}
                     style="font-size: 1.2rem;">{item.amountType}</span>
                 {/if}
                 <span
@@ -100,6 +101,12 @@
                     class="cursor-pointer fal fa-ruler p-2 top-0 -mt-1 {recipe.edit ? 'mr-10' : ''} absolute right-0 text-gray-600" />
                 {/if}
                 {#if recipe.edit}
+                  <i
+                    on:click={() => moveDown(index)}
+                    class="text-sm cursor-pointer fal fa-arrow-down p-2 top-0 mr-24 absolute right-0 text-gray-600" />
+                  <i
+                    on:click={() => moveUp(index)}
+                    class="text-sm cursor-pointer fal fa-arrow-up p-2 top-0 mr-16 absolute right-0 text-gray-600" />
                   <i
                     on:click={() => deleteIngredient(index)}
                     class="cursor-pointer fal fa-minus-circle p-2 top-0 -mt-1 absolute right-0 text-gray-600" />
@@ -301,9 +308,52 @@
     }, 0)
   }
 
+  function array_move(array, sourceIndex, destinationIndex) {
+    const smallerIndex = Math.min(sourceIndex, destinationIndex)
+    const largerIndex = Math.max(sourceIndex, destinationIndex)
+
+    return [
+      ...array.slice(0, smallerIndex),
+      ...(sourceIndex < destinationIndex
+        ? array.slice(smallerIndex + 1, largerIndex + 1)
+        : []),
+      array[sourceIndex],
+      ...(sourceIndex > destinationIndex
+        ? array.slice(smallerIndex, largerIndex)
+        : []),
+      ...array.slice(largerIndex + 1),
+    ]
+  }
+
+  function moveUp(index) {
+    recipes.update((r) => {
+      const clamp = Math.max(0, index - 1)
+      r[$openedRecipe].ingredients = array_move(
+        r[$openedRecipe].ingredients,
+        index,
+        clamp
+      )
+      return r
+    })
+  }
+
+  function moveDown(index) {
+    recipes.update((r) => {
+      const clamp = Math.min(r[$openedRecipe].ingredients.length - 1, index + 1)
+      r[$openedRecipe].ingredients = array_move(
+        r[$openedRecipe].ingredients,
+        index,
+        clamp
+      )
+      return r
+    })
+  }
+
   function deleteIngredient(index) {
     recipes.update((r) => {
-      r[$openedRecipe].ingredients.splice(index, 1)
+      r[$openedRecipe].ingredients = r[$openedRecipe].ingredients.filter(
+        (a, i) => i !== index
+      )
       return r
     })
   }
