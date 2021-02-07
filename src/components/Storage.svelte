@@ -34,6 +34,13 @@
         </div>
         <div class="flex-grow whitespace-no-wrap text-right">
           {#if item.rename}
+            <i
+              on:click={() => moveDown(index)}
+              class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
+            <i
+              on:click={() => moveUp(index)}
+              class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600" />
+
             <Button
               color="red"
               class="mr-1"
@@ -109,5 +116,34 @@
     recipes.set($recipes)
 
     cancelRemove()
+  }
+
+  function array_move(array, sourceIndex, destinationIndex) {
+    const smallerIndex = Math.min(sourceIndex, destinationIndex)
+    const largerIndex = Math.max(sourceIndex, destinationIndex)
+
+    return [
+      ...array.slice(0, smallerIndex),
+      ...(sourceIndex < destinationIndex
+        ? array.slice(smallerIndex + 1, largerIndex + 1)
+        : []),
+      array[sourceIndex],
+      ...(sourceIndex > destinationIndex
+        ? array.slice(smallerIndex, largerIndex)
+        : []),
+      ...array.slice(largerIndex + 1),
+    ]
+  }
+
+  function moveUp(index) {
+    const clamp = Math.max(0, index - 1)
+    $recipes = array_move($recipes, index, clamp)
+    recipes.set($recipes)
+  }
+
+  function moveDown(index) {
+    const clamp = Math.min($recipes.length - 1, index + 1)
+    $recipes = array_move($recipes, index, clamp)
+    recipes.set($recipes)
   }
 </script>
