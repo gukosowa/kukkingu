@@ -7,6 +7,7 @@
       {type}
       {placeholder}
       {value}
+      {id}
       bind:this={elInput}
       on:input={handleInput}
       on:keypress={onKeyPress}
@@ -29,6 +30,8 @@
   export let disabled = false
   export let placeholder = ''
   export let autofocus = false
+
+  export let id = null
 
   export let elInput = null
 

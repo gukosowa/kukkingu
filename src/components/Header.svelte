@@ -28,6 +28,7 @@
         class="w-20"
         placeholder="最低量"
         type="number"
+        id="input-desired"
         bind:elInput={elDesire}
         on:enter={blur}
         on:input={onchange}

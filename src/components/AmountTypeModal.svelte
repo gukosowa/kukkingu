@@ -44,6 +44,10 @@
     show = false
     value = type.value
   }
+
+  export function focus() {
+    show = true
+  }
 </script>
 
 <style>

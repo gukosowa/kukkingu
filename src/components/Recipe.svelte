@@ -42,6 +42,7 @@
               placeholder="材料"
               class="col-span-6"
               inputClass="input-field"
+              id="input-name-{index}"
               on:enter={focusNext}
               bind:value={item.name} />
             <SInput
@@ -49,9 +50,13 @@
               class="col-span-3"
               inputClass="input-field"
               type="number"
+              id="input-amount-{index}"
               on:enter={focusNext}
               bind:value={item.amount} />
-            <AmountTypeModal class="col-span-3" bind:value={item.amountType} />
+            <AmountTypeModal
+              bind:this={item._inputAmountType}
+              class="col-span-3"
+              bind:value={item.amountType} />
           {/if}
           <div
             class="col-span-12 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white">
@@ -60,16 +65,21 @@
                 <div class="absolute left-0 top-0 text-xs ml-3 mt-1">
                   必要な量
                 </div>
-                <span class="text-gray-300 font-bold">{item.name || '-'}</span>
+                <span
+                  class="text-gray-300 font-bold"
+                  on:click={() => clickName(index)}>{item.name || '-'}</span>
                 {#if ['大さじ', '小さじ'].includes(item.amountType)}
                   <span
                     class="text-red-300"
                     style="font-size: 1.2rem;">{item.amountType}</span>
                 {/if}
-                <span class="font-bold">{amount(item, item.amountType)}</span>
+                <span
+                  class="font-bold"
+                  on:click={() => clickAmount(index)}>{amount(item, item.amountType)}</span>
                 {#if !['大さじ', '小さじ'].includes(item.amountType)}
                   <span
                     class="text-red-300"
+                    on:click={() => clickAmountType(item._inputAmountType)}
                     style="font-size: 1.2rem;">{item.amountType}</span>
                 {/if}
               </div>
@@ -81,8 +91,8 @@
                     on:input={saveChange} />
                 {:else if !recipe.edit}
                   <div
-                    class="text-xs whitespace-no-wrap absolute top-0 -mt-4 right-0 text-gray-700">
-                    元
+                    class="text-xs whitespace-no-wrap absolute top-0 -mt-4 right-0 text-gray-500">
+                    <span class="text-gray-700">オリジナル </span>
                     {item.amount || '0'}
                   </div>
                   <i
@@ -92,7 +102,7 @@
                 {#if recipe.edit}
                   <i
                     on:click={() => deleteIngredient(index)}
-                    class="fal fa-minus-circle p-2 top-0 -mt-1 absolute right-0 text-gray-600" />
+                    class="cursor-pointer fal fa-minus-circle p-2 top-0 -mt-1 absolute right-0 text-gray-600" />
                 {/if}
               </div>
             </div>
@@ -157,6 +167,18 @@
   import { newIngredient } from '~plugins/helper'
   import Checkbox from './Checkbox.svelte'
   import AmountTypeModal from './AmountTypeModal.svelte'
+
+  function clickName(index) {
+    document.getElementById('input-name-' + index)?.focus()
+  }
+
+  function clickAmount(index) {
+    document.getElementById('input-amount-' + index)?.focus()
+  }
+
+  function clickAmountType(item) {
+    item?.focus()
+  }
 
   function addIngredient() {
     $recipes[$openedRecipe].ingredients.push(newIngredient())
@@ -243,7 +265,6 @@
       let amount = (Math.round((item.amount / rat) * 4) / 4).toFixed(2)
       if (amount.includes('.')) {
         let [number, decimal] = amount.split('.')
-        console.log(number, decimal)
 
         if (decimal) {
           number = +number === 0 ? '' : number
@@ -274,6 +295,10 @@
       r[$openedRecipe].desired = r[$openedRecipe].ingredients[index].amount
       return r
     })
+    document.getElementById('input-desired')?.focus()
+    setTimeout(() => {
+      document.getElementById('input-desired')?.select()
+    }, 0)
   }
 
   function deleteIngredient(index) {
