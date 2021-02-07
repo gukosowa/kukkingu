@@ -15,7 +15,7 @@
       <div class="-mt-2 right-0 absolute mr-4 arrow-up" />
       {#each types as type}
         <div
-          class="text-center cursor-pointer rounded-lg px-5 py-3 bg-white border-l border-r"
+          class="text-center cursor-pointer px-5 py-3 bg-white border-l border-r"
           on:click|stopPropagation={() => clickType(type)}>
           <i
             style="font-size: {type.size || 'default'}"
@@ -32,6 +32,7 @@
   export let value = 'g'
 
   const types = [
+    { icon: 'fas fa-ellipsis-v\n', value: '少々' },
     { icon: 'fas fa-weight-hanging', value: 'g' },
     { icon: 'fas fa-tint', value: '㏄' },
     { icon: 'fas fa-utensil-spoon', value: '大さじ' },

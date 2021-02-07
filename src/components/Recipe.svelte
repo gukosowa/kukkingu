@@ -66,7 +66,7 @@
                     class="text-red-300"
                     style="font-size: 1.2rem;">{item.amountType}</span>
                 {/if}
-                <span class="font-bold">{amount(item)}</span>
+                <span class="font-bold">{amount(item, item.amountType)}</span>
                 {#if !['大さじ', '小さじ'].includes(item.amountType)}
                   <span
                     class="text-red-300"
@@ -213,8 +213,53 @@
     }
   }
 
-  function amount(item) {
+  function amount(item, amountType) {
+    let useQuarter
     const rat = ratio || 1
+
+    switch (amountType) {
+      case '少々':
+        return Math.ceil(item.amount / rat).toFixed(0)
+      case 'g':
+      case '㏄':
+        if (item.amount > 1) {
+          return Math.round(item.amount / rat)
+        }
+        break
+      case '大さじ':
+      case '小さじ':
+      case '個':
+        useQuarter = true
+        break
+      default:
+        useQuarter = false
+    }
+    if (useQuarter) {
+      let amount = (Math.round((item.amount / rat) * 4) / 4).toFixed(2)
+      if (amount.includes('.')) {
+        let [number, decimal] = amount.split('.')
+        console.log(number, decimal)
+
+        if (decimal) {
+          number = +number === 0 ? '' : number
+        }
+        switch (decimal) {
+          case '25':
+            amount = number + ' ' + '¼'
+            break
+          case '50':
+            amount = number + ' ' + '½'
+            break
+          case '75':
+            amount = number + ' ' + '¾'
+            break
+          default:
+            amount = number
+        }
+      }
+      return !amount ? 0 : amount
+    }
+
     return parseFloat((item.amount / rat).toFixed(2)) || '0'
   }
 
