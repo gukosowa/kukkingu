@@ -1,25 +1,27 @@
 <div class="App h-screen flex flex-col">
   <Header />
   <div class="mt-16 bg-gray-200 flex-grow p-2">
-    {#if $openedRecipe === -1}
-      <Storage />
-    {:else}
-      <Recipe />
-    {/if}
+    <Router {routes} restoreScrollState={true} on:routeLoaded={routeLoaded} />
   </div>
 </div>
 
 <script>
-  // https://golb.hplar.ch/2019/07/ocr-with-tesseractjs.html
-  import 'https://unpkg.com/tesseract.js@2.1.3/dist/tesseract.min.js'
-
-  import { openedRecipe } from '~src/store'
+  import Header from '~components/Header.svelte'
+  import Router from 'svelte-spa-router'
   import '~css/main.css'
 
-  import Header from '~components/Header.svelte'
-  import Storage from './components/Storage.svelte'
+  import Storage from '~src/components/Storage.svelte'
+  import Recipe from '~src/components/Recipe.svelte'
+  import { route } from '~src/store'
 
-  import Recipe from './components/Recipe.svelte'
+  const routes = {
+    '/recipe/:id': Recipe,
+    '/': Storage,
+  }
+
+  function routeLoaded(event) {
+    route.set(event.detail)
+  }
 </script>
 
 <style>

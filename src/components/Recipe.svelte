@@ -35,7 +35,7 @@
   </div>
   <div class="flex flex-col">
     <div class="mb-3 mt-2">
-      {#each recipe.ingredients as item, index}
+      {#each recipe.ingredients as item, index (index)}
         <div class="grid grid-cols-12 mb-2 gap-1" value={recipe.ingredients}>
           {#if recipe.edit}
             <SInput
@@ -59,6 +59,7 @@
               bind:value={item.amountType} />
           {/if}
           <div
+            transition:fly|local={{ delay: 0, duration: 200, x: 0, y: -30, opacity: 0, intro: false, easing: quintOut }}
             class="col-span-12 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white">
             <div class="grid grid-cols-12">
               <div class="col-span-10">
@@ -130,7 +131,7 @@
         <SInput
           placeholder="レシピのURL"
           class="flex-grow"
-          on:input={() => ($recipes[$openedRecipe].url = recipe.url)}
+          on:input={() => ($recipes[recipeId].url = recipe.url)}
           bind:value={recipe.url} />
       {/if}
       {#if recipe.url}
@@ -145,7 +146,7 @@
           style="height: 200px;"
           class="mt-2 w-full focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
           bind:value={recipe.note}
-          on:input={() => ($recipes[$openedRecipe].note = recipe.note)} />
+          on:input={() => ($recipes[recipeId].note = recipe.note)} />
       {:else if recipe.note}
         <p class="text-sm mt-3 px-2"><b>ノート:</b></p>
         <p class="text-sm px-2">{recipe.note}</p>
@@ -155,18 +156,32 @@
 {/if}
 
 <script>
-  import { openedRecipe } from '~src/store'
+  import { fly } from 'svelte/transition'
+  import { quintOut } from 'svelte/easing'
   import { recipes } from '~src/store'
+  import { location, push } from 'svelte-spa-router'
+
+  export let params = {}
 
   if (!$recipes || $recipes.length === 0) {
-    openedRecipe.set(-1)
+    push('/')
   }
 
-  let ratio
-  $: ratio = recipe.original / recipe.desired
+  let recipeId = params.id
+
+  $: recipeId = params.id
 
   let recipe
-  $: recipe = $openedRecipe !== -1 ? $recipes[$openedRecipe] : null
+
+  location.subscribe((l) => {
+    recipeId = params.id
+    recipe = recipeId !== -1 ? $recipes[recipeId] : null
+  })
+
+  let ratio
+  $: ratio = recipe && recipe.original / recipe.desired
+
+  $: recipe = recipeId !== -1 ? $recipes[recipeId] : null
 
   import Button from './Button.svelte'
   import SInput from './Input.svelte'
@@ -188,7 +203,7 @@
   }
 
   function addIngredient() {
-    $recipes[$openedRecipe].ingredients.push(newIngredient())
+    $recipes[recipeId].ingredients.push(newIngredient())
     recipes.set($recipes)
     setTimeout(() => {
       let items = [...document.getElementsByClassName('input-field')]
@@ -197,23 +212,23 @@
   }
 
   function switchEdit() {
-    $recipes[$openedRecipe].edit = !$recipes[$openedRecipe].edit
-    $recipes[$openedRecipe].checklist = false
+    $recipes[recipeId].edit = !$recipes[recipeId].edit
+    $recipes[recipeId].checklist = false
     recipes.set($recipes)
   }
 
   function switchCheck() {
-    $recipes[$openedRecipe].checklist = !$recipes[$openedRecipe].checklist
-    $recipes[$openedRecipe].edit = false
+    $recipes[recipeId].checklist = !$recipes[recipeId].checklist
+    $recipes[recipeId].edit = false
     recipes.set($recipes)
   }
 
   function clearCheck() {
-    $recipes[$openedRecipe].ingredients.forEach((i) => {
+    $recipes[recipeId].ingredients.forEach((i) => {
       i.checked = false
     })
 
-    $recipes[$openedRecipe].edit = false
+    $recipes[recipeId].edit = false
     recipes.set($recipes)
   }
 
@@ -298,8 +313,8 @@
 
   function doOriginal(index) {
     recipes.update((r) => {
-      r[$openedRecipe].original = r[$openedRecipe].ingredients[index].amount
-      r[$openedRecipe].desired = r[$openedRecipe].ingredients[index].amount
+      r[recipeId].original = r[recipeId].ingredients[index].amount
+      r[recipeId].desired = r[recipeId].ingredients[index].amount
       return r
     })
     document.getElementById('input-desired')?.focus()
@@ -328,8 +343,8 @@
   function moveUp(index) {
     recipes.update((r) => {
       const clamp = Math.max(0, index - 1)
-      r[$openedRecipe].ingredients = array_move(
-        r[$openedRecipe].ingredients,
+      r[recipeId].ingredients = array_move(
+        r[recipeId].ingredients,
         index,
         clamp
       )
@@ -339,9 +354,9 @@
 
   function moveDown(index) {
     recipes.update((r) => {
-      const clamp = Math.min(r[$openedRecipe].ingredients.length - 1, index + 1)
-      r[$openedRecipe].ingredients = array_move(
-        r[$openedRecipe].ingredients,
+      const clamp = Math.min(r[recipeId].ingredients.length - 1, index + 1)
+      r[recipeId].ingredients = array_move(
+        r[recipeId].ingredients,
         index,
         clamp
       )
@@ -351,7 +366,7 @@
 
   function deleteIngredient(index) {
     recipes.update((r) => {
-      r[$openedRecipe].ingredients = r[$openedRecipe].ingredients.filter(
+      r[recipeId].ingredients = r[recipeId].ingredients.filter(
         (a, i) => i !== index
       )
       return r

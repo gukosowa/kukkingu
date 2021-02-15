@@ -13,3 +13,5 @@ export const openedRecipe = writable(storedOpenedRecipe)
 openedRecipe.subscribe((value) => {
   localStorage.setItem('openedRecipe', JSON.stringify(value))
 })
+
+export const route = writable({})

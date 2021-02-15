@@ -29,7 +29,7 @@ module.exports = {
   ],
   routes: [
     /* Enable an SPA Fallback in development: */
-    // {"match": "routes", "src": ".*", "dest": "/index.html"},
+    // { match: 'routes', src: '.*', dest: '/index.html' },
   ],
   optimize: {
     /* Example: Bundle your final build: */
@@ -37,7 +37,12 @@ module.exports = {
   },
   packageOptions: {
     rollup: {
-      plugins: [rollupPluginSvelte()],
+      plugins: [
+        rollupPluginSvelte({
+          include: ['~src/../node_modules/svelte-spa-router'],
+          dev: process.env.NODE_ENV !== 'production',
+        }),
+      ],
     },
   },
   devOptions: {

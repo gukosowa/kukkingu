@@ -13,8 +13,9 @@
     <Button class="ml-2 flex-shrink" on:click={onCreateNew}>作成</Button>
   </div>
 
-  {#each $recipes as item, index}
-    <div>
+  {#each $recipes as item, index (index)}
+    <div
+      transition:fly|local={{ delay: 0, duration: 200, x: 0, y: -30, opacity: 0, intro: false, easing: quintOut }}>
       <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-2">
         <div class="flex-grow pr-2">
           {#if item.rename}
@@ -63,12 +64,17 @@
 </div>
 
 <script>
-  import { openedRecipe, recipes } from '~src/store'
+  import { fly } from 'svelte/transition'
+  import { quintOut } from 'svelte/easing'
+  import { recipes } from '~src/store'
+  import { push } from 'svelte-spa-router'
   import Button from './Button.svelte'
   import SInput from './Input.svelte'
   import { newRecipe } from '~plugins/helper'
   import Icon from './Icon.svelte'
   import ModalConfirm from './ModalConfirm.svelte'
+
+  export let params = {}
 
   let recipeName = ''
   let showDeleteConfirm = false
@@ -80,7 +86,7 @@
   }
 
   function open(index) {
-    openedRecipe.set(index)
+    push('/recipe/' + index)
   }
 
   function initRename(index) {

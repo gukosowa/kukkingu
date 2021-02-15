@@ -38,19 +38,25 @@
 </header>
 
 <script>
-  import { openedRecipe, recipes } from '~src/store'
+  import { recipes, route } from '~src/store'
+  import { push } from 'svelte-spa-router'
 
   let elDesire
-
   let recipe
-  $: recipe = $recipes[$openedRecipe]
+
+  let recipeId = -1
+  route.subscribe((r) => {
+    recipeId = r.location?.startsWith('/recipe/') ? r.location.slice(8) : -1
+  })
+
+  $: recipe = recipeId !== -1 ? $recipes[recipeId] : null
 
   import SInput from '~components/Input.svelte'
   import Icon from './Icon.svelte'
   import Button from './Button.svelte'
 
   function onchange() {
-    $recipes[$openedRecipe] = recipe
+    $recipes[recipeId] = recipe
     recipes.set($recipes)
   }
 
@@ -63,6 +69,6 @@
   }
 
   function home() {
-    openedRecipe.set(-1)
+    push('/')
   }
 </script>
