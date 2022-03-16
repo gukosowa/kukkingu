@@ -8,6 +8,14 @@ export const getStorage = (key, fallback) => {
   return JSON.parse(k)
 }
 
+export async function test() {
+  return fetch('http://localhost:9999/netlify/functions/db', {
+  method: "POST",
+  body: JSON.stringify(_data),
+  headers: {"Content-type": "application/json; charset=UTF-8"}
+})
+}
+
 export const newRecipe = (name) => {
   let localRecipes = getStorage('recipes', [])
 
