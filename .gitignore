@@ -10,3 +10,4 @@ build
 .eslintcache
 .vscode
 .netlify
+.env

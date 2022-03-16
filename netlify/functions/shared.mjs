@@ -13,6 +13,16 @@ export function setAuth(event) {
   return { user, error }
 }
 
+export function responseOptions() {
+  return {
+    statusCode: 200,
+ headers: {
+   'Access-Control-Allow-Origin': '*',
+   'Access-Control-Allow-Credentials': true
+ },
+}
+}
+
 export function response(body, statusCode = 200) {
     return {
         statusCode,
