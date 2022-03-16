@@ -3,6 +3,6 @@
   "svelteSortOrder": "markup-scripts-styles",
   "semi": false,
   "singleQuote": true,
-  "trailingComma": "es5",
+  "trailingComma": "all",
   "plugins": ["prettier-plugin-svelte"]
 }
