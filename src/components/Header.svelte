@@ -79,7 +79,7 @@
   import { recipes, route } from '~src/store'
   import { push } from 'svelte-spa-router'
 
-  let showUserModal = true
+  let showUserModal = false
   let elDesire
   let recipe
 
