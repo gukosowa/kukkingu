@@ -38,6 +38,7 @@
   const handleInput = (e) => {
     value = type.match(/^(number|range)$/) ? +e.target.value : e.target.value
     dispatch('input', value)
+    dispatch('update', value)
   }
 
   const onKeyPress = (e) => {
@@ -63,4 +64,5 @@
       },
     }
   }
+
 </script>

@@ -28,6 +28,8 @@
 </div>
 
 <script>
+  import { createEventDispatcher } from 'svelte'
+  const dispatch = createEventDispatcher()
   let show = false
   export let value = 'g'
 
@@ -41,6 +43,7 @@
   ]
 
   function clickType(type) {
+    dispatch('update', value)
     show = false
     value = type.value
   }
@@ -48,6 +51,7 @@
   export function focus() {
     show = true
   }
+
 </script>
 
 <style>
@@ -60,4 +64,5 @@
 
     border-bottom: 12px solid white;
   }
+
 </style>

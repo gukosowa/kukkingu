@@ -44,6 +44,7 @@
               inputClass="input-field"
               id="input-name-{index}"
               on:enter={focusNext}
+              on:update={saveChange}
               bind:value={item.name} />
             <SInput
               placeholder="分量"
@@ -51,11 +52,13 @@
               inputClass="input-field"
               type="number"
               id="input-amount-{index}"
+              on:update={saveChange}
               on:enter={focusNext}
               bind:value={item.amount} />
             <AmountTypeModal
               bind:this={item._inputAmountType}
               class="col-span-3"
+              on:update={saveChange}
               bind:value={item.amountType} />
           {/if}
           <div
@@ -131,6 +134,7 @@
         <SInput
           placeholder="レシピのURL"
           class="flex-grow"
+          on:update={saveChange}
           on:input={() => ($recipes[recipeId].url = recipe.url)}
           bind:value={recipe.url} />
       {/if}
@@ -145,6 +149,7 @@
           placeholder="ノート"
           style="height: 200px;"
           class="mt-2 w-full focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
+          on:input={saveChange}
           bind:value={recipe.note}
           on:input={() => ($recipes[recipeId].note = recipe.note)} />
       {:else if recipe.note}
@@ -372,6 +377,7 @@
       return r
     })
   }
+
 </script>
 
 <style>
@@ -379,4 +385,5 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
 </style>

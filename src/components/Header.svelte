@@ -2,7 +2,24 @@
   class="z-10 px-2 text-white h-16 bg-blue-600 fixed flex w-full items-center shadow-md border-b border-blue-700">
   <div class="w-full flex items-baseline">
     {#if !recipe}
-      <div class="flex-grow">材料コンバーター</div>
+      <div class="flex-grow flex">
+        <div class="flex-grow self-center">材料コンバーター</div>
+        <div class="flex-shrink">
+          {#await userPromise}
+            <Icon icon="fal fa-sync fa-spin mr-4" size="1.2rem" />
+          {:then user}
+            {#if !!user}
+              <Button class="shadow-none" on:click={() => logout()}>
+                <Icon icon="fal fa-sign-out" size="1.2rem" />
+              </Button>
+            {:else}
+              <Button class="shadow-none" on:click={() => loginWithRedirect()}>
+                <Icon icon="fal fa-cloud-upload" size="1.2rem" />
+              </Button>
+            {/if}
+          {/await}
+        </div>
+      </div>
     {:else}
       <div class="flex-grow">
         <Button class="shadow-none" on:click={() => home()}>
@@ -38,6 +55,8 @@
 </header>
 
 <script>
+  import { loginWithRedirect, logout } from 'thin-backend'
+  import { userPromise } from '~src'
   import { recipes, route } from '~src/store'
   import { push } from 'svelte-spa-router'
 
@@ -55,6 +74,8 @@
   import Icon from './Icon.svelte'
   import Button from './Button.svelte'
 
+  userPromise.then(console.log)
+
   function onchange() {
     $recipes[recipeId] = recipe
     recipes.set($recipes)
@@ -71,4 +92,5 @@
   function home() {
     push('/')
   }
+
 </script>
