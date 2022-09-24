@@ -28,8 +28,11 @@
 </div>
 
 <script>
+  import { createEventDispatcher } from 'svelte'
+
   let show = false
   export let value = 'g'
+  const dispatch = new createEventDispatcher()
 
   const types = [
     { icon: 'fas fa-ellipsis-v\n', value: '少々' },
@@ -40,14 +43,20 @@
     { icon: 'fas fa-circle', value: '個' },
   ]
 
+  function onInput() {
+    dispatch('input')
+  }
+
   function clickType(type) {
     show = false
     value = type.value
+    onInput()
   }
 
   export function focus() {
     show = true
   }
+
 </script>
 
 <style>
@@ -60,4 +69,5 @@
 
     border-bottom: 12px solid white;
   }
+
 </style>

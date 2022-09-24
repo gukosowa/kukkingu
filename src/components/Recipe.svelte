@@ -44,6 +44,7 @@
               inputClass="input-field"
               id="input-name-{index}"
               on:enter={focusNext}
+              on:input={saveRecipe}
               bind:value={item.name} />
             <SInput
               placeholder="分量"
@@ -52,10 +53,12 @@
               type="number"
               id="input-amount-{index}"
               on:enter={focusNext}
+              on:input={saveRecipe}
               bind:value={item.amount} />
             <AmountTypeModal
               bind:this={item._inputAmountType}
               class="col-span-3"
+              on:input={saveRecipe}
               bind:value={item.amountType} />
           {/if}
           <div
@@ -200,6 +203,10 @@
 
   function clickAmountType(item) {
     item?.focus()
+  }
+
+  function saveRecipe() {
+    recipes.set($recipes)
   }
 
   function addIngredient() {
@@ -372,6 +379,7 @@
       return r
     })
   }
+
 </script>
 
 <style>
@@ -379,4 +387,5 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
 </style>

@@ -15,6 +15,16 @@
     "baseUrl": "./",
     /* paths - import rewriting/resolving */
     "paths": {
+      "~public*": ["./public*"],
+      "~components*": ["./src/components*"],
+      "~assets*": ["./src/assets*"],
+      "~src*": ["./src*"],
+      "~img*": ["./src/assets/img*"],
+      "~css*": ["./src/assets/css*"],
+      "~pages*": ["./src/pages*"],
+      "~layouts*": ["./src/layouts*"],
+      "~plugins*": ["./src/plugins*"],
+      "~router*": ["./src/router*]"]
       // If you configured any Snowpack aliases, add them here.
       // Add this line to get types for streaming imports (packageOptions.source="remote"):
       //     "*": [".snowpack/types/*"]

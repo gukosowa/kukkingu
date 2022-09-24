@@ -9,19 +9,31 @@
   import Header from '~components/Header.svelte'
   import Router from 'svelte-spa-router'
   import '~css/main.css'
+  import { fetchBackend } from '~plugins/helper.js'
 
   import Storage from '~src/components/Storage.svelte'
   import Recipe from '~src/components/Recipe.svelte'
-  import { route } from '~src/store'
+  import { recipes, route, storeAuth } from '~src/store'
 
   const routes = {
     '/recipe/:id': Recipe,
     '/': Storage,
   }
 
+  if (location.hash.startsWith('#access_token')) {
+    const urlParts = Object.fromEntries(
+      new Map(
+        location.hash.split('&').map((p) => p.replace('#', '').split('='))
+      )
+    )
+
+    storeAuth.set(urlParts)
+  }
+
   function routeLoaded(event) {
     route.set(event.detail)
   }
+
 </script>
 
 <style>
