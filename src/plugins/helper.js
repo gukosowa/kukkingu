@@ -8,46 +8,6 @@ export const getStorage = (key, fallback) => {
   return JSON.parse(k)
 }
 
-function setAuthToken(token) {
-  localStorage.setItem('access_token', token)
-}
-
-function getAuthToken() {
-  return localStorage.getItem('access_token') ?? ''
-}
-
-export async function syncDB() {
-  return await fetch('http://localhost:9999/netlify/functions/db', {
-    method: "POST",
-    body: JSON.stringify(data),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8",
-      "Authorization": 'Bearer ' + getAuthToken()
-    }
-  }).then(res => res.json())
-}
-
-export async function endpointUser(endpoint, data) {
-  return fetch('http://localhost:9999/.netlify/functions/' + endpoint, {
-    method: "POST",
-    body: JSON.stringify(data),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8",
-    }
-  })
-}
-
-export async function test() {
-  return fetch('http://localhost:9999/netlify/functions/db', {
-  method: "POST",
-  body: JSON.stringify(_data),
-  headers: {
-    "Content-type": "application/json; charset=UTF-8",
-    "Authorization": 'Bearer'
-  }
-})
-}
-
 export const newRecipe = (name) => {
   let localRecipes = getStorage('recipes', [])
 
