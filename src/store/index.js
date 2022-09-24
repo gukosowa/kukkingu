@@ -9,7 +9,12 @@ export function setSyncRecipeID(id) {
 }
 
 export const recipes = writable(storedRecipes)
+
 recipes.subscribe((value) => {
+  updateRecipesToStore(value)
+})
+
+export function updateRecipesToStore(value) {
   value = value.map((r) => {
     if (r.ingredients) {
       r.ingredients.map((i) => {
@@ -33,7 +38,7 @@ recipes.subscribe((value) => {
       console.log('finished sync', result)
     })
   }
-})
+}
 
 export const storedOpenedRecipe = JSON.parse(
   localStorage.getItem('openedRecipe') || -1

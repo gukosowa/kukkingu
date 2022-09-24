@@ -1,5 +1,9 @@
 import { getCurrentUserId } from 'thin-backend/auth.js'
-import { setSyncRecipeID, uuidv4 } from '~src/store/index.js'
+import {
+  setSyncRecipeID,
+  updateRecipesToStore,
+  uuidv4,
+} from '~src/store/index.js'
 import App from './App.svelte'
 
 import {
@@ -13,9 +17,9 @@ initThinBackend({
   host: 'https://cooker.thinbackend.app',
 })
 
-await initAuth()
-
 async function syncRecipe() {
+  await initAuth()
+
   if (getCurrentUserId()) {
     let queryRecipe = await query('recipes').fetchOne()
     const localRecipeString = localStorage.getItem('recipes') || '[]'
@@ -40,6 +44,8 @@ async function syncRecipe() {
 
     setSyncRecipeID(queryRecipe.id)
 
+    const mustSync = localRecipes.length !== recipes.length
+
     const merged = [...recipes, ...localRecipes].reduce((acc, value) => {
       let existingValueIndex = acc.findIndex((obj) => obj.id === value.id)
       if (existingValueIndex === -1) {
@@ -54,12 +60,16 @@ async function syncRecipe() {
     }, [])
 
     localStorage.setItem('recipes', JSON.stringify(merged))
+
+    if (mustSync) {
+      updateRecipesToStore(merged)
+    }
   }
+
+  return getCurrentUser()
 }
 
-await syncRecipe()
-
-export const userPromise = getCurrentUser()
+export const userPromise = syncRecipe()
 
 const app = new App({
   target: document.body,
