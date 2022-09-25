@@ -1,5 +1,6 @@
 import { getCurrentUserId } from 'thin-backend/auth.js'
 import {
+  recipes,
   setSyncRecipeID,
   updateRecipesToStore,
   uuidv4,
@@ -17,53 +18,70 @@ initThinBackend({
   host: 'https://cooker.thinbackend.app',
 })
 
+function ensureRecipesId() {
+  let recipes = getLocalRecipesArray()
+  let changeId = false
+  recipes = recipes.map((r) => {
+    if (!r.id) {
+      changeId = true
+      r.id = uuidv4()
+    }
+    return r
+  })
+  if (changeId) {
+    localStorage.setItem('recipes', JSON.stringify(recipes))
+  }
+}
+
+export function getLocalRecipesStringified() {
+  return localStorage.getItem('recipes') || '[]'
+}
+export function getLocalRecipesArray() {
+  return JSON.parse(getLocalRecipesStringified())
+}
+
 async function syncRecipe() {
   await initAuth()
 
   if (getCurrentUserId()) {
+    ensureRecipesId()
+
     let queryRecipe = await query('recipes').fetchOne()
-    const localRecipeString = localStorage.getItem('recipes') || '[]'
-    let changeId = false
-    let localRecipes = JSON.parse(localRecipeString).map((r) => {
-      if (!r.id) {
-        changeId = true
-        r.id = uuidv4()
-      }
-      return r
-    })
-    if (changeId) {
-      localStorage.setItem('recipes', JSON.stringify(localRecipes))
-    }
 
     if (queryRecipe === null) {
       queryRecipe = await createRecord('recipes', {
-        recipe: JSON.stringify(localRecipes),
+        recipe: getLocalRecipesStringified(),
       })
     }
-    const recipes = JSON.parse(queryRecipe.recipe)
+    const fetchedRecipes = JSON.parse(queryRecipe.recipe)
 
     setSyncRecipeID(queryRecipe.id)
 
-    const mustSync = localRecipes.length !== recipes.length
+    const mustSync = getLocalRecipesArray().length !== fetchedRecipes.length
 
-    const merged = [...recipes, ...localRecipes].reduce((acc, value) => {
-      let existingValueIndex = acc.findIndex((obj) => obj.id === value.id)
-      if (existingValueIndex === -1) {
-        acc.push({ ...value })
+    const merged = [...getLocalRecipesArray(), ...fetchedRecipes].reduce(
+      (acc, value) => {
+        let existingValueIndex = acc.findIndex((obj) => obj.id === value.id)
+        if (existingValueIndex === -1) {
+          acc.push({ ...value })
+          return acc
+        }
+        acc[existingValueIndex] = {
+          ...acc[existingValueIndex],
+          ...value,
+        }
         return acc
-      }
-      acc[existingValueIndex] = {
-        ...acc[existingValueIndex],
-        ...value,
-      }
-      return acc
-    }, [])
+      },
+      []
+    )
 
     localStorage.setItem('recipes', JSON.stringify(merged))
 
     if (mustSync) {
       updateRecipesToStore(merged)
     }
+
+    recipes.set(merged)
   }
 
   return getCurrentUser()

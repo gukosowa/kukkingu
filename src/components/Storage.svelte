@@ -9,7 +9,7 @@
       bind:value={recipeName}
       on:enter={onCreateNew}
       useinit
-      placeholder="Name of recipe" />
+      placeholder="レシピ名" />
     <Button class="ml-2 flex-shrink" on:click={onCreateNew}>作成</Button>
   </div>
 
