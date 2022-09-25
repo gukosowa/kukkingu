@@ -140,7 +140,9 @@
       {/if}
       {#if recipe.url}
         <a href={recipe.url} class="ml-2" target="_blank" rel="noreferrer">
-          <Button class="whitespace-no-wrap">リンクを開く</Button></a>
+          <Button class="whitespace-no-wrap">
+            レシピのウェブページを開く
+          </Button></a>
       {/if}
     </div>
     <div>
@@ -161,6 +163,7 @@
 {/if}
 
 <script>
+  import { onMount } from 'svelte'
   import { fly } from 'svelte/transition'
   import { quintOut } from 'svelte/easing'
   import { recipes } from '~src/store'
@@ -178,7 +181,7 @@
 
   let recipe
 
-  location.subscribe((l) => {
+  location.subscribe(() => {
     recipeId = params.id
     recipe = recipeId !== -1 ? $recipes[recipeId] : null
   })
@@ -194,6 +197,11 @@
   import { newIngredient } from '~plugins/helper'
   import Checkbox from './Checkbox.svelte'
   import AmountTypeModal from './AmountTypeModal.svelte'
+
+  onMount(() => {
+    $recipes[recipeId].edit = false
+    recipes.set($recipes)
+  })
 
   function clickName(index) {
     document.getElementById('input-name-' + index)?.focus()

@@ -1,6 +1,7 @@
-<div>
+<div class="flex-grow flex flex-col">
   <ModalConfirm
     bind:value={showDeleteConfirm}
+    bind:removeName={deleteConfirmName}
     on:confirm={() => remove()}
     on:cancel={() => cancelRemove()} />
   <div class="text-left mb-2 flex items-baseline">
@@ -46,7 +47,7 @@
               color="red"
               class="mr-1"
               tone={300}
-              on:click={() => initRemove(index)}>
+              on:click={() => initRemove(index, item.name)}>
               <Icon icon="fal fa-trash-alt" size="1.2rem" />
             </Button>
             <Button color="green" tone={400} on:click={() => rename(index)}>
@@ -80,6 +81,7 @@
 
   let recipeName = ''
   let showDeleteConfirm = false
+  let deleteConfirmName = ''
   let deleteIndex = null
 
   function onCreateNew() {
@@ -109,8 +111,9 @@
     recipes.set($recipes)
   }
 
-  function initRemove(index) {
+  function initRemove(index, removeName) {
     showDeleteConfirm = true
+    deleteConfirmName = removeName
     deleteIndex = index
   }
 

@@ -10,7 +10,11 @@
           {:then user}
             {#if !!user}
               <Button class="shadow-none" on:click={() => logout()}>
-                <Icon icon="fal fa-sign-out" size="1.2rem" />
+                {#if $didSynced}
+                  <Icon icon="fal fa-sync fa-spin" size="1.2rem" />
+                {:else}
+                  <Icon icon="fal fa-sign-out" size="1.2rem" />
+                {/if}
               </Button>
             {:else}
               <Button class="shadow-none" on:click={() => loginWithRedirect()}>
@@ -71,6 +75,7 @@
   $: recipe = recipeId !== -1 ? $recipes[recipeId] : null
 
   import SInput from '~components/Input.svelte'
+  import { didSynced } from '~src/store/index.js'
   import Icon from './Icon.svelte'
   import Button from './Button.svelte'
 

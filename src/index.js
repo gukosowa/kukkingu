@@ -69,6 +69,7 @@ async function syncRecipe() {
         acc[existingValueIndex] = {
           ...acc[existingValueIndex],
           ...value,
+          edit: false,
         }
         return acc
       },

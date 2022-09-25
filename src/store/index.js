@@ -9,6 +9,8 @@ export function setSyncRecipeID(id) {
 }
 
 export const recipes = writable(storedRecipes)
+let timeoutDidSynced = null
+export const didSynced = writable(false)
 
 recipes.subscribe((value) => {
   updateRecipesToStore(value)
@@ -31,11 +33,20 @@ export function updateRecipesToStore(value) {
   localStorage.setItem('recipes', stringified)
 
   if (syncRecipeID) {
+    didSynced.set(true)
     updateRecord('recipes', syncRecipeID, {
       recipe: stringified,
     }).then((result) => {
       // finished update
       console.log('finished sync', result)
+
+      if (timeoutDidSynced) {
+        clearTimeout(timeoutDidSynced)
+        timeoutDidSynced = null
+      }
+      timeoutDidSynced = setTimeout(() => {
+        didSynced.set(false)
+      }, 100)
     })
   }
 }
