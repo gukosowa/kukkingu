@@ -158,7 +158,7 @@
           on:input={() => ($recipes[recipeId].note = recipe.note)} />
       {:else if recipe.note}
         <p class="text-sm mt-3 px-2"><b>{$_('ノート')}:</b></p>
-        <p class="text-sm px-2">{recipe.note}</p>
+        <p class="text-sm whitespace-pre-wrap px-2">{recipe.note}</p>
       {/if}
     </div>
   </div>
@@ -166,8 +166,8 @@
 {/if}
 
 <script>
-  import { _ } from 'svelte-i18n'
   import { onMount } from 'svelte'
+  import { _ } from 'svelte-i18n'
   import { fly } from 'svelte/transition'
   import { quintOut } from 'svelte/easing'
   import Footer from '~components/Footer.svelte'
