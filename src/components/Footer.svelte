@@ -18,8 +18,17 @@
           {#await userPromise}
             <Icon icon="fal fa-sync fa-spin mr-4" size="1.2rem" />
           {:then user}
-            {#if !!user}<span>シンクのユーザー名: {user.email}</span>{/if}
+            {#if !!user}<span>シンクのユーザー名: {user.email}</span><br />{/if}
           {/await}
+          <div class="text-sm text-right" on:click={changeLocale}>
+            <i class="fas fa-globe mr-1" />
+
+            JP
+            <i
+              class="fas fa-toggle-on"
+              class:fa-rotate-180={$currentLocale === 'jp'} />
+            EN
+          </div>
         </div>
       </div>
     </div>
@@ -29,7 +38,7 @@
 <script>
   import ModalConfirm from '~components/ModalConfirm.svelte'
   import { userPromise } from '~src'
-  import { recipes } from '~src/store/index.js'
+  import { currentLocale, recipes } from '~src/store/index.js'
   import Icon from './Icon.svelte'
 
   let showDeleteConfirm = false
@@ -45,6 +54,13 @@
 
   function cancelClearAll() {
     showDeleteConfirm = false
+  }
+
+  function changeLocale() {
+    let setLocale = $currentLocale === 'jp' ? 'en' : 'jp'
+    currentLocale.set(setLocale)
+
+    console.log(setLocale)
   }
 
 </script>

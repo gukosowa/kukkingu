@@ -16,6 +16,9 @@ recipes.subscribe((value) => {
   updateRecipesToStore(value)
 })
 
+const defaultLocale = 'jp'
+export const currentLocale = writable(defaultLocale)
+
 export function updateRecipesToStore(value) {
   value = value.map((r) => {
     if (r.ingredients) {
