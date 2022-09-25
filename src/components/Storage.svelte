@@ -17,7 +17,7 @@
   {#each $recipes as item, index (index)}
     <div
       transition:fly|local={{ delay: 0, duration: 200, x: 0, y: -30, opacity: 0, intro: false, easing: quintOut }}>
-      <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-2">
+      <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
         <div class="flex-grow pr-2">
           {#if item.rename}
             <SInput

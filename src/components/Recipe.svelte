@@ -1,5 +1,5 @@
 {#if recipe}
-  <div class="flex items-center">
+  <div class="flex items-center my-1">
     <div
       class="title flex-1 whitespace-no-wrap overflow-hidden text-xs px-1 font-bold text-gray-700">
       {recipe?.name}
@@ -36,7 +36,7 @@
   <div class="flex flex-col">
     <div class="mb-3 mt-2">
       {#each recipe.ingredients as item, index (index)}
-        <div class="grid grid-cols-12 mb-2 gap-1" value={recipe.ingredients}>
+        <div class="grid grid-cols-12 mb-3 gap-1" value={recipe.ingredients}>
           {#if recipe.edit}
             <SInput
               placeholder="材料"
@@ -66,7 +66,8 @@
             class="col-span-12 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white">
             <div class="grid grid-cols-12">
               <div class="col-span-10">
-                <div class="absolute left-0 top-0 text-xs ml-3 mt-1">
+                <div
+                  class="absolute left-0 text-gray-600 top-0 text-xs ml-3 mt-1">
                   必要な量
                 </div>
                 <span
@@ -142,6 +143,7 @@
         <a href={recipe.url} class="ml-2" target="_blank" rel="noreferrer">
           <Button class="whitespace-no-wrap">
             レシピのウェブページを開く
+            <i class="fal fa-external-link ml-2" />
           </Button></a>
       {/if}
     </div>
