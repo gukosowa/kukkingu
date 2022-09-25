@@ -8,6 +8,7 @@
   "dependencies": {
     "rollup": "^2.79.1",
     "svelte": "^3.24.0",
+    "svelte-i18n": "^3.4.0",
     "svelte-spa-router": "^3.1.0",
     "thin-backend": "^0.11.0"
   },

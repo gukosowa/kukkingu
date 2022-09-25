@@ -11,14 +11,16 @@
       <div class="flex-grow flex">
         <div class="flex-grow self-center">
           <a class="" href="/privacy-statement.txt">Privacy Policy</a>
-          <div class="mt-1 mb-2" on:click={initClearAll}>clear all</div>
+          <div class="mt-1 mb-2" on:click={initClearAll}>
+            {$_('clear_all_data')}
+          </div>
         </div>
 
         <div class="flex-shrink">
           {#await userPromise}
             <Icon icon="fal fa-sync fa-spin mr-4" size="1.2rem" />
           {:then user}
-            {#if !!user}<span>シンクのユーザー名: {user.email}</span><br />{/if}
+            {#if !!user}<span>{$_('username')}: {user.email}</span><br />{/if}
           {/await}
           <div class="text-sm text-right" on:click={changeLocale}>
             <i class="fas fa-globe mr-1" />
@@ -36,13 +38,20 @@
 </footer>
 
 <script>
+  import { onMount } from 'svelte'
+  import { _, locale } from 'svelte-i18n'
   import ModalConfirm from '~components/ModalConfirm.svelte'
   import { userPromise } from '~src'
   import { currentLocale, recipes } from '~src/store/index.js'
   import Icon from './Icon.svelte'
 
   let showDeleteConfirm = false
-  let deleteConfirmName = 'すべてのレシピ'
+  let deleteConfirmName = $_('clear_all')
+
+  onMount(() => {
+    const storedLocale = localStorage.getItem('locale') || 'jp'
+    locale.set(storedLocale)
+  })
 
   function initClearAll() {
     showDeleteConfirm = true
@@ -60,7 +69,8 @@
     let setLocale = $currentLocale === 'jp' ? 'en' : 'jp'
     currentLocale.set(setLocale)
 
-    console.log(setLocale)
+    locale.set(setLocale)
+    localStorage.setItem('locale', setLocale)
   }
 
 </script>

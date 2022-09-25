@@ -7,19 +7,19 @@
     <div class="w-full h-full px-12 pb-8 flex flex-col justify-end">
       <div class="w- bg-white p-5 rounded-xl drop-shadow">
         <div class="text-lg text-gray-600 font-bold">
-          本当に削除？<br />
+          {$_('really_delete')}？<br />
           <span class="text-sm">> {removeName}</span>
         </div>
         <div class="text-white text-center">
           <div
             class="cursor-pointer py-3 my-5 bg-red-500 rounded-lg drop-shadow"
             on:click={() => clickYes()}>
-            はい
+            {$_('yes')}
           </div>
           <div
             class="cursor-pointer py-3 bg-gray-500 rounded-lg drop-shadow"
             on:click={() => clickNo()}>
-            キャンセル
+            {$_('cancel')}
           </div>
         </div>
       </div>
@@ -28,6 +28,7 @@
 {/if}
 
 <script>
+  import { _ } from 'svelte-i18n'
   export let value = false
   export let removeName = ''
   import { createEventDispatcher } from 'svelte'

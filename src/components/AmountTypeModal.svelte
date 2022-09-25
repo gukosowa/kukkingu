@@ -28,18 +28,23 @@
 </div>
 
 <script>
+  import { _ } from 'svelte-i18n'
   import { createEventDispatcher } from 'svelte'
   const dispatch = createEventDispatcher()
   let show = false
   export let value = 'g'
 
   const types = [
-    { icon: 'fas fa-ellipsis-v\n', value: '少々' },
-    { icon: 'fas fa-weight-hanging', value: 'g' },
-    { icon: 'fas fa-tint', value: '㏄' },
-    { icon: 'fas fa-utensil-spoon', value: '大さじ' },
-    { icon: 'fas fa-utensil-spoon', size: '0.8rem', value: '小さじ' },
-    { icon: 'fas fa-circle', value: '個' },
+    { icon: 'fas fa-ellipsis-v\n', value: $_('ms_pinch') },
+    { icon: 'fas fa-weight-hanging', value: $_('ms_gramm') },
+    { icon: 'fas fa-tint', value: $_('ms_ml') },
+    { icon: 'fas fa-utensil-spoon', value: $_('ms_big_spoon') },
+    {
+      icon: 'fas fa-utensil-spoon',
+      size: '0.8rem',
+      value: $_('ms_small_spoon'),
+    },
+    { icon: 'fas fa-circle', value: $_('ms_unit') },
   ]
 
   function clickType(type) {

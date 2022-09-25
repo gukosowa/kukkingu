@@ -7,6 +7,16 @@ import {
 } from '~src/store/index.js'
 import App from './App.svelte'
 
+import { addMessages, init } from 'svelte-i18n'
+import en from './i18n/en.json'
+import jp from './i18n/jp.json'
+addMessages('en', en)
+addMessages('jp', jp)
+init({
+  fallbackLocale: 'jp',
+  initialLocale: 'jp',
+})
+
 import {
   createRecord,
   getCurrentUser,

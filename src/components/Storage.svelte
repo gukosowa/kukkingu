@@ -10,8 +10,10 @@
       bind:value={recipeName}
       on:enter={onCreateNew}
       useinit
-      placeholder="レシピ名" />
-    <Button class="ml-2 flex-shrink" on:click={onCreateNew}>作成</Button>
+      placeholder={$_('recipe_name')} />
+    <Button class="ml-2 flex-shrink" on:click={onCreateNew}>
+      {$_('add_recipe')}
+    </Button>
   </div>
 
   {#each $recipes as item, index (index)}
@@ -66,6 +68,7 @@
 </div>
 
 <script>
+  import { _ } from 'svelte-i18n'
   import { fly } from 'svelte/transition'
   import { quintOut } from 'svelte/easing'
   import Footer from '~components/Footer.svelte'
