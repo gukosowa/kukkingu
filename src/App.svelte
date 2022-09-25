@@ -3,11 +3,9 @@
   <div class="mt-16 bg-gray-200 flex-grow p-2">
     <Router {routes} restoreScrollState={true} on:routeLoaded={routeLoaded} />
   </div>
-  <Footer />
 </div>
 
 <script>
-  import Footer from '~components/Footer.svelte'
   import Header from '~components/Header.svelte'
   import Router from 'svelte-spa-router'
   import '~css/main.css'

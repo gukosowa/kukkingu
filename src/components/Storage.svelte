@@ -61,11 +61,13 @@
       </div>
     </div>
   {/each}
+  <Footer />
 </div>
 
 <script>
   import { fly } from 'svelte/transition'
   import { quintOut } from 'svelte/easing'
+  import Footer from '~components/Footer.svelte'
   import { recipes } from '~src/store'
   import { push } from 'svelte-spa-router'
   import Button from './Button.svelte'
@@ -152,4 +154,5 @@
     $recipes = array_move($recipes, index, clamp)
     recipes.set($recipes)
   }
+
 </script>
