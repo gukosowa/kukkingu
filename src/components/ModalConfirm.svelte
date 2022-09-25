@@ -7,19 +7,19 @@
     <div class="w-full h-full px-12 pb-8 flex flex-col justify-end">
       <div class="w- bg-white p-5 rounded-xl drop-shadow">
         <div class="text-lg text-gray-600 font-bold">
-          {$_('really_delete')}？<br />
+          {$_('本当に削除')}？<br />
           <span class="text-sm">> {removeName}</span>
         </div>
         <div class="text-white text-center">
           <div
             class="cursor-pointer py-3 my-5 bg-red-500 rounded-lg drop-shadow"
             on:click={() => clickYes()}>
-            {$_('yes')}
+            {$_('はい')}
           </div>
           <div
             class="cursor-pointer py-3 bg-gray-500 rounded-lg drop-shadow"
             on:click={() => clickNo()}>
-            {$_('cancel')}
+            {$_('キャンセル')}
           </div>
         </div>
       </div>

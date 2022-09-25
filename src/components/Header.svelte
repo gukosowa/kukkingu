@@ -3,7 +3,7 @@
   <div class="w-full flex items-baseline">
     {#if !recipe}
       <div class="flex-grow flex">
-        <div class="flex-grow self-center">{$_('title')}</div>
+        <div class="flex-grow self-center">{$_('材料コンバーター')}</div>
         <div class="flex-shrink">
           {#await userPromise}
             <Icon icon="fal fa-sync fa-spin mr-4" size="1.2rem" />
@@ -35,7 +35,7 @@
     {#if !!recipe}
       <SInput
         class="w-20"
-        placeholder={$_('original_weight_short')}
+        placeholder={$_('必要量')}
         type="number"
         on:enter={focusNext}
         on:input={onchange}
@@ -47,7 +47,7 @@
         icon="fal fa-play-circle" />
       <SInput
         class="w-20"
-        placeholder={$_('target_weight')}
+        placeholder={$_('最低量')}
         type="number"
         id="input-desired"
         bind:elInput={elDesire}

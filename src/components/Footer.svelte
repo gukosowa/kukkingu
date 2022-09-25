@@ -12,7 +12,7 @@
         <div class="flex-grow self-center">
           <a class="" href="/privacy-statement.txt">Privacy Policy</a>
           <div class="mt-1 mb-2" on:click={initClearAll}>
-            {$_('clear_all_data')}
+            {$_('すべてクリア')}
           </div>
         </div>
 
@@ -20,7 +20,7 @@
           {#await userPromise}
             <Icon icon="fal fa-sync fa-spin mr-4" size="1.2rem" />
           {:then user}
-            {#if !!user}<span>{$_('username')}: {user.email}</span><br />{/if}
+            {#if !!user}<span>{$_('ユーザー名')}: {user.email}</span><br />{/if}
           {/await}
           <div class="text-sm text-right" on:click={changeLocale}>
             <i class="fas fa-globe mr-1" />
@@ -42,14 +42,15 @@
   import { _, locale } from 'svelte-i18n'
   import ModalConfirm from '~components/ModalConfirm.svelte'
   import { userPromise } from '~src'
-  import { currentLocale, recipes } from '~src/store/index.js'
+  import { currentLocale, defaultLocale, recipes } from '~src/store/index.js'
   import Icon from './Icon.svelte'
 
   let showDeleteConfirm = false
-  let deleteConfirmName = $_('clear_all')
+  let deleteConfirmName = $_('すべてのレシピ')
 
   onMount(() => {
-    const storedLocale = localStorage.getItem('locale') || 'jp'
+    const storedLocale = localStorage.getItem('locale') || defaultLocale
+    currentLocale.set(storedLocale)
     locale.set(storedLocale)
   })
 

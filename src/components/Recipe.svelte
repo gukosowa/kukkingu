@@ -9,26 +9,26 @@
       <Button on:click={switchEdit} class="mr-1" color="green">
         {#if recipe.edit}
           <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
-          {$_('mode_show')}
+          {$_('表示モード')}
         {:else}
           <Icon icon="fal fa-pen" class="mr-1" size="0.8rem" />
-          {$_('mode_edit')}
+          {$_('編集モード')}
         {/if}
       </Button>
     {:else}
       <Button on:click={clearCheck} class="mr-1" color="gray">
         <Icon icon="fal fa-broom" class="mr-1" size="0.8rem" />
-        {$_('clear')}
+        {$_('クリア')}
       </Button>
     {/if}
     {#if !recipe.edit}
       <Button on:click={switchCheck} color="gray">
         {#if recipe.checklist}
           <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
-          {$_('mode_show')}
+          {$_('表示モード')}
         {:else}
           <Icon icon="fal fa-shopping-cart" class="mr-1" size="0.8rem" />
-          {$_('mode_cart')}
+          {$_('チェックリスト')}
         {/if}
       </Button>
     {/if}
@@ -39,7 +39,7 @@
         <div class="grid grid-cols-12 mb-3 gap-1" value={recipe.ingredients}>
           {#if recipe.edit}
             <SInput
-              placeholder={$_('ingredient')}
+              placeholder={$_('材料')}
               class="col-span-6"
               inputClass="input-field"
               id="input-name-{index}"
@@ -47,7 +47,7 @@
               on:update={saveChange}
               bind:value={item.name} />
             <SInput
-              placeholder={$_('weight')}
+              placeholder={$_('分量')}
               class="col-span-3"
               inputClass="input-field"
               type="number"
@@ -68,25 +68,25 @@
               <div class="col-span-10">
                 <div
                   class="absolute left-0 text-gray-600 top-0 text-xs ml-3 mt-1">
-                  {$_('original_weight')}
+                  {$_('必要な量')}
                 </div>
                 <span
                   class="text-gray-300 font-bold"
                   on:click={() => clickName(index)}>{item.name || '-'}</span>
-                {#if [$_('ms_big_spoon'), $_('ms_small_spoon')].includes(item.amountType)}
+                {#if ['大さじ', '小さじ'].includes(item.amountType)}
                   <span
                     class="text-red-300"
                     on:click={() => clickAmountType(item._inputAmountType)}
-                    style="font-size: 1.2rem;">{item.amountType}</span>
+                    style="font-size: 1.2rem;">{$_('full_' + item.amountType)}</span>
                 {/if}
                 <span
                   class="font-bold"
                   on:click={() => clickAmount(index)}>{amount(item, item.amountType)}</span>
-                {#if ![$_('ms_big_spoon'), $_('ms_small_spoon')].includes(item.amountType)}
+                {#if !['大さじ', '小さじ'].includes(item.amountType)}
                   <span
                     class="text-red-300"
                     on:click={() => clickAmountType(item._inputAmountType)}
-                    style="font-size: 1.2rem;">{item.amountType}</span>
+                    style="font-size: 1.2rem;">{$_('full_' + item.amountType)}</span>
                 {/if}
               </div>
               <div class="col-span-2 relative text-right">
@@ -98,7 +98,7 @@
                 {:else if !recipe.edit}
                   <div
                     class="text-xs whitespace-no-wrap absolute top-0 -mt-4 right-0 text-gray-500">
-                    <span class="text-gray-700">{$_('original')} </span>
+                    <span class="text-gray-700">{$_('オリジナル')} </span>
                     {item.amount || '0'}
                   </div>
                   <i
@@ -126,14 +126,14 @@
       {#if recipe.edit}
         <Button on:click={addIngredient} color="green">
           <Icon icon="fal fa-plus" class="mr-1" size="1.2rem" />
-          {$_('add')}
+          {$_('追加')}
         </Button>
       {/if}
     </div>
     <div class="flex mt-4">
       {#if recipe.edit}
         <SInput
-          placeholder={$_('recipe_url')}
+          placeholder={$_('レシピのURL')}
           class="flex-grow"
           on:update={saveChange}
           on:input={() => ($recipes[recipeId].url = recipe.url)}
@@ -142,7 +142,7 @@
       {#if recipe.url}
         <a href={recipe.url} class="ml-2" target="_blank" rel="noreferrer">
           <Button class="whitespace-no-wrap">
-            {$_('open_link')}
+            {$_('レシピのウェブページを開く')}
             <i class="fal fa-external-link ml-2" />
           </Button></a>
       {/if}
@@ -150,14 +150,14 @@
     <div>
       {#if recipe.edit}
         <textarea
-          placeholder={$_('note')}
+          placeholder={$_('ノート')}
           style="height: 200px;"
           class="mt-2 w-full focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
           on:input={saveChange}
           bind:value={recipe.note}
           on:input={() => ($recipes[recipeId].note = recipe.note)} />
       {:else if recipe.note}
-        <p class="text-sm mt-3 px-2"><b>{$_('note')}:</b></p>
+        <p class="text-sm mt-3 px-2"><b>{$_('ノート')}:</b></p>
         <p class="text-sm px-2">{recipe.note}</p>
       {/if}
     </div>
@@ -204,7 +204,9 @@
   import AmountTypeModal from './AmountTypeModal.svelte'
 
   onMount(() => {
-    $recipes[recipeId].edit = false
+    if ($recipes[recipeId]) {
+      $recipes[recipeId].edit = false
+    }
     recipes.set($recipes)
   })
 
@@ -285,17 +287,17 @@
     const rat = ratio || 1
 
     switch (amountType) {
-      case $_('ms_pinch'):
+      case '少々':
         return Math.ceil(item.amount / rat).toFixed(0)
-      case $_('ms_gramm'):
-      case $_('ms_ml'):
+      case 'g':
+      case '㏄':
         if (item.amount > 1) {
           return Math.round(item.amount / rat)
         }
         break
-      case $_('ms_big_spoon'):
-      case $_('ms_small_spoon'):
-      case $_('ms_unit'):
+      case '大さじ':
+      case '小さじ':
+      case '個':
         useQuarter = true
         break
       default:

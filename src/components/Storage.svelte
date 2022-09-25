@@ -10,9 +10,9 @@
       bind:value={recipeName}
       on:enter={onCreateNew}
       useinit
-      placeholder={$_('recipe_name')} />
+      placeholder={$_('レシピ名')} />
     <Button class="ml-2 flex-shrink" on:click={onCreateNew}>
-      {$_('add_recipe')}
+      {$_('作成')}
     </Button>
   </div>
 

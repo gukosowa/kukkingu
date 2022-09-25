@@ -16,7 +16,7 @@ recipes.subscribe((value) => {
   updateRecipesToStore(value)
 })
 
-const defaultLocale = 'jp'
+export const defaultLocale = 'en'
 export const currentLocale = writable(defaultLocale)
 
 export function updateRecipesToStore(value) {

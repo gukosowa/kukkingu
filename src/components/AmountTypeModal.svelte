@@ -2,7 +2,7 @@
   on:click={() => (show = true)}
   class="{$$props.class} cursor-pointer bg-white focus:ring-indigo-500 text-gray-700 p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md">
   <div class="whitespace-no-wrap pl-1 text-sm">
-    {value}
+    {$_(value)}
     <i class="text-gray-500 float-right mt-1 mr-2 fas fa-sort-down" />
   </div>
   {#if show === true}
@@ -20,7 +20,7 @@
           <i
             style="font-size: {type.size || 'default'}"
             class="text-gray-600 mb-2 block {type.icon}" />
-          {type.value}
+          {$_(type.value)}
         </div>
       {/each}
     </div>
@@ -35,16 +35,16 @@
   export let value = 'g'
 
   const types = [
-    { icon: 'fas fa-ellipsis-v\n', value: $_('ms_pinch') },
-    { icon: 'fas fa-weight-hanging', value: $_('ms_gramm') },
-    { icon: 'fas fa-tint', value: $_('ms_ml') },
-    { icon: 'fas fa-utensil-spoon', value: $_('ms_big_spoon') },
+    { icon: 'fas fa-ellipsis-v\n', value: '少々' },
+    { icon: 'fas fa-weight-hanging', value: 'g' },
+    { icon: 'fas fa-tint', value: '㏄' },
+    { icon: 'fas fa-utensil-spoon', value: '大さじ' },
     {
       icon: 'fas fa-utensil-spoon',
       size: '0.8rem',
-      value: $_('ms_small_spoon'),
+      value: '小さじ',
     },
-    { icon: 'fas fa-circle', value: $_('ms_unit') },
+    { icon: 'fas fa-circle', value: '個' },
   ]
 
   function clickType(type) {
