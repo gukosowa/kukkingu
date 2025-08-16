@@ -1,6 +1,12 @@
 export default {
   content: ['./src/**/*.{html,js,svelte,ts}'],
-  safelist: [/^bg-pink-/, /^bg-green-/, /^bg-red-/, /^bg-gray-/],
+  // Ensure dynamic bg-* classes are included in the build
+  safelist: [
+    { pattern: /^bg-pink-/ },
+    { pattern: /^bg-green-/ },
+    { pattern: /^bg-red-/ },
+    { pattern: /^bg-gray-/ },
+  ],
   theme: {
     extend: {
       colors: {
@@ -10,4 +16,3 @@ export default {
   },
   plugins: [],
 }
-
