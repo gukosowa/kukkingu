@@ -1,4 +1,4 @@
-// https://github.com/OliwerDrywa/svelte-pwa/blob/master/public/manifest.json
+// Service worker with Workbox; updates caches using Stale-While-Revalidate
 
 const cacheName = 'stale-with-revalidate'
 

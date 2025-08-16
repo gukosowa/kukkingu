@@ -1,47 +1,17 @@
+import { ref } from 'vue'
 import { getCurrentUserId } from 'thin-backend/auth.js'
+import {
+  createRecord,
+  getCurrentUser,
+  initAuth,
+  query,
+} from 'thin-backend'
 import {
   recipes,
   setSyncRecipeID,
   updateRecipesToStore,
   uuidv4,
-} from '~src/store/index.js'
-import App from './App.svelte'
-
-import { addMessages, init } from 'svelte-i18n'
-import en from './i18n/en.json'
-import jp from './i18n/jp.json'
-addMessages('en', en)
-addMessages('jp', jp)
-init({
-  fallbackLocale: 'jp',
-  initialLocale: 'jp',
-})
-
-import {
-  createRecord,
-  getCurrentUser,
-  initAuth,
-  initThinBackend,
-  query,
-} from 'thin-backend'
-initThinBackend({
-  host: 'https://cooker.thinbackend.app',
-})
-
-function ensureRecipesId() {
-  let recipes = getLocalRecipesArray()
-  let changeId = false
-  recipes = recipes.map((r) => {
-    if (!r.id) {
-      changeId = true
-      r.id = uuidv4()
-    }
-    return r
-  })
-  if (changeId) {
-    localStorage.setItem('recipes', JSON.stringify(recipes))
-  }
-}
+} from '~src/store/index'
 
 export function getLocalRecipesStringified() {
   return localStorage.getItem('recipes') || '[]'
@@ -50,13 +20,31 @@ export function getLocalRecipesArray() {
   return JSON.parse(getLocalRecipesStringified())
 }
 
-async function syncRecipe() {
+function ensureRecipesId() {
+  let recs = getLocalRecipesArray()
+  let changeId = false
+  recs = recs.map((r: any) => {
+    if (!r.id) {
+      changeId = true
+      r.id = uuidv4()
+    }
+    return r
+  })
+  if (changeId) {
+    localStorage.setItem('recipes', JSON.stringify(recs))
+  }
+}
+
+export const user = ref<any>(null)
+export const userLoading = ref<boolean>(true)
+
+export async function syncRecipe() {
   await initAuth()
 
   if (getCurrentUserId()) {
     ensureRecipesId()
 
-    let queryRecipe = await query('recipes').fetchOne()
+    let queryRecipe: any = await query('recipes').fetchOne()
 
     if (queryRecipe === null) {
       queryRecipe = await createRecord('recipes', {
@@ -70,7 +58,7 @@ async function syncRecipe() {
     const mustSync = getLocalRecipesArray().length !== fetchedRecipes.length
 
     const merged = [...getLocalRecipesArray(), ...fetchedRecipes].reduce(
-      (acc, value) => {
+      (acc: any[], value: any) => {
         let existingValueIndex = acc.findIndex((obj) => obj.id === value.id)
         if (existingValueIndex === -1) {
           acc.push({ ...value })
@@ -83,31 +71,23 @@ async function syncRecipe() {
         }
         return acc
       },
-      []
+      [] as any[]
     )
 
     localStorage.setItem('recipes', JSON.stringify(merged))
 
     if (mustSync) {
-      updateRecipesToStore(merged)
+      updateRecipesToStore(merged as any)
     }
 
-    recipes.set(merged)
+    recipes.value = merged as any
   }
 
-  return getCurrentUser()
+  const u = await getCurrentUser()
+  user.value = u
+  userLoading.value = false
+  return u
 }
 
 export const userPromise = syncRecipe()
 
-const app = new App({
-  target: document.body,
-})
-
-// noinspection JSUnusedGlobalSymbols
-export default app
-
-// Register service worker if available
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js')
-}

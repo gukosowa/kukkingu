@@ -1,0 +1,306 @@
+<template>
+  <div v-if="recipe">
+    <div class="flex items-center my-1">
+      <div class="title flex-1 whitespace-no-wrap overflow-hidden text-xs px-1 font-bold text-gray-700">
+        {{ recipe?.name }}
+      </div>
+
+      <template v-if="!recipe.checklist">
+        <Button @click="switchEdit" class="mr-1" color="green">
+          <template v-if="recipe.edit">
+            <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
+            {{ t('表示モード') }}
+          </template>
+          <template v-else>
+            <Icon icon="fal fa-pen" class="mr-1" size="0.8rem" />
+            {{ t('編集モード') }}
+          </template>
+        </Button>
+      </template>
+      <template v-else>
+        <Button @click="clearCheck" class="mr-1" color="gray">
+          <Icon icon="fal fa-broom" class="mr-1" size="0.8rem" />
+          {{ t('クリア') }}
+        </Button>
+      </template>
+      <template v-if="!recipe.edit">
+        <Button @click="switchCheck" color="gray">
+          <template v-if="recipe.checklist">
+            <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
+            {{ t('表示モード') }}
+          </template>
+          <template v-else>
+            <Icon icon="fal fa-shopping-cart" class="mr-1" size="0.8rem" />
+            {{ t('チェックリスト') }}
+          </template>
+        </Button>
+      </template>
+    </div>
+    <div class="flex flex-col">
+      <div class="mb-3 mt-2">
+        <div class="grid grid-cols-12 mb-3 gap-1" v-for="(item, index) in recipe.ingredients" :key="index">
+          <template v-if="recipe.edit">
+            <SInput
+              :placeholder="t('材料')"
+              class="col-span-6"
+              inputClass="input-field"
+              :id="'input-name-' + index"
+              @enter="() => focusNext(index)"
+              @update="saveChange"
+              v-model="item.name"
+            />
+            <SInput
+              :placeholder="t('分量')"
+              class="col-span-3"
+              inputClass="input-field"
+              type="number"
+              :id="'input-amount-' + index"
+              @update="saveChange"
+              @enter="() => focusNext(index)"
+              v-model="item.amount"
+            />
+            <AmountTypeModal
+              :ref="(el:any) => (amountRefs[index] = el)"
+              class="col-span-3"
+              @update="saveChange"
+              v-model="item.amountType"
+            />
+          </template>
+          <div class="col-span-12 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white">
+            <div class="grid grid-cols-12">
+              <div class="col-span-10">
+                <div class="absolute left-0 text-gray-600 top-0 text-xs ml-3 mt-1">
+                  {{ t('必要な量') }}
+                </div>
+                <span class="text-gray-300 font-bold" @click="() => clickName(index)">{{ item.name || '-' }}</span>
+                <span
+                  class="text-red-300"
+                  v-if="['大さじ', '小さじ'].includes(item.amountType as any)"
+                  @click="() => clickAmountType(index)"
+                  style="font-size: 1.2rem;"
+                  >{{ t('full_' + item.amountType) }}</span
+                >
+                <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item, item.amountType as any) }}</span>
+                <span
+                  class="text-red-300"
+                  v-if="!['大さじ', '小さじ'].includes(item.amountType as any)"
+                  @click="() => clickAmountType(index)"
+                  style="font-size: 1.2rem;"
+                  >{{ t('full_' + item.amountType) }}</span
+                >
+              </div>
+              <div class="col-span-2 relative text-right">
+                <template v-if="recipe.checklist">
+                  <Checkbox class="absolute right-0 top-0 -mt-1" v-model="item.checked" @input="saveChange" />
+                </template>
+                <template v-else-if="!recipe.edit">
+                  <div class="text-xs whitespace-no-wrap absolute top-0 -mt-4 right-0 text-gray-500">
+                    <span class="text-gray-700">{{ t('オリジナル') }} </span>
+                    {{ item.amount || '0' }}
+                  </div>
+                  <i
+                    @click="() => doOriginal(index)"
+                    class="cursor-pointer fal fa-ruler p-2 top-0 -mt-1 absolute right-0 text-gray-600"
+                  />
+                </template>
+                <template v-if="recipe.edit">
+                  <i @click="() => moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 top-0 mr-24 absolute right-0 text-gray-600" />
+                  <i @click="() => moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 top-0 mr-16 absolute right-0 text-gray-600" />
+                  <i @click="() => deleteIngredient(index)" class="cursor-pointer fal fa-minus-circle p-2 top-0 -mt-1 absolute right-0 text-gray-600" />
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-4 mt-2 text-right">
+        <template v-if="recipe.edit">
+          <Button @click="addIngredient" color="green">
+            <Icon icon="fal fa-plus" class="mr-1" size="1.2rem" />
+            {{ t('追加') }}
+          </Button>
+        </template>
+      </div>
+      <div class="flex mt-4">
+        <template v-if="recipe.edit">
+          <SInput :placeholder="t('レシピのURL')" class="flex-grow" @update="saveChange" v-model="recipe.url" />
+        </template>
+        <template v-if="recipe.url">
+          <a :href="recipe.url" class="ml-2" target="_blank" rel="noreferrer">
+            <Button class="whitespace-no-wrap">
+              {{ t('レシピのウェブページを開く') }}
+              <i class="fal fa-external-link ml-2" />
+            </Button>
+          </a>
+        </template>
+      </div>
+      <div>
+        <template v-if="recipe.edit">
+          <textarea
+            :placeholder="t('ノート')"
+            style="height: 200px"
+            class="mt-2 w-full focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
+            @input="saveChange"
+            v-model="recipe.note"
+          />
+        </template>
+        <template v-else-if="recipe.note">
+          <p class="text-sm mt-3 px-2"><b>{{ t('ノート') }}:</b></p>
+          <p class="markdown-body text-sm whitespace-pre-wrap px-2" v-html="markedRender"></p>
+        </template>
+      </div>
+    </div>
+    <Footer />
+  </div>
+</template>
+
+<script lang="ts" setup>
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import * as marked from 'marked'
+import Footer from '~components/Footer.vue'
+import { recipes as _recipes } from '~src/store/index'
+import Button from './Button.vue'
+import SInput from './Input.vue'
+import Icon from './Icon.vue'
+import Checkbox from './Checkbox.vue'
+import AmountTypeModal from './AmountTypeModal.vue'
+import { t } from '~src/i18n'
+
+const route = useRoute()
+const router = useRouter()
+
+const recipeId = computed(() => {
+  return +(route.params.id as any)
+})
+
+const recipe = computed<any>({
+  get() {
+    return _recipes.value?.[recipeId.value]
+  },
+  set(v) {
+    const copy = [..._recipes.value]
+    copy[recipeId.value] = v
+    _recipes.value = copy
+  },
+})
+
+if (!_recipes.value || _recipes.value.length === 0) {
+  router.push('/')
+}
+
+const markedRender = computed(() => marked.parse(recipe.value?.note || ''))
+const ratio = computed(() => (recipe.value ? recipe.value.original / recipe.value.desired : 1))
+
+function amount(item: any, amountType: string): string {
+  const original = parseFloat(item.amount || '0')
+  if (!original || !ratio.value) return '-'
+  const desired = original / ratio.value
+  switch (amountType) {
+    case 'g':
+      return desired.toFixed(2) + 'g'
+    case '㏄':
+      return desired.toFixed(2) + 'ml'
+    case '大さじ':
+      return (desired / 15).toFixed(2) + 'tbl'
+    case '小さじ':
+      return (desired / 5).toFixed(2) + 'tea'
+    case '個':
+      return desired.toFixed(2) + 'pc'
+    default:
+      return desired.toFixed(2)
+  }
+}
+
+const amountRefs = ref<any[]>([])
+function clickName(index: number) {
+  document.getElementById('input-name-' + index)?.focus()
+}
+function clickAmount(index: number) {
+  document.getElementById('input-amount-' + index)?.focus()
+}
+function clickAmountType(index: number) {
+  amountRefs.value?.[index]?.focus?.()
+}
+function addIngredient() {
+  const copy = [..._recipes.value]
+  copy[recipeId.value].ingredients.push({ name: '', amount: '', amountType: 'g', note: '' })
+  _recipes.value = copy
+  setTimeout(() => {
+    const items = [...document.getElementsByClassName('input-field')] as HTMLElement[]
+    items[items.length - 2]?.focus()
+  }, 0)
+}
+function switchEdit() {
+  const copy = [..._recipes.value]
+  copy[recipeId.value].edit = !copy[recipeId.value].edit
+  copy[recipeId.value].checklist = false
+  _recipes.value = copy
+}
+function switchCheck() {
+  const copy = [..._recipes.value]
+  copy[recipeId.value].checklist = !copy[recipeId.value].checklist
+  copy[recipeId.value].edit = false
+  _recipes.value = copy
+}
+function clearCheck() {
+  const copy = [..._recipes.value]
+  copy[recipeId.value].ingredients.forEach((i: any) => (i.checked = false))
+  _recipes.value = copy
+}
+function doOriginal(index: number) {
+  // Reserved for restoring original amount; implement if needed
+}
+function array_move<T>(array: T[], sourceIndex: number, destinationIndex: number): T[] {
+  const smallerIndex = Math.min(sourceIndex, destinationIndex)
+  const largerIndex = Math.max(sourceIndex, destinationIndex)
+  return [
+    ...array.slice(0, smallerIndex),
+    ...(sourceIndex < destinationIndex ? array.slice(smallerIndex + 1, largerIndex + 1) : []),
+    array[sourceIndex],
+    ...(sourceIndex > destinationIndex ? array.slice(smallerIndex, largerIndex) : []),
+    ...array.slice(largerIndex + 1),
+  ]
+}
+function moveUp(index: number) {
+  const copy = [..._recipes.value]
+  const clamp = Math.max(0, index - 1)
+  copy[recipeId.value].ingredients = array_move(copy[recipeId.value].ingredients, index, clamp)
+  _recipes.value = copy
+}
+function moveDown(index: number) {
+  const copy = [..._recipes.value]
+  const clamp = Math.min(copy[recipeId.value].ingredients.length - 1, index + 1)
+  copy[recipeId.value].ingredients = array_move(copy[recipeId.value].ingredients, index, clamp)
+  _recipes.value = copy
+}
+function deleteIngredient(index: number) {
+  const copy = [..._recipes.value]
+  copy[recipeId.value].ingredients = copy[recipeId.value].ingredients.filter((_: any, i: number) => i !== index)
+  _recipes.value = copy
+}
+function saveChange() {
+  // recipes ref is reactive; assigning above triggers persistence via external calls
+}
+</script>
+
+<style scoped>
+@import 'github-markdown-css';
+.title {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.markdown-body {
+  background: initial;
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}
+</style>

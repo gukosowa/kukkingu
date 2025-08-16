@@ -1,5 +1,5 @@
 export default {
-  content: ['./src/**/*.{html,js,svelte,ts}'],
+  content: ['./src/**/*.{html,js,ts,vue}'],
   // Ensure dynamic bg-* classes are included in the build
   safelist: [
     { pattern: /^bg-pink-/ },

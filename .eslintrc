@@ -1,35 +1,31 @@
 {
-  "parser": "babel-eslint",
+  "root": true,
   "env": {
     "browser": true,
     "node": true,
-    "es6": true
+    "es2021": true
   },
+  "parser": "vue-eslint-parser",
   "parserOptions": {
-    "ecmaVersion": 2020,
-    "sourceType": "module"
+    "parser": "@typescript-eslint/parser",
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "extraFileExtensions": [".vue"]
   },
-  "plugins": [
-    "svelte3",
-    "prettier"
-  ],
+  "plugins": ["vue", "@typescript-eslint", "prettier"],
   "extends": [
-    "prettier",
-    "eslint:recommended"
+    "eslint:recommended",
+    "plugin:vue/vue3-recommended",
+    "@vue/eslint-config-typescript/recommended",
+    "@vue/eslint-config-prettier"
   ],
+  "rules": {
+    "prettier/prettier": ["error"],
+    "vue/multi-word-component-names": "off"
+  },
   "overrides": [
     {
-      "files": [
-        "src/**/*.svelte"
-      ],
-      "processor": "svelte3/svelte3"
-    },
-    {
-      "files": [
-        "src/**/*.test.js",
-        "src/**/*.spec.js",
-        "src/**/*.spec.jsx"
-      ]
+      "files": ["src/**/*.test.{js,ts}", "src/**/*.spec.{js,ts}"]
     }
   ]
 }

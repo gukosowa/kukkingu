@@ -1,6 +1,6 @@
 # Kukkingu
 
-Svelte SPA migrated to Vite + Svelte 4, Tailwind 3, and TypeScript 5.
+Vue 3 SPA using Vite, Tailwind 3, and TypeScript 5.
 
 ## Scripts
 
@@ -19,10 +19,10 @@ Use your package manager of choice:
 - Entry HTML lives at project root `index.html` (Vite convention).
 - Aliases mirror legacy Snowpack aliases via Vite config and TS `paths`.
 - Tailwind uses `content` scanning and a safelist for dynamic bg classes.
-- Service worker registration remains in `src/index.js`.
+- Service worker registers from `/service-worker.js` in `main.ts`.
 
 ## Folder Structure
 
-- `src/` app source (Svelte components, store, i18n, etc.)
+- `src/` app source (Vue components, router, store, i18n, etc.)
 - `public/` static assets (favicon, manifest, etc.)
 - `dist/` build output (generated)
