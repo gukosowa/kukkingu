@@ -158,7 +158,9 @@
           on:input={() => ($recipes[recipeId].note = recipe.note)} />
       {:else if recipe.note}
         <p class="text-sm mt-3 px-2"><b>{$_('ノート')}:</b></p>
-        <p class="text-sm whitespace-pre-wrap px-2">{recipe.note}</p>
+        <p class="markdown-body text-sm whitespace-pre-wrap px-2">
+          {@html markedRender}
+        </p>
       {/if}
     </div>
   </div>
@@ -167,6 +169,7 @@
 
 <script>
   import { onMount } from 'svelte'
+  import * as marked from 'marked'
   import { _ } from 'svelte-i18n'
   import { fly } from 'svelte/transition'
   import { quintOut } from 'svelte/easing'
@@ -183,6 +186,9 @@
   let recipeId = params.id
 
   $: recipeId = params.id
+
+  let markedRender
+  $: markedRender = marked.parse(recipe.note)
 
   let recipe
 
@@ -396,9 +402,25 @@
 </script>
 
 <style>
+  @import 'github-markdown-css';
   .title {
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .markdown-body {
+    background: initial;
+    box-sizing: border-box;
+    min-width: 200px;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 45px;
+  }
+
+  @media (max-width: 767px) {
+    .markdown-body {
+      padding: 15px;
+    }
   }
 
 </style>

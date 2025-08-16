@@ -107,15 +107,7 @@ const app = new App({
 // noinspection JSUnusedGlobalSymbols
 export default app
 
-// Hot Module Replacement (HMR) - Remove this snippet to remove HMR.
-// Learn more: https://www.snowpack.dev/concepts/hot-module-replacement
-if (import.meta.hot) {
-  import.meta.hot.accept()
-  import.meta.hot.dispose(() => {
-    app.$destroy()
-  })
-} else {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js')
-  }
+// Register service worker if available
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js')
 }

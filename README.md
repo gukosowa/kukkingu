@@ -1,29 +1,28 @@
-# New Project
+# Kukkingu
 
-> ✨ Bootstrapped with Create Snowpack App (CSA).
+Svelte SPA migrated to Vite + Svelte 4, Tailwind 3, and TypeScript 5.
 
-## Available Scripts
+## Scripts
 
-### npm start
+- `dev`: start Vite dev server.
+- `build`: production build to `dist/`.
+- `preview`: preview the production build locally.
+- `test`: run tests via web-test-runner.
 
-Runs the app in the development mode.
-Open http://localhost:8080 to view it in the browser.
+Use your package manager of choice:
 
-The page will reload if you make edits.
-You will also see any lint errors in the console.
+- pnpm: `pnpm dev`, `pnpm build`, `pnpm preview`
+- npm: `npm run dev`, `npm run build`, `npm run preview`
 
-### npm test
+## Notes
 
-Launches the test runner in the interactive watch mode.
-See the section about running tests for more information.
+- Entry HTML lives at project root `index.html` (Vite convention).
+- Aliases mirror legacy Snowpack aliases via Vite config and TS `paths`.
+- Tailwind uses `content` scanning and a safelist for dynamic bg classes.
+- Service worker registration remains in `src/index.js`.
 
-### npm run build
+## Folder Structure
 
-Builds a static copy of your site to the `build/` folder.
-Your app is ready to be deployed!
-
-**For the best production performance:** Add a build bundler plugin like [@snowpack/plugin-webpack](https://github.com/snowpackjs/snowpack/tree/main/plugins/plugin-webpack) or [snowpack-plugin-rollup-bundle](https://github.com/ParamagicDev/snowpack-plugin-rollup-bundle) to your `snowpack.config.json` config file.
-
-### Q: What about Eject?
-
-No eject needed! Snowpack guarantees zero lock-in, and CSA strives for the same.
+- `src/` app source (Svelte components, store, i18n, etc.)
+- `public/` static assets (favicon, manifest, etc.)
+- `dist/` build output (generated)
