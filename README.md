@@ -1,28 +1,45 @@
 # Kukkingu
 
-Vue 3 SPA using Vite, Tailwind 3, and TypeScript 5.
+Kukkingu is a lightweight recipe manager built with **Vue 3**, **Vite**,
+**Tailwind CSS**, and **TypeScript**. It integrates
+[Thin Backend](https://thin-backend.com/) for persistence and registers a
+service worker for offline use.
 
-## Scripts
+## Features
 
-- `dev`: start Vite dev server.
-- `build`: production build to `dist/`.
-- `preview`: preview the production build locally.
-- `test`: run tests via web-test-runner.
+- Create, rename, reorder, and delete recipes
+- Ingredient checklist with portion scaling
+- Markdown-based notes for each recipe
+- Localized interface (Japanese & English)
+- Service worker caching for production builds
 
-Use your package manager of choice:
+## Quick Start
 
-- pnpm: `pnpm dev`, `pnpm build`, `pnpm preview`
-- npm: `npm run dev`, `npm run build`, `npm run preview`
+```bash
+npm install
+npm run dev       # start development server
+npm test          # run unit tests
+npm run build     # create production build in dist/
+npm run preview   # preview the build locally
+```
 
-## Notes
+pnpm equivalents are also supported (`pnpm dev`, `pnpm build`, ...).
 
-- Entry HTML lives at project root `index.html` (Vite convention).
-- Aliases mirror legacy Snowpack aliases via Vite config and TS `paths`.
-- Tailwind uses `content` scanning and a safelist for dynamic bg classes.
-- Service worker registers from `/service-worker.js` in `main.ts`.
+## Project Structure
 
-## Folder Structure
+- `index.html` – Vite entry point
+- `src/` – application source
+  - `components/` – Vue components (PascalCase `.vue`)
+  - `router/` – Vue Router configuration
+  - `store/` – reactive state and persistence helpers
+  - `i18n/` – localization messages and helpers
+  - `plugins/`, `services/` – utilities and integrations
+- `public/` – static files served as-is (icons, manifest, service worker)
+- `dist/` – generated production build
 
-- `src/` app source (Vue components, router, store, i18n, etc.)
-- `public/` static assets (favicon, manifest, etc.)
-- `dist/` build output (generated)
+## Contributing
+
+This project uses ESLint and Prettier with two-space indentation, single
+quotes, and no semicolons. Commit messages follow **Conventional
+Commits**. Run `npm test` and `npm run build` before submitting a PR.
+
