@@ -31,6 +31,5 @@ export async function openChatGPT(prompt: string): Promise<boolean> {
   } catch (e) {
     legacyCopyToClipboard(prompt)
   }
-  window.open('https://chatgpt.com/', '_blank')
   return true
 }
