@@ -3,7 +3,7 @@
     <div
       v-if="modelValue"
       @click="toggle"
-      class="w-10 h-10 bg-blue-600 border-2 border-blue-400 block text-center rounded-lg"
+      class="w-10 h-10 bg-blue-600 border-2 border-blue-400 block text-center rounded-lg flex items-center justify-center"
     >
       <i class="fas fa-check text-md" />
     </div>
@@ -16,7 +16,10 @@
 </template>
 
 <script lang="ts" setup>
-const props = defineProps<{ modelValue: boolean; class?: string }>()
+const props = withDefaults(defineProps<{ modelValue?: boolean; class?: string }>(), {
+  modelValue: false,
+  class: '',
+})
 const emit = defineEmits<{ (e: 'update:modelValue', v: boolean): void; (e: 'input', v: boolean): void }>()
 const cls = props.class || ''
 const toggle = () => {
@@ -30,4 +33,3 @@ div {
   cursor: pointer;
 }
 </style>
-
