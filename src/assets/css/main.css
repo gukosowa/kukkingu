@@ -1,6 +1,13 @@
 /* noinspection CssInvalidAtRule */
 @tailwind base;
 
+/* Ensure the default UI font is Noto Sans JP */
+@layer base {
+  body {
+    @apply font-sans;
+  }
+}
+
 /* noinspection CssInvalidAtRule */
 @tailwind components;
 

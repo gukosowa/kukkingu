@@ -6,14 +6,13 @@
       @confirm="remove"
       @cancel="cancelRemove"
     />
-    <div class="text-left mb-2 flex items-baseline">
+    <div class="mb-2 flex items-center">
       <SInput
         class="flex-1 mx-2"
-        v-model="recipeName"
-        @enter="onCreateNew"
-        :placeholder="t('Recipe name')"
+        v-model="filterQuery"
+        :placeholder="t('Filter recipes')"
       />
-      <Button class="ml-2 flex-shrink" @click="onCreateNew">{{ t('Create') }}</Button>
+      <Button class="ml-2 flex-shrink" @click="openCreateModal">{{ t('Create') }}</Button>
     </div>
 
 
@@ -28,6 +27,16 @@
       @cancel="cancelImportUrl"
     />
     <ModalInput
+      v-model="showCreateModal"
+      :value="createName"
+      :title="t('Create Recipe')"
+      :confirmText="t('Create')"
+      :cancelText="t('Close')"
+      :placeholder="t('Recipe name')"
+      @confirm="confirmCreate"
+      @cancel="cancelCreate"
+    />
+    <ModalInput
       v-model="showImportJsonModal"
       :value="importJsonText"
       :title="t('Import JSON')"
@@ -39,7 +48,7 @@
     />
 
     <div class='flex-grow'>
-      <div v-for="(item, index) in recipes" :key="index">
+      <div v-for="(item, index) in recipes" :key="index" v-show="filterMatch(item?.name)">
         <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
           <div class="flex-grow pr-2">
             <template v-if="item.rename">
@@ -128,7 +137,9 @@ import { buildImportRecipePrompt } from '~src/services/prompt'
 
 const router = useRouter()
 const recipes = computed({ get: () => _recipes.value, set: (v) => (_recipes.value = v as any) })
-let recipeName = ref('')
+let filterQuery = ref('')
+let showCreateModal = ref(false)
+let createName = ref('')
 let showDeleteConfirm = ref(false)
 let deleteConfirmName = ref('')
 let deleteIndex = ref<number | null>(null)
@@ -141,9 +152,24 @@ let toastTimer: number | null = null
 
 const route = useRoute()
 
-function onCreateNew() {
-  _recipes.value = newRecipe(recipeName.value)
-  recipeName.value = ''
+function openCreateModal() {
+  createName.value = ''
+  showCreateModal.value = true
+}
+function confirmCreate(name: string) {
+  _recipes.value = newRecipe((name || '').trim())
+  showCreateModal.value = false
+  createName.value = ''
+}
+function cancelCreate() {
+  showCreateModal.value = false
+  createName.value = ''
+}
+function filterMatch(name: string | undefined) {
+  const q = (filterQuery.value || '').toLowerCase().trim()
+  if (!q) return true
+  const n = (name || '').toLowerCase()
+  return n.includes(q)
 }
 function open(index: number) {
   router.push('/recipe/' + index)
