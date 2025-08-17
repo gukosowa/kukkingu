@@ -16,5 +16,14 @@
     "orientation": "portrait",
     "theme_color":"#ffffff",
     "background_color":"#ffffff",
-    "display":"standalone"
+    "display":"standalone",
+    "share_target": {
+        "action": "/",
+        "method": "GET",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url"
+        }
+    }
 }

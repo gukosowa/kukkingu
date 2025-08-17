@@ -222,6 +222,19 @@ function clickAmount(index: number) {
 function clickAmountType(index: number) {
   amountRefs.value?.[index]?.focus?.()
 }
+function focusNext(index: number) {
+  const active = document.activeElement as HTMLElement | null
+  if (active?.id === 'input-name-' + index) {
+    document.getElementById('input-amount-' + index)?.focus()
+    return
+  }
+  if (active?.id === 'input-amount-' + index) {
+    amountRefs.value?.[index]?.focus?.()
+    return
+  }
+  const nextName = document.getElementById('input-name-' + (index + 1))
+  nextName?.focus()
+}
 function addIngredient() {
   const copy = [..._recipes.value]
   copy[recipeId.value].ingredients.push({ name: '', amount: '', amountType: 'g', note: '' })

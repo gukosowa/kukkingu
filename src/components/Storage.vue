@@ -16,6 +16,28 @@
       <Button class="ml-2 flex-shrink" @click="onCreateNew">{{ t('作成') }}</Button>
     </div>
 
+    <div class="mb-2 flex">
+      <Button class="mx-2 flex-1" @click="openImportUrl">Import from URL</Button>
+      <Button class="mx-2 flex-1" @click="openImportJson">Import from GPT</Button>
+    </div>
+
+    <ModalInput
+      v-model="showImportUrlModal"
+      :value="importUrl"
+      title="Import from URL"
+      confirmText="Open GPT"
+      placeholder="https://example.com"
+      @confirm="confirmImportUrl"
+    />
+    <ModalInput
+      v-model="showImportJsonModal"
+      title="Import from GPT"
+      confirmText="Import"
+      placeholder="Paste JSON"
+      :multiline="true"
+      @confirm="confirmImportJson"
+    />
+
     <div v-for="(item, index) in recipes" :key="index">
       <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
         <div class="flex-grow pr-2">
@@ -57,8 +79,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { t } from '~src/i18n'
 import Footer from '~components/Footer.vue'
 import { recipes as _recipes } from '~src/store/index'
@@ -67,6 +89,7 @@ import SInput from './Input.vue'
 import { newRecipe } from '~plugins/helper'
 import Icon from './Icon.vue'
 import ModalConfirm from './ModalConfirm.vue'
+import ModalInput from './ModalInput.vue'
 
 const router = useRouter()
 const recipes = computed({ get: () => _recipes.value, set: (v) => (_recipes.value = v as any) })
@@ -74,6 +97,11 @@ let recipeName = ref('')
 let showDeleteConfirm = ref(false)
 let deleteConfirmName = ref('')
 let deleteIndex = ref<number | null>(null)
+let showImportUrlModal = ref(false)
+let showImportJsonModal = ref(false)
+let importUrl = ref('')
+
+const route = useRoute()
 
 function onCreateNew() {
   _recipes.value = newRecipe(recipeName.value)
@@ -135,4 +163,40 @@ function moveDown(index: number) {
   const clamp = Math.min(recipes.value.length - 1, index + 1)
   recipes.value = array_move(recipes.value as any, index, clamp) as any
 }
+
+function openImportUrl() {
+  showImportUrlModal.value = true
+}
+
+function confirmImportUrl(url: string) {
+  importUrl.value = url
+  showImportUrlModal.value = false
+  const prompt =
+    'Get the content of ' +
+    url +
+    ' and convert it to structured Json. Answer ONLY with the Json, no markdown, just plain Json. The Json must follow this structure: {"name":"string","original":number,"desired":number,"note":"string","url":"string","ingredients":[{"name":"string","amount":"number or string","amountType":"string","note":"string"}]}'
+  window.open('https://chatgpt.com/?q=' + encodeURIComponent(prompt), '_blank')
+}
+
+function openImportJson() {
+  showImportJsonModal.value = true
+}
+
+function confirmImportJson(json: string) {
+  showImportJsonModal.value = false
+  try {
+    const data = JSON.parse(json)
+    recipes.value = [...recipes.value, data]
+  } catch (e) {
+    alert('Invalid JSON')
+  }
+}
+
+onMounted(() => {
+  const shared = route.query.url
+  if (typeof shared === 'string' && shared) {
+    importUrl.value = shared
+    showImportUrlModal.value = true
+  }
+})
 </script>
