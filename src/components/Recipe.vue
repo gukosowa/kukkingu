@@ -249,7 +249,17 @@ function clearCheck() {
   _recipes.value = copy
 }
 function doOriginal(index: number) {
-  // Reserved for restoring original amount; implement if needed
+  const item = recipe.value?.ingredients?.[index]
+  if (!item) return
+  const amount = parseFloat(item.amount || '0')
+  if (!amount) return
+  const copy = [..._recipes.value]
+  copy[recipeId.value].original = amount
+  copy[recipeId.value].desired = amount
+  _recipes.value = copy
+  setTimeout(() => {
+    document.getElementById('input-desired')?.focus()
+  }, 0)
 }
 function array_move<T>(array: T[], sourceIndex: number, destinationIndex: number): T[] {
   const smallerIndex = Math.min(sourceIndex, destinationIndex)
