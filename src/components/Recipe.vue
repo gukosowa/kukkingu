@@ -288,16 +288,62 @@ function norm(type: string): string {
 
 const amountRefs = ref<any[]>([])
 function clickName(index: number) {
-  document.getElementById('input-name-' + index)?.focus()
+  if (recipe.value?.edit) {
+    document.getElementById('input-name-' + index)?.focus()
+  } else {
+    const selection = window.getSelection()
+    const range = document.createRange()
+    const element = event?.target as HTMLElement
+    if (selection && element) {
+      range.selectNodeContents(element)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
+  }
 }
+
 function clickAmount(index: number) {
-  document.getElementById('input-amount-' + index)?.focus()
+  if (recipe.value?.edit) {
+    document.getElementById('input-amount-' + index)?.focus()
+  } else {
+    const selection = window.getSelection()
+    const range = document.createRange()
+    const element = event?.target as HTMLElement
+    if (selection && element) {
+      range.selectNodeContents(element)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
+  }
 }
 function clickAmountType(index: number) {
-  amountRefs.value?.[index]?.focus?.()
+  if (recipe.value?.edit) {
+    amountRefs.value?.[index]?.focus?.()
+  } else {
+    const selection = window.getSelection()
+    const range = document.createRange()
+    const element = event?.target as HTMLElement
+    if (selection && element) {
+      range.selectNodeContents(element)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
+  }
 }
+
 function clickNote(index: number) {
-  document.getElementById('input-note-' + index)?.focus()
+  if (recipe.value?.edit) {
+    document.getElementById('input-note-' + index)?.focus()
+  } else {
+    const selection = window.getSelection()
+    const range = document.createRange()
+    const element = event?.target as HTMLElement
+    if (selection && element) {
+      range.selectNodeContents(element)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
+  }
 }
 function focusNext(index: number) {
   const active = document.activeElement as HTMLElement | null
@@ -353,6 +399,8 @@ function doOriginal(index: number) {
   _recipes.value = copy
   setTimeout(() => {
     document.getElementById('input-desired')?.focus()
+    document.getElementById('input-desired')?.select()
+
   }, 0)
 }
 function array_move<T>(array: T[], sourceIndex: number, destinationIndex: number): T[] {
