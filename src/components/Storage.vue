@@ -7,11 +7,25 @@
       @cancel="cancelRemove"
     />
     <div class="mb-2 flex items-center">
-      <SInput
-        class="flex-1 mx-2"
-        v-model="filterQuery"
-        :placeholder="t('Filter recipes')"
-      />
+      <div class="relative flex-1 mx-2">
+        <SInput
+          ref="filterInputRef"
+          class="w-full"
+          :inputClass="'pr-8'"
+          v-model="filterQuery"
+          :placeholder="t('Filter recipes')"
+        />
+        <button
+          v-if="filterQuery"
+          @click="clearFilter"
+          type="button"
+          aria-label="Clear filter"
+          :title="t('Clear')"
+          class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+        >
+          <Icon icon="fal fa-times-circle" size="1.1rem" />
+        </button>
+      </div>
       <Button class="ml-2 flex-shrink" @click="openCreateModal">{{ t('Create') }}</Button>
     </div>
 
@@ -76,7 +90,7 @@
           <div class="flex-grow whitespace-nowrap text-right">
             <template v-if="item.rename">
               <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
-              <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600" />
+              <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600 mr-2" />
               <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
                 <Icon icon="fal fa-trash-alt" size="1.2rem" />
               </Button>
@@ -113,7 +127,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { t, currentLocale } from '~src/i18n'
 import Footer from '~components/Footer.vue'
@@ -132,6 +146,7 @@ import { buildImportRecipePrompt } from '~src/services/prompt'
 const router = useRouter()
 const recipes = computed({ get: () => _recipes.value, set: (v) => (_recipes.value = v as any) })
 let filterQuery = ref('')
+const filterInputRef = ref<InstanceType<typeof SInput> | null>(null)
 let showCreateModal = ref(false)
 let createName = ref('')
 let showDeleteConfirm = ref(false)
@@ -166,6 +181,10 @@ function filterMatch(name: string | undefined) {
   if (!q) return true
   const n = (name || '').toLowerCase()
   return n.includes(q)
+}
+function clearFilter() {
+  filterQuery.value = ''
+  nextTick(() => filterInputRef.value?.focus?.())
 }
 function open(index: number) {
   router.push('/recipe/' + index)
