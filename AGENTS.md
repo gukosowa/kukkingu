@@ -37,5 +37,4 @@
 - CI hygiene: ensure `npm test` and `npm run build` pass locally before opening a PR.
 
 ## Security & Configuration Tips
-- Thin Backend: host configured in `src/main.ts` (`initThinBackend`). Do not commit secrets.
 - Service worker registers from `/service-worker.js`; verify behavior when changing caching or routes.

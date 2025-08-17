@@ -1,9 +1,8 @@
 # Kukkingu
 
 Kukkingu is a lightweight recipe manager built with **Vue 3**, **Vite**,
-**Tailwind CSS**, and **TypeScript**. It integrates
-[Thin Backend](https://thin-backend.com/) for persistence and registers a
-service worker for offline use.
+**Tailwind CSS**, and **TypeScript**. Data is stored locally (in
+`localStorage`), and a service worker is registered for offline use.
 
 ## Features
 
@@ -42,4 +41,3 @@ pnpm equivalents are also supported (`pnpm dev`, `pnpm build`, ...).
 This project uses ESLint and Prettier with two-space indentation, single
 quotes, and no semicolons. Commit messages follow **Conventional
 Commits**. Run `npm test` and `npm run build` before submitting a PR.
-

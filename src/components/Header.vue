@@ -4,19 +4,6 @@
       <template v-if="!recipe">
         <div class="flex-grow flex">
           <div class="flex-grow self-center">{{ t('Ingredient converter') }}</div>
-          <div class="flex-shrink">
-            <template v-if="userLoading">
-              <Icon icon="fal fa-sync fa-spin mr-4" size="1.2rem" />
-            </template>
-            <template v-else>
-              <Button class="shadow-none" v-if="user" @click="logout()">
-                <Icon :icon="didSynced ? 'fal fa-sync fa-spin' : 'fal fa-sign-out'" size="1.2rem" />
-              </Button>
-              <Button class="shadow-none" v-else @click="loginWithRedirect()">
-                <Icon icon="fal fa-cloud-upload" size="1.2rem" />
-              </Button>
-            </template>
-          </div>
         </div>
       </template>
       <template v-else>
@@ -55,15 +42,12 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { loginWithRedirect, logout } from 'thin-backend'
-import { recipes, didSynced as _didSynced } from '~src/store/index'
+import { recipes } from '~src/store/index'
 import { t } from '~src/i18n'
-import { user, userLoading } from '~src/services/auth'
 import SInput from '~components/Input.vue'
 import Icon from './Icon.vue'
 import Button from './Button.vue'
 
-const didSynced = computed(() => _didSynced.value)
 const route = useRoute()
 const router = useRouter()
 

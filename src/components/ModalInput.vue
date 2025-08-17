@@ -15,12 +15,13 @@
               v-model="localValue"
               :placeholder="placeholder"
               :autofocus="true"
+              :ref="(el:any) => (inputRef.value = el)"
             />
             <textarea
               v-else
               v-model="localValue"
               :placeholder="placeholder"
-              autofocus
+              ref="textareaRef"
               class="w-full focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
             />
           </div>
@@ -45,7 +46,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import SInput from './Input.vue'
 
 const props = withDefaults(
@@ -73,10 +74,21 @@ const emit = defineEmits<{
 }>()
 
 const localValue = ref(props.value)
+const inputRef = ref<any>(null)
+const textareaRef = ref<HTMLTextAreaElement | null>(null)
 watch(
   () => props.modelValue,
   (v) => {
-    if (v) localValue.value = props.value
+    if (v) {
+      localValue.value = props.value
+      nextTick(() => {
+        if (props.multiline) {
+          textareaRef.value?.focus()
+        } else {
+          inputRef.value?.focus?.()
+        }
+      })
+    }
   }
 )
 
@@ -95,4 +107,3 @@ function close() {
       drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
   }
 </style>
-

@@ -3,9 +3,7 @@ import App from './App.vue'
 import router from './router'
 import '~css/main.css'
 
-// thin-backend init
-import { initThinBackend } from 'thin-backend'
-initThinBackend({ host: 'https://cooker.thinbackend.app' })
+// Thin Backend removed: no remote init
 
 // Register service worker only in production to avoid dev caching issues
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {

@@ -18,12 +18,6 @@
           </div>
 
           <div class="flex-shrink">
-            <template v-if="userLoading">
-              <Icon icon="fal fa-sync fa-spin mr-4" size="1.2rem" />
-            </template>
-            <template v-else>
-              <span v-if="user">{{ t('Username') }}: {{ user.email }}</span><br />
-            </template>
             <div class="text-sm text-right cursor-pointer" @click="changeLocale">
               <i class="fas fa-globe mr-1" />
               JP
@@ -43,7 +37,6 @@ import ModalConfirm from '~components/ModalConfirm.vue'
 import Icon from './Icon.vue'
 import { recipes } from '~src/store/index'
 import { currentLocale as _current, defaultLocale, setLocale, t } from '~src/i18n'
-import { user, userLoading } from '~src/services/auth'
 
 const currentLocale = computed(() => _current.value)
 let showDeleteConfirm = ref(false)

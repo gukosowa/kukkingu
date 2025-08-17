@@ -15,4 +15,4 @@ The following dependencies have newer major versions available (current → late
 - @web/test-runner: 0.12.x → latest (0.x not semver-major)
 - chai/@types/chai: 4.x → latest
 
-Note: packages on 0.x (e.g., thin-backend 0.11.x) are not listed as “major” since their major remains 0.
+Note: packages on 0.x are not listed as “major” since their major remains 0.

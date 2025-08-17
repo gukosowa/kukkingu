@@ -12,7 +12,6 @@
     "@types/marked": "^5.0.2",
     "github-markdown-css": "^5.1.0",
     "marked": "^4.1.0",
-    "thin-backend": "^0.11.0",
     "vue": "^3.4.0",
     "vue-router": "^4.3.0"
   },

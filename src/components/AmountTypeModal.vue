@@ -1,7 +1,7 @@
 <template>
   <div @click="() => (show = true)" :class="[cls, 'cursor-pointer bg-white focus:ring-indigo-500 text-gray-700 p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md']">
     <div class="whitespace-no-wrap pl-1 text-sm">
-      {{ t(modelValue) }}
+      {{ t(norm(modelValue)) }}
       <i class="text-gray-500 float-right mt-1 mr-2 fas fa-sort-down" />
     </div>
     <template v-if="show === true">
@@ -29,6 +29,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { t } from '~src/i18n'
+import { normalizeAmountType } from '~src/services/units'
 
 const props = defineProps<{ modelValue: string; class?: string }>()
 const emit = defineEmits<{ (e: 'update:modelValue', v: string): void; (e: 'update', v: string): void }>()
@@ -54,6 +55,10 @@ function focus() {
   show.value = true
 }
 
+function norm(v: string) {
+  return normalizeAmountType(v)
+}
+
 defineExpose({ focus })
 </script>
 
@@ -66,4 +71,3 @@ defineExpose({ focus })
     border-bottom: 12px solid white;
   }
 </style>
-

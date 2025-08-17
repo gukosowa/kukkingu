@@ -184,8 +184,7 @@ function confirmImportUrl(url: string) {
   showImportUrlModal.value = false
   const locale = currentLocale.value === 'jp' ? 'Japanese' : 'English'
   const unitRules = [
-    'Map units to one of: g, ㏄ (ml), 大さじ (tablespoon), 小さじ (teaspoon), 個 (piece).',
-    'If source has ml use ㏄; tablespoon->大さじ; teaspoon->小さじ; piece/whole->個.',
+    'Allowed units (choose only from these and use these exact keys in ingredient.amountType): g, ml, tbl (tablespoon), tea (teaspoon), p (piece), pinch.',
   ].join(' ')
   const ingredientRules = [
     'For each ingredient: remove any text in brackets/parentheses from the name (e.g., "Onion (chopped)" -> name: "Onion").',
@@ -198,19 +197,17 @@ function confirmImportUrl(url: string) {
   ].join(' ')
   const noteRules = [
     'The top-level note must be present and non-empty.',
-    'Start with a concise, useful description of the dish (what it is, cuisine/style, key flavors/ingredients, typical serving or occasion) in ' +
-    locale +
-    '.',
-    'Then briefly list assumptions you made, details removed from brackets, and any missing/ambiguous amounts, also in ' +
-    locale +
-    '.',
+    'Write the note in two parts using bold labels (no Markdown headers):',
+    '**Steps**: first, list all cooking steps as a clear numbered list in ' + locale + '.',
+    '**Overview**: after the steps, write a concise overview in ' +
+      locale +
+      ' covering the dish description (what it is, cuisine/style, key flavors/ingredients, typical serving/occasion), any assumptions made, details removed from brackets, and any missing/ambiguous amounts.',
+    'Do not use Markdown headings (no #). Use bold labels like **Steps** and **Overview** instead. Lists are allowed.',
     'Do not mention this prompt, ChatGPT, or any app/tool; focus only on the recipe itself.',
-    'You may use Markdown formatting in the description including headers, lists, bold and italic text.',
-    'Structure the description with clear sections for overview, ingredients needed, detailed steps, tips/notes.',
   ].join(' ')
   const localeRule = 'All text values must be written in ' + locale + '.'
   const jsonSchema =
-    '{"name":"string","edit":true,"original":number,"desired":number,"note":"string","url":"string","ingredients":[{"name":"string","amount":number,"amountType":"g|㏄|大さじ|小さじ|個","note":"string"}]}'
+    '{"name":"string","edit":true,"original":number,"desired":number,"note":"string","url":"string","ingredients":[{"name":"string","amount":number,"amountType":"g|ml|tbl|tea|p|pinch","note":"string"}]}'
   const formattingRule =
     'Return the result as a Markdown fenced code block using four backticks with the `json` language tag (start with ````json and end with ````). The content of the block must be only valid JSON matching the schema.'
   const prompt =

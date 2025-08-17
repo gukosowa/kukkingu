@@ -1,5 +1,5 @@
 import { ref, Ref, watch } from 'vue'
-import { updateRecord } from 'thin-backend'
+import { migrateRecipeUnits, normalizeAmountType } from '~src/services/units'
 
 export type Ingredient = {
   name: string
@@ -23,15 +23,11 @@ export type Recipe = {
 }
 
 const storedRecipes: Recipe[] = JSON.parse(localStorage.getItem('recipes') || '[]')
+  .map((r: any) => migrateRecipeUnits(r))
 
-export let syncRecipeID: string | null = null
-export function setSyncRecipeID(id: string) {
-  syncRecipeID = id
-}
+// Thin Backend removed: no remote sync
 
 export const recipes: Ref<Recipe[]> = ref(storedRecipes)
-let timeoutDidSynced: any = null
-export const didSynced = ref(false)
 
 // persist changes to local storage and backend
 watch(recipes, (val) => {
@@ -44,6 +40,8 @@ export function updateRecipesToStore(value: Recipe[]) {
     if (r.ingredients) {
       r.ingredients.forEach((i: any) => {
         delete (i as any)._inputAmountType
+        // Normalize units before persisting
+        i.amountType = normalizeAmountType(i.amountType)
       })
       if (!r.id) {
         r.id = uuidv4()
@@ -53,22 +51,6 @@ export function updateRecipesToStore(value: Recipe[]) {
   })
   const stringified = JSON.stringify(value)
   localStorage.setItem('recipes', stringified)
-
-  if (syncRecipeID) {
-    didSynced.value = true
-    updateRecord('recipes', syncRecipeID, {
-      recipe: stringified,
-    }).then((result) => {
-      console.log('finished sync', result)
-      if (timeoutDidSynced) {
-        clearTimeout(timeoutDidSynced)
-        timeoutDidSynced = null
-      }
-      timeoutDidSynced = setTimeout(() => {
-        didSynced.value = false
-      }, 100)
-    })
-  }
 }
 
 export const storedOpenedRecipe = JSON.parse(

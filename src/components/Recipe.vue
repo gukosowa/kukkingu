@@ -75,18 +75,18 @@
                 <span class="text-gray-300 font-bold" @click="() => clickName(index)">{{ item.name || '-' }}</span>
                 <span
                   class="text-red-300"
-                  v-if="['tbl', 'tea'].includes(item.amountType as any)"
+                  v-if="['tbl', 'tea'].includes(norm(item.amountType as any))"
                   @click="() => clickAmountType(index)"
                   style="font-size: 1.2rem;"
-                  >{{ t('full_' + item.amountType) }}</span
+                  >{{ t('full_' + norm(item.amountType as any)) }}</span
                 >
-                <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item, item.amountType as any) }}</span>
+                <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item, norm(item.amountType as any)) }}</span>
                 <span
                   class="text-red-300"
-                  v-if="!['tbl', 'tea'].includes(item.amountType as any)"
+                  v-if="!['tbl', 'tea'].includes(norm(item.amountType as any))"
                   @click="() => clickAmountType(index)"
                   style="font-size: 1.2rem;"
-                  >{{ t('full_' + item.amountType) }}</span
+                  >{{ t('full_' + norm(item.amountType as any)) }}</span
                 >
               </div>
               <div class="col-span-2 relative text-right">
@@ -155,7 +155,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as marked from 'marked'
 import Footer from '~components/Footer.vue'
@@ -166,6 +166,7 @@ import Icon from './Icon.vue'
 import Checkbox from './Checkbox.vue'
 import AmountTypeModal from './AmountTypeModal.vue'
 import { t } from '~src/i18n'
+import { normalizeAmountType } from '~src/services/units'
 
 const route = useRoute()
 const router = useRouter()
@@ -189,24 +190,45 @@ if (!_recipes.value || _recipes.value.length === 0) {
   router.push('/')
 }
 
+// Ensure view mode when opening a recipe: if currently in edit mode, switch to view
+watch(
+  () => recipeId.value,
+  (id) => {
+    const list = _recipes.value
+    if (!Array.isArray(list) || id == null) return
+    const current = list[id]
+    if (current && current.edit) {
+      const copy = [...list]
+      copy[id] = { ...copy[id], edit: false }
+      _recipes.value = copy
+    }
+  },
+  { immediate: true }
+)
+
 const markedRender = computed(() => marked.parse(recipe.value?.note || ''))
 const ratio = computed(() => (recipe.value ? recipe.value.original / recipe.value.desired : 1))
 
+function norm(type: string): string {
+  return normalizeAmountType(type)
+}
+
 function amount(item: any, amountType: string): string {
+  amountType = norm(amountType)
   const original = parseFloat(item.amount || '0')
   if (!original || !ratio.value) return '-'
   const desired = original / ratio.value
   switch (amountType) {
     case 'g':
-      return desired.toFixed(2) + 'g'
+      return desired.toFixed(2)//  + 'g'
     case 'ml':
-      return desired.toFixed(2) + 'ml'
+      return desired.toFixed(2)//  + 'ml'
     case 'tbl':
-      return (desired / 15).toFixed(2) + 'tbl'
+      return (desired / 15).toFixed(2)//  + 'tbl'
     case 'tea':
-      return (desired / 5).toFixed(2) + 'tea'
+      return (desired / 5).toFixed(2)//  + 'tea'
     case 'p':
-      return desired.toFixed(2) + 'pc'
+      return desired.toFixed(2)//  + 'pc'
     default:
       return desired.toFixed(2)
   }
