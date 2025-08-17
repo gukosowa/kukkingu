@@ -127,7 +127,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { t, currentLocale } from '~src/i18n'
 import Footer from '~components/Footer.vue'
@@ -362,16 +362,32 @@ function showToast(msg: string) {
 }
 
 onMounted(() => {
-  const shared = route.query.url
-  if (typeof shared === 'string' && shared) {
-    importUrl.value = shared
-    showImportUrlModal.value = true
-  }
+  // Handle Web Share Target (GET) params on first load
+  handleSharedFromQuery()
   // Disable list transitions after initial appear
   window.setTimeout(() => {
     transitionName.value = 'none'
   }, 220)
 })
+
+// Also handle subsequent shares when app is already open
+watch(
+  () => route.query,
+  () => handleSharedFromQuery(),
+)
+
+function handleSharedFromQuery() {
+  const q: any = route.query || {}
+  const sharedUrl = typeof q.url === 'string' ? q.url : ''
+  const sharedText = typeof q.text === 'string' ? q.text : ''
+  const sharedTitle = typeof q.title === 'string' ? q.title : ''
+  const combinedText = [sharedTitle, sharedText].filter(Boolean).join('\n')
+  if (sharedUrl || combinedText) {
+    importUrl.value = sharedUrl
+    importText.value = combinedText
+    showImportUrlModal.value = true
+  }
+}
 
 // Legacy clipboard copy using document.execCommand('copy') for wider compatibility
 function legacyCopyToClipboard(text: string) {
