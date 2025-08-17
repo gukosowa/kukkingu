@@ -4,7 +4,8 @@
 /* Ensure the default UI font is Noto Sans JP */
 @layer base {
   body {
-    @apply font-sans;
+    /* Use sans stack and enable font smoothing */
+    @apply font-sans antialiased;
   }
 }
 

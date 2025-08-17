@@ -12,7 +12,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Noto Sans JP"', ...defaultTheme.fontFamily.sans],
+        // Prefer Inter for Latin; fall back to Noto Sans JP for Japanese
+        sans: ['Inter', '"Noto Sans JP"', ...defaultTheme.fontFamily.sans],
       },
       colors: {
         orange: { 500: '#ff3e00' },
