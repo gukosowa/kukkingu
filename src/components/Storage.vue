@@ -143,6 +143,7 @@ import ModalUrlText from './ModalUrlText.vue'
 import { mergeRecipesByExportedAt } from '~src/services/importExport'
 import { chooseExportFile, saveExportFile, loadFromFile } from '~src/services/fileExport'
 import { buildImportRecipePrompt } from '~src/services/prompt'
+import { openChatGPT } from '~src/services/chatgpt'
 
 const router = useRouter()
 const recipes = computed({ get: () => _recipes.value, set: (v) => (_recipes.value = v as any) })
@@ -251,7 +252,7 @@ function openImportUrl() {
   showImportUrlModal.value = true
 }
 
-function confirmImportUrl(payload: { url: string; text: string; fromPicture: boolean }) {
+async function confirmImportUrl(payload: { url: string; text: string; fromPicture: boolean }) {
   importUrl.value = payload.url
   importText.value = payload.text
   importFromPicture.value = payload.fromPicture
@@ -271,8 +272,8 @@ function confirmImportUrl(payload: { url: string; text: string; fromPicture: boo
     showToast(t('Prompt copied. Opening Gemini...'))
     window.open('https://gemini.google.com/', '_blank')
   } else {
-    // Default to ChatGPT with query param
-    window.open(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`, '_blank')
+    const copied = await openChatGPT(prompt)
+    if (copied) showToast(t('Prompt copied. Opening ChatGPT...'))
   }
 }
 
