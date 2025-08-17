@@ -11,7 +11,7 @@
         @input="handleInput"
         @keypress="onKeyPress"
         :disabled="!!disabled"
-        class="w-full focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
+        class="w-full border focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
         :class="inputClass"
       />
     </label>

@@ -9,21 +9,26 @@
       <div class="w-full h-full px-12 pb-8 flex flex-col justify-end">
         <div class="bg-white p-5 rounded-xl drop-shadow" @click.stop>
           <div class="text-lg text-gray-600 font-bold">{{ title }}</div>
-          <div class="my-5">
-            <SInput
-              v-if="!multiline"
-              v-model="localValue"
-              :placeholder="placeholder"
-              :autofocus="true"
-              ref="inputRef"
-            />
-            <textarea
-              v-else
-              v-model="localValue"
-              :placeholder="placeholder"
-              ref="textareaRef"
-              class="w-full border focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
-            />
+          <div class="my-5 space-y-4">
+            <div>
+              <div class="text-sm text-gray-600 mb-1">{{ t('Recipe URL') }}</div>
+              <SInput
+                v-model="localUrl"
+                :placeholder="placeholderUrl"
+                :autofocus="true"
+                ref="inputRef"
+              />
+            </div>
+            <div>
+              <div class="text-sm text-gray-600 mb-1">{{ t('Recipe text') }}</div>
+              <textarea
+                v-model="localText"
+                :placeholder="placeholderText"
+                ref="textareaRef"
+                rows="6"
+                class="w-full focus:ring-indigo-500 border text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
+              />
+            </div>
           </div>
           <div class="text-white text-center">
             <div
@@ -43,57 +48,60 @@
       </div>
     </div>
   </div>
+
 </template>
 
 <script lang="ts" setup>
 import { ref, watch, nextTick } from 'vue'
 import SInput from './Input.vue'
+import { t } from '~src/i18n'
 
 const props = withDefaults(
   defineProps<{
     modelValue: boolean
     title: string
-    placeholder?: string
+    placeholderUrl?: string
+    placeholderText?: string
     confirmText?: string
     cancelText?: string
-    value?: string
-    multiline?: boolean
+    url?: string
+    text?: string
   }>(),
   {
-    placeholder: '',
+    placeholderUrl: 'https://example.com',
+    placeholderText: '',
     confirmText: 'OK',
     cancelText: 'Cancel',
-    value: '',
-    multiline: false,
+    url: '',
+    text: '',
   }
 )
 const emit = defineEmits<{
-  (e: 'confirm', v: string): void
+  (e: 'confirm', v: { url: string; text: string }): void
   (e: 'cancel'): void
   (e: 'update:modelValue', v: boolean): void
 }>()
 
-const localValue = ref(props.value)
+const localUrl = ref(props.url)
+const localText = ref(props.text)
 const inputRef = ref<InstanceType<typeof SInput> | null>(null)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
+
 watch(
   () => props.modelValue,
   (v) => {
     if (v) {
-      localValue.value = props.value
+      localUrl.value = props.url || ''
+      localText.value = props.text || ''
       nextTick(() => {
-        if (props.multiline) {
-          textareaRef.value?.focus()
-        } else {
-          inputRef.value?.focus?.()
-        }
+        inputRef.value?.focus?.()
       })
     }
   }
 )
 
 function confirm() {
-  emit('confirm', localValue.value)
+  emit('confirm', { url: (localUrl.value || '').trim(), text: (localText.value || '').trim() })
 }
 function close() {
   emit('cancel')
@@ -102,8 +110,8 @@ function close() {
 </script>
 
 <style scoped>
-  .drop-shadow {
-    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))
-      drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
-  }
+.drop-shadow {
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
+}
 </style>
+

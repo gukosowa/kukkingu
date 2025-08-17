@@ -17,12 +17,14 @@
 
 
 
-    <ModalInput
+    <ModalUrlText
       v-model="showImportUrlModal"
-      :value="importUrl"
+      :url="importUrl"
+      :text="importText"
       :title="t('JSON from URL')"
       :confirmText="t('Open GPT')"
-      :placeholder="t('https://example.com')"
+      :placeholderUrl="t('https://example.com')"
+      :placeholderText="t('Recipe text')"
       @confirm="confirmImportUrl"
       @cancel="cancelImportUrl"
     />
@@ -91,17 +93,7 @@
       <Button class="mx-2 flex-1 !text-xs" @click="openImportUrl">{{ t('JSON from URL') }}</Button>
       <Button class="mx-2 flex-1 !text-xs" @click="openImportJson">{{ t('Import JSON') }}</Button>
       <Button class="mx-2 flex-1 !text-xs" @click="chooseFile">{{ t('Export to file') }}</Button>
-      <Button
-        v-show="!!exportHandle"
-        class="mx-2 flex-1 !text-xs relative"
-        @click="saveFile"
-      >
-        {{ t('Sync to file') }}
-        <span
-          v-show="exportDirty"
-          class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"
-        />
-      </Button>
+      <Button class="mx-2 flex-1 !text-xs" @click="loadFile">{{ t('Load from file') }}</Button>
     </div>
     <div
       v-if="toastMessage"
@@ -126,13 +118,9 @@ import { newRecipe } from '~plugins/helper'
 import Icon from './Icon.vue'
 import ModalConfirm from './ModalConfirm.vue'
 import ModalInput from './ModalInput.vue'
+import ModalUrlText from './ModalUrlText.vue'
 import { mergeRecipesByExportedAt } from '~src/services/importExport'
-import {
-  chooseExportFile,
-  saveExportFile,
-  exportHandle,
-  exportDirty,
-} from '~src/services/fileExport'
+import { chooseExportFile, saveExportFile, loadFromFile } from '~src/services/fileExport'
 import { buildImportRecipePrompt } from '~src/services/prompt'
 
 const router = useRouter()
@@ -146,6 +134,7 @@ let deleteIndex = ref<number | null>(null)
 let showImportUrlModal = ref(false)
 let showImportJsonModal = ref(false)
 let importUrl = ref('')
+let importText = ref('')
 let importJsonText = ref('')
 let toastMessage = ref('')
 let toastTimer: number | null = null
@@ -233,11 +222,12 @@ function openImportUrl() {
   showImportUrlModal.value = true
 }
 
-function confirmImportUrl(url: string) {
-  importUrl.value = url
+function confirmImportUrl(payload: { url: string; text: string }) {
+  importUrl.value = payload.url
+  importText.value = payload.text
   showImportUrlModal.value = false
   const locale = currentLocale.value === 'jp' ? 'Japanese' : 'English'
-  const prompt = buildImportRecipePrompt(url, locale)
+  const prompt = buildImportRecipePrompt({ url: importUrl.value, text: importText.value, locale })
 
   console.log(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`)
   window.open(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`, '_blank')
@@ -281,6 +271,7 @@ function confirmImportJson(json: string) {
 
 function cancelImportUrl() {
   importUrl.value = ''
+  importText.value = ''
   showImportUrlModal.value = false
 }
 
@@ -308,10 +299,20 @@ async function chooseFile() {
 async function saveFile() {
   try {
     const res = await saveExportFile()
-    showToast(res.mergedWithExisting ? t('Synced with file') : t('Saved to file'))
+    showToast(t('Saved to file'))
   } catch (e) {
     console.error('Export failed', e)
     alert(t('Export failed'))
+  }
+}
+
+async function loadFile() {
+  try {
+    await loadFromFile()
+    showToast(t('Loaded from file'))
+  } catch (e) {
+    console.error('Load failed', e)
+    alert(t('Load failed'))
   }
 }
 
