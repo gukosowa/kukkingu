@@ -49,12 +49,12 @@
       @cancel="cancelImportJson"
     />
 
-    <TransitionGroup name="ov" tag="div" class="flex-grow" appear>
+    <TransitionGroup :name="transitionName" tag="div" class="flex-grow" appear>
       <div
         v-for="(item, index) in recipes"
         :key="index"
         v-show="filterMatch(item?.name)"
-        :style="staggerStyle(index)"
+        :style="transitionName === 'ov' ? staggerStyle(index) : null"
         class="ov-item"
       >
         <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
@@ -144,6 +144,7 @@ let importText = ref('')
 let importJsonText = ref('')
 let toastMessage = ref('')
 let toastTimer: number | null = null
+const transitionName = ref('ov')
 
 const route = useRoute()
 
@@ -347,6 +348,10 @@ onMounted(() => {
     importUrl.value = shared
     showImportUrlModal.value = true
   }
+  // Disable list transitions after initial appear
+  window.setTimeout(() => {
+    transitionName.value = 'none'
+  }, 220)
 })
 
 // Legacy clipboard copy using document.execCommand('copy') for wider compatibility
@@ -391,7 +396,7 @@ function staggerStyle(i: number) {
   transform: translateY(-6px);
 }
 .ov-enter-active {
-  transition: opacity 200ms ease-out, transform 200ms ease-out;
+  transition: opacity 150ms ease-out, transform 150ms ease-out;
 }
 .ov-enter-to {
   opacity: 1;
