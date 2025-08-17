@@ -62,8 +62,17 @@
             <AmountTypeModal
               :ref="(el:any) => (amountRefs[index] = el)"
               class="col-span-3"
-              @update="saveChange"
+              @update="() => { saveChange(); clickNote(index) }"
               v-model="item.amountType"
+            />
+            <SInput
+              :placeholder="t('Note')"
+              class="col-span-12"
+              inputClass="input-field"
+              :id="'input-note-' + index"
+              @update="saveChange"
+              @enter="() => focusNext(index)"
+              v-model="item.note"
             />
           </template>
           <div class="col-span-12 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white">
@@ -89,6 +98,10 @@
                       style="font-size: 1.2rem;"
                       >{{ unitLabel(item.amountType as any) }}</span>
                   </template>
+                <div v-if="item.note" class="text-sm text-gray-400 mt-1">
+                  <b>{{ t('Note') }}:</b>
+                  <span @click="() => clickNote(index)">{{ item.note }}</span>
+                </div>
               </div>
               <div class="col-span-2 relative text-right">
                 <template v-if="recipe.checklist">
@@ -283,6 +296,9 @@ function clickAmount(index: number) {
 function clickAmountType(index: number) {
   amountRefs.value?.[index]?.focus?.()
 }
+function clickNote(index: number) {
+  document.getElementById('input-note-' + index)?.focus()
+}
 function focusNext(index: number) {
   const active = document.activeElement as HTMLElement | null
   if (active?.id === 'input-name-' + index) {
@@ -293,8 +309,12 @@ function focusNext(index: number) {
     amountRefs.value?.[index]?.focus?.()
     return
   }
-  const nextName = document.getElementById('input-name-' + (index + 1))
-  nextName?.focus()
+  if (active?.id === 'input-note-' + index) {
+    const nextName = document.getElementById('input-name-' + (index + 1))
+    nextName?.focus()
+    return
+  }
+  clickNote(index)
 }
 function addIngredient() {
   const copy = [..._recipes.value]
