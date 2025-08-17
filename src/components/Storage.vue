@@ -25,58 +25,63 @@
       :confirmText="t('Open GPT')"
       :placeholder="t('https://example.com')"
       @confirm="confirmImportUrl"
+      @cancel="cancelImportUrl"
     />
     <ModalInput
       v-model="showImportJsonModal"
+      :value="importJsonText"
       :title="t('Import JSON')"
       :confirmText="t('Import')"
       :placeholder="t('Paste JSON')"
       :multiline="true"
       @confirm="confirmImportJson"
+      @cancel="cancelImportJson"
     />
 
-    <div v-for="(item, index) in recipes" :key="index">
-      <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
-        <div class="flex-grow pr-2">
-          <template v-if="item.rename">
-            <SInput
-              @enter="() => rename(index)"
-              :autofocus="true"
-              :modelValue="item.name"
-              @update="(v:any) => changeName(v, index)"
-            />
-          </template>
-          <template v-else>
-            <Button color="pink" @click="open(index)" class="font-hairline text-lg leading-5 tracking-wider">
-              {{ item.name }}
-            </Button>
-          </template>
-        </div>
-        <div class="flex-grow whitespace-no-wrap text-right">
-          <template v-if="item.rename">
-            <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
-            <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600" />
-            <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
-              <Icon icon="fal fa-trash-alt" size="1.2rem" />
-            </Button>
-            <Button color="green" :tone="400" @click="() => rename(index)">
-              <Icon icon="fal fa-check" size="1.2rem" />
-            </Button>
-          </template>
-          <template v-else>
-            <Button color="gray" :tone="400" @click="() => initRename(index)">
-              <Icon icon="fal fa-pen" size="1.2rem" />
-            </Button>
-          </template>
+    <div class='flex-grow'>
+      <div v-for="(item, index) in recipes" :key="index">
+        <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
+          <div class="flex-grow pr-2">
+            <template v-if="item.rename">
+              <SInput
+                @enter="() => rename(index)"
+                :autofocus="true"
+                :modelValue="item.name"
+                @update="(v:any) => changeName(v, index)"
+              />
+            </template>
+            <template v-else>
+              <Button color="pink" @click="open(index)" class="font-hairline text-lg leading-5 tracking-wider">
+                {{ item.name }}
+              </Button>
+            </template>
+          </div>
+          <div class="flex-grow whitespace-no-wrap text-right">
+            <template v-if="item.rename">
+              <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
+              <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600" />
+              <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
+                <Icon icon="fal fa-trash-alt" size="1.2rem" />
+              </Button>
+              <Button color="green" :tone="400" @click="() => rename(index)">
+                <Icon icon="fal fa-check" size="1.2rem" />
+              </Button>
+            </template>
+            <template v-else>
+              <Button color="gray" :tone="400" @click="() => initRename(index)">
+                <Icon icon="fal fa-pen" size="1.2rem" />
+              </Button>
+            </template>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Moved JSON controls to bottom of overview -->
     <div class="mt-2 flex">
-      <Button class="mx-2 flex-1" @click="openImportUrl">{{ t('JSON from URL') }}</Button>
-      <Button class="mx-2 flex-1" @click="openImportJson">{{ t('Import JSON') }}</Button>
-      <Button class="mx-2 flex-1" @click="exportAll">{{ t('Export to JSON') }}</Button>
+      <Button class="mx-2 flex-1 !text-xs" @click="openImportUrl">{{ t('JSON from URL') }}</Button>
+      <Button class="mx-2 flex-1 !text-xs" @click="openImportJson">{{ t('Import JSON') }}</Button>
+      <Button class="mx-2 flex-1 !text-xs" @click="exportAll">{{ t('Export to JSON') }}</Button>
     </div>
     <Footer />
   </div>
@@ -104,6 +109,7 @@ let deleteIndex = ref<number | null>(null)
 let showImportUrlModal = ref(false)
 let showImportJsonModal = ref(false)
 let importUrl = ref('')
+let importJsonText = ref('')
 
 const route = useRoute()
 
@@ -169,6 +175,7 @@ function moveDown(index: number) {
 }
 
 function openImportUrl() {
+  importUrl.value = ''
   showImportUrlModal.value = true
 }
 
@@ -227,6 +234,7 @@ function confirmImportUrl(url: string) {
 }
 
 function openImportJson() {
+  importJsonText.value = ''
   showImportJsonModal.value = true
 }
 
@@ -248,6 +256,16 @@ function confirmImportJson(json: string) {
   } catch (e) {
     alert(t('Invalid JSON'))
   }
+}
+
+function cancelImportUrl() {
+  importUrl.value = ''
+  showImportUrlModal.value = false
+}
+
+function cancelImportJson() {
+  importJsonText.value = ''
+  showImportJsonModal.value = false
 }
 
 function parsePastedJson(input: string): any | null {
