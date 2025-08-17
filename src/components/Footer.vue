@@ -5,6 +5,11 @@
     @confirm="clearAll"
     @cancel="cancelClearAll"
   />
+  <ModalLocale
+    v-model:modelValue="showLocaleModal"
+    :locale="currentLocale"
+    @confirm="confirmLocale"
+  />
 
   <footer class="z-10 flex-shrink px-2 mt-8 text-gray-500 text-sm flex w-full items-end">
     <div class="h-8 flex items-center w-full">
@@ -18,11 +23,9 @@
           </div>
 
           <div class="flex-shrink">
-            <div class="text-sm text-right cursor-pointer" @click="changeLocale">
+            <div class="text-sm text-right cursor-pointer" @click="openLocaleModal">
               <i class="fas fa-globe mr-1" />
-              JP
-              <i class="fas fa-toggle-on" :class="{ 'fa-rotate-180': currentLocale === 'jp' }" />
-              EN
+              {{ currentLocale.toUpperCase() }}
             </div>
           </div>
         </div>
@@ -34,13 +37,14 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
 import ModalConfirm from '~components/ModalConfirm.vue'
-import Icon from './Icon.vue'
+import ModalLocale from '~components/ModalLocale.vue'
 import { recipes } from '~src/store/index'
 import { currentLocale as _current, defaultLocale, setLocale, t } from '~src/i18n'
 
 const currentLocale = computed(() => _current.value)
 let showDeleteConfirm = ref(false)
 let deleteConfirmName = ref(t('All recipes'))
+let showLocaleModal = ref(false)
 
 onMounted(() => {
   const stored = localStorage.getItem('locale') || defaultLocale
@@ -56,8 +60,11 @@ function clearAll() {
 function cancelClearAll() {
   showDeleteConfirm.value = false
 }
-function changeLocale() {
-  const set = currentLocale.value === 'jp' ? 'en' : 'jp'
-  setLocale(set as any)
+function openLocaleModal() {
+  showLocaleModal.value = true
+}
+function confirmLocale(locale: string) {
+  setLocale(locale as any)
+  showLocaleModal.value = false
 }
 </script>
