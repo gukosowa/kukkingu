@@ -3,7 +3,7 @@
     <div class="w-full flex items-baseline">
       <template v-if="!recipe">
         <div class="flex-grow flex">
-          <div class="flex-grow self-center">{{ t('材料コンバーター') }}</div>
+          <div class="flex-grow self-center">{{ t('Ingredient converter') }}</div>
           <div class="flex-shrink">
             <template v-if="userLoading">
               <Icon icon="fal fa-sync fa-spin mr-4" size="1.2rem" />
@@ -30,7 +30,7 @@
       <template v-if="recipe">
         <SInput
           class="w-20"
-          :placeholder="t('必要量')"
+          :placeholder="t('Original amount')"
           type="number"
           @enter="focusNext"
           @update="onchange"
@@ -39,7 +39,7 @@
         <Icon class="mx-1" style="top: 3px;" size="1.6rem" icon="fal fa-play-circle" />
         <SInput
           class="w-20"
-          :placeholder="t('最低量')"
+          :placeholder="t('Target amount')"
           type="number"
           id="input-desired"
           ref="elDesire"

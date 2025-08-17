@@ -36,12 +36,12 @@ const cls = props.class || ''
 let show = ref(false)
 
 const types = [
-  { icon: 'fas fa-ellipsis-v', value: '少々' },
+  { icon: 'fas fa-ellipsis-v', value: 'pinch' },
   { icon: 'fas fa-weight-hanging', value: 'g' },
-  { icon: 'fas fa-tint', value: '㏄' },
-  { icon: 'fas fa-utensil-spoon', value: '大さじ' },
-  { icon: 'fas fa-utensil-spoon', size: '0.8rem', value: '小さじ' },
-  { icon: 'fas fa-circle', value: '個' },
+  { icon: 'fas fa-tint', value: 'ml' },
+  { icon: 'fas fa-utensil-spoon', value: 'tbl' },
+  { icon: 'fas fa-utensil-spoon', size: '0.8rem', value: 'tea' },
+  { icon: 'fas fa-circle', value: 'p' },
 ]
 
 function clickType(type: any) {

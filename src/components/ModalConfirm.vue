@@ -9,7 +9,7 @@
       <div class="w-full h-full px-12 pb-8 flex flex-col justify-end">
         <div class="w- bg-white p-5 rounded-xl drop-shadow">
           <div class="text-lg text-gray-600 font-bold">
-            {{ t('本当に削除') }}？<br />
+            {{ t('Really delete') }}?<br />
             <span class="text-sm">> {{ removeName }}</span>
           </div>
           <div class="text-white text-center">
@@ -17,13 +17,13 @@
               class="cursor-pointer py-3 my-5 bg-red-500 rounded-lg drop-shadow"
               @click.stop="clickYes"
             >
-              {{ t('はい') }}
+              {{ t('Yes') }}
             </div>
             <div
               class="cursor-pointer py-3 bg-gray-500 rounded-lg drop-shadow"
               @click.stop="clickNo"
             >
-              {{ t('キャンセル') }}
+              {{ t('Cancel') }}
             </div>
           </div>
         </div>

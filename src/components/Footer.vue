@@ -13,7 +13,7 @@
           <div class="flex-grow self-center">
             <a class="" href="/privacy-statement.txt">Privacy Policy</a>
             <div class="mt-1 mb-2 cursor-pointer" @click="initClearAll">
-              {{ t('すべてクリア') }}
+              {{ t('Clear data') }}
             </div>
           </div>
 
@@ -22,7 +22,7 @@
               <Icon icon="fal fa-sync fa-spin mr-4" size="1.2rem" />
             </template>
             <template v-else>
-              <span v-if="user">{{ t('ユーザー名') }}: {{ user.email }}</span><br />
+              <span v-if="user">{{ t('Username') }}: {{ user.email }}</span><br />
             </template>
             <div class="text-sm text-right cursor-pointer" @click="changeLocale">
               <i class="fas fa-globe mr-1" />
@@ -47,7 +47,7 @@ import { user, userLoading } from '~src/services/auth'
 
 const currentLocale = computed(() => _current.value)
 let showDeleteConfirm = ref(false)
-let deleteConfirmName = ref(t('すべてのレシピ'))
+let deleteConfirmName = ref(t('All recipes'))
 
 onMounted(() => {
   const stored = localStorage.getItem('locale') || defaultLocale

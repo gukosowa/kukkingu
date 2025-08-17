@@ -11,9 +11,9 @@
         class="flex-1 mx-2"
         v-model="recipeName"
         @enter="onCreateNew"
-        :placeholder="t('レシピ名')"
+        :placeholder="t('Recipe name')"
       />
-      <Button class="ml-2 flex-shrink" @click="onCreateNew">{{ t('作成') }}</Button>
+      <Button class="ml-2 flex-shrink" @click="onCreateNew">{{ t('Create') }}</Button>
     </div>
 
 

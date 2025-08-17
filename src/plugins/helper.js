@@ -29,7 +29,7 @@ export const newRecipe = (name) => {
     desired: 100,
     note: '',
     url: '',
-    ingredients: [newIngredient('人', '2', '個')],
+    ingredients: [newIngredient('person', '2', 'p')],
   }
 
   if (localRecipes.length) {

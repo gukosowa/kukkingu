@@ -9,29 +9,29 @@
         <Button @click="switchEdit" class="mr-1" color="green">
           <template v-if="recipe.edit">
             <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
-            {{ t('表示モード') }}
+            {{ t('View mode') }}
           </template>
           <template v-else>
             <Icon icon="fal fa-pen" class="mr-1" size="0.8rem" />
-            {{ t('編集モード') }}
+            {{ t('Edit mode') }}
           </template>
         </Button>
       </template>
       <template v-else>
         <Button @click="clearCheck" class="mr-1" color="gray">
           <Icon icon="fal fa-broom" class="mr-1" size="0.8rem" />
-          {{ t('クリア') }}
+          {{ t('Clear') }}
         </Button>
       </template>
       <template v-if="!recipe.edit">
         <Button @click="switchCheck" color="gray">
           <template v-if="recipe.checklist">
             <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
-            {{ t('表示モード') }}
+            {{ t('View mode') }}
           </template>
           <template v-else>
             <Icon icon="fal fa-shopping-cart" class="mr-1" size="0.8rem" />
-            {{ t('チェックリスト') }}
+            {{ t('Checklist') }}
           </template>
         </Button>
       </template>
@@ -41,7 +41,7 @@
         <div class="grid grid-cols-12 mb-3 gap-1" v-for="(item, index) in recipe.ingredients" :key="index">
           <template v-if="recipe.edit">
             <SInput
-              :placeholder="t('材料')"
+              :placeholder="t('Ingredient')"
               class="col-span-6"
               inputClass="input-field"
               :id="'input-name-' + index"
@@ -50,7 +50,7 @@
               v-model="item.name"
             />
             <SInput
-              :placeholder="t('分量')"
+              :placeholder="t('Amount')"
               class="col-span-3"
               inputClass="input-field"
               type="number"
@@ -70,12 +70,12 @@
             <div class="grid grid-cols-12">
               <div class="col-span-10">
                 <div class="absolute left-0 text-gray-600 top-0 text-xs ml-3 mt-1">
-                  {{ t('必要な量') }}
+                  {{ t('Needed amount') }}
                 </div>
                 <span class="text-gray-300 font-bold" @click="() => clickName(index)">{{ item.name || '-' }}</span>
                 <span
                   class="text-red-300"
-                  v-if="['大さじ', '小さじ'].includes(item.amountType as any)"
+                  v-if="['tbl', 'tea'].includes(item.amountType as any)"
                   @click="() => clickAmountType(index)"
                   style="font-size: 1.2rem;"
                   >{{ t('full_' + item.amountType) }}</span
@@ -83,7 +83,7 @@
                 <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item, item.amountType as any) }}</span>
                 <span
                   class="text-red-300"
-                  v-if="!['大さじ', '小さじ'].includes(item.amountType as any)"
+                  v-if="!['tbl', 'tea'].includes(item.amountType as any)"
                   @click="() => clickAmountType(index)"
                   style="font-size: 1.2rem;"
                   >{{ t('full_' + item.amountType) }}</span
@@ -95,7 +95,7 @@
                 </template>
                 <template v-else-if="!recipe.edit">
                   <div class="text-xs whitespace-no-wrap absolute top-0 -mt-4 right-0 text-gray-500">
-                    <span class="text-gray-700">{{ t('オリジナル') }} </span>
+                    <span class="text-gray-700">{{ t('Original') }} </span>
                     {{ item.amount || '0' }}
                   </div>
                   <i
@@ -117,18 +117,18 @@
         <template v-if="recipe.edit">
           <Button @click="addIngredient" color="green">
             <Icon icon="fal fa-plus" class="mr-1" size="1.2rem" />
-            {{ t('追加') }}
+            {{ t('Add') }}
           </Button>
         </template>
       </div>
       <div class="flex mt-4">
         <template v-if="recipe.edit">
-          <SInput :placeholder="t('レシピのURL')" class="flex-grow" @update="saveChange" v-model="recipe.url" />
+          <SInput :placeholder="t('Recipe URL')" class="flex-grow" @update="saveChange" v-model="recipe.url" />
         </template>
         <template v-if="recipe.url">
           <a :href="recipe.url" class="ml-2" target="_blank" rel="noreferrer">
             <Button class="whitespace-no-wrap">
-              {{ t('レシピのウェブページを開く') }}
+              {{ t('Open recipe web page') }}
               <i class="fal fa-external-link ml-2" />
             </Button>
           </a>
@@ -137,7 +137,7 @@
       <div>
         <template v-if="recipe.edit">
           <textarea
-            :placeholder="t('ノート')"
+            :placeholder="t('Note')"
             style="height: 200px"
             class="mt-2 w-full focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
             @input="saveChange"
@@ -145,7 +145,7 @@
           />
         </template>
         <template v-else-if="recipe.note">
-          <p class="text-sm mt-3 px-2"><b>{{ t('ノート') }}:</b></p>
+          <p class="text-sm mt-3 px-2"><b>{{ t('Note') }}:</b></p>
           <p class="markdown-body text-sm whitespace-pre-wrap px-2 !text-gray-900" v-html="markedRender"></p>
         </template>
       </div>
@@ -199,13 +199,13 @@ function amount(item: any, amountType: string): string {
   switch (amountType) {
     case 'g':
       return desired.toFixed(2) + 'g'
-    case '㏄':
+    case 'ml':
       return desired.toFixed(2) + 'ml'
-    case '大さじ':
+    case 'tbl':
       return (desired / 15).toFixed(2) + 'tbl'
-    case '小さじ':
+    case 'tea':
       return (desired / 5).toFixed(2) + 'tea'
-    case '個':
+    case 'p':
       return desired.toFixed(2) + 'pc'
     default:
       return desired.toFixed(2)
