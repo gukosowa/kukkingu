@@ -9,6 +9,7 @@
         :id="id || undefined"
         ref="el"
         @input="handleInput"
+        @click="onClick"
         @keypress="onKeyPress"
         :disabled="!!disabled"
         class="w-full border focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
@@ -33,8 +34,9 @@ const props = withDefaults(
     autofocus?: boolean
     id?: string | null
     class?: string
+    selectOnClick?: boolean
   }>(),
-  { type: 'text', inputClass: '', modelValue: '', icon: '', disabled: false, placeholder: '', autofocus: false, id: null, class: '' }
+  { type: 'text', inputClass: '', modelValue: '', icon: '', disabled: false, placeholder: '', autofocus: false, id: null, class: '', selectOnClick: false }
 )
 const emit = defineEmits<{
   (e: 'update:modelValue', v: any): void
@@ -58,6 +60,29 @@ const onKeyPress = (e: KeyboardEvent) => {
   if (e.key === 'Enter') emit('enter', { value: props.modelValue, el: el.value })
 }
 
+const onClick = () => {
+  if (!props.selectOnClick) return
+  // Delay ensures click/focus interactions settle before selection
+  requestAnimationFrame(() => {
+    const input = el.value
+    if (!input) return
+    try {
+      input.select()
+    } catch (_) {
+      // ignore
+    }
+    // Fallback for inputs that don't support select()
+    try {
+      const len = (input.value || '').toString().length
+      if (typeof (input as any).setSelectionRange === 'function') {
+        ;(input as any).setSelectionRange(0, len)
+      }
+    } catch (_) {
+      // ignore
+    }
+  })
+}
+
 onMounted(() => {
   if (props.autofocus) {
     el.value?.focus()
@@ -66,4 +91,3 @@ onMounted(() => {
 
 defineExpose({ focus: () => el.value?.focus(), elInput: el })
 </script>
-
