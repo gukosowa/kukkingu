@@ -35,6 +35,7 @@
       v-model="showImportUrlModal"
       :url="importUrl"
       :text="importText"
+      :fromPicture="importFromPicture"
       :title="t('JSON from URL')"
       :confirmText="t('Open GPT')"
       :placeholderUrl="t('https://example.com')"
@@ -156,6 +157,7 @@ let showImportUrlModal = ref(false)
 let showImportJsonModal = ref(false)
 let importUrl = ref('')
 let importText = ref('')
+let importFromPicture = ref(false)
 let importJsonText = ref('')
 let toastMessage = ref('')
 let toastTimer: number | null = null
@@ -245,15 +247,22 @@ function moveDown(index: number) {
 
 function openImportUrl() {
   importUrl.value = ''
+  importFromPicture.value = false
   showImportUrlModal.value = true
 }
 
-function confirmImportUrl(payload: { url: string; text: string }) {
+function confirmImportUrl(payload: { url: string; text: string; fromPicture: boolean }) {
   importUrl.value = payload.url
   importText.value = payload.text
+  importFromPicture.value = payload.fromPicture
   showImportUrlModal.value = false
   const locale = currentLocale.value === 'jp' ? 'Japanese' : 'English'
-  const prompt = buildImportRecipePrompt({ url: importUrl.value, text: importText.value, locale })
+  const prompt = buildImportRecipePrompt({
+    url: importUrl.value,
+    text: importText.value,
+    locale,
+    fromPicture: importFromPicture.value,
+  })
 
   const url = importUrl.value || ''
   if (url.includes('youtube.com')) {
@@ -306,6 +315,7 @@ function confirmImportJson(json: string) {
 function cancelImportUrl() {
   importUrl.value = ''
   importText.value = ''
+  importFromPicture.value = false
   showImportUrlModal.value = false
 }
 
@@ -385,6 +395,7 @@ function handleSharedFromQuery() {
   if (sharedUrl || combinedText) {
     importUrl.value = sharedUrl
     importText.value = combinedText
+    importFromPicture.value = false
     showImportUrlModal.value = true
   }
 }

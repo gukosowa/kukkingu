@@ -4,9 +4,9 @@
 export type LocaleText = 'English' | 'Japanese'
 
 export function buildImportRecipePrompt(
-  input: { url?: string; text?: string; locale: LocaleText }
+  input: { url?: string; text?: string; locale: LocaleText; fromPicture?: boolean }
 ): string {
-  const { url, text, locale } = input
+  const { url, text, locale, fromPicture } = input
   const unitRules = [
     'Allowed units (choose only from these and use these exact keys in ingredient.amountType): g, ml, tbl (tablespoon), tea (teaspoon), p (piece), pinch.',
   ].join(' ')
@@ -45,6 +45,10 @@ export function buildImportRecipePrompt(
     sourceInstruction = `Fetch the content of ${url} and also use the provided recipe text below. Combine and deduplicate details from both sources to produce a single clean, structured recipe JSON. If there is a conflict, prefer explicit amounts/units and mention assumptions in the note. Provided text:\n\n\`\`\`\n${safeText}\n\`\`\``
   } else {
     sourceInstruction = 'Convert the provided recipe into a clean, structured recipe JSON.'
+  }
+
+  if (fromPicture) {
+    sourceInstruction += ' Extract the recipe information from the attached pictures.'
   }
 
   return `${sourceInstruction} ${localeRule} Follow these strict rules: ${unitRules} ${ingredientRules} ${noteRules} The JSON must match this exact structure: ${jsonSchema} ${formattingRule}`

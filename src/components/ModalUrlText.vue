@@ -39,6 +39,10 @@
                   class="w-full focus:ring-indigo-500 border text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
                 />
               </div>
+              <div class="flex items-center">
+                <Checkbox class="mr-2" v-model="localFromPicture" />
+                <div class="text-sm text-gray-600">{{ t('From picture') }}</div>
+              </div>
             </div>
             <div class="text-white text-center">
               <div
@@ -65,6 +69,7 @@
 <script lang="ts" setup>
 import { ref, watch, nextTick } from 'vue'
 import SInput from './Input.vue'
+import Checkbox from './Checkbox.vue'
 import { t } from '~src/i18n'
 
 const props = withDefaults(
@@ -77,6 +82,7 @@ const props = withDefaults(
     cancelText?: string
     url?: string
     text?: string
+    fromPicture?: boolean
   }>(),
   {
     placeholderUrl: 'https://example.com',
@@ -85,16 +91,18 @@ const props = withDefaults(
     cancelText: 'Cancel',
     url: '',
     text: '',
+    fromPicture: false,
   }
 )
 const emit = defineEmits<{
-  (e: 'confirm', v: { url: string; text: string }): void
+  (e: 'confirm', v: { url: string; text: string; fromPicture: boolean }): void
   (e: 'cancel'): void
   (e: 'update:modelValue', v: boolean): void
 }>()
 
 const localUrl = ref(props.url)
 const localText = ref(props.text)
+const localFromPicture = ref(props.fromPicture)
 const inputRef = ref<InstanceType<typeof SInput> | null>(null)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
@@ -104,6 +112,7 @@ watch(
     if (v) {
       localUrl.value = props.url || ''
       localText.value = props.text || ''
+      localFromPicture.value = props.fromPicture || false
       nextTick(() => {
         inputRef.value?.focus?.()
       })
@@ -112,7 +121,11 @@ watch(
 )
 
 function confirm() {
-  emit('confirm', { url: (localUrl.value || '').trim(), text: (localText.value || '').trim() })
+  emit('confirm', {
+    url: (localUrl.value || '').trim(),
+    text: (localText.value || '').trim(),
+    fromPicture: localFromPicture.value,
+  })
 }
 function close() {
   emit('cancel')
