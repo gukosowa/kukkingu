@@ -1,47 +1,58 @@
 <template>
   <div v-if="modelValue">
     <div class="fixed w-screen h-screen bg-black top-0 left-0 z-40 opacity-50" />
-    <div
-      class="fixed w-screen w-full h-screen top-0 left-0 z-50"
-      style="backdrop-filter: blur(1px)"
-      @click="close"
+    <Transition
+      appear
+      enter-active-class="transition ease-out duration-150"
+      enter-from-class="opacity-0 translate-y-3"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition ease-in duration-150"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 translate-y-2"
     >
-      <div class="w-full h-full px-12 pb-8 flex flex-col justify-end">
-        <div class="bg-white p-5 rounded-xl drop-shadow" @click.stop>
-          <div class="text-lg text-gray-600 font-bold">{{ title }}</div>
-          <div class="my-5">
-            <SInput
-              v-if="!multiline"
-              v-model="localValue"
-              :placeholder="placeholder"
-              :autofocus="true"
-              ref="inputRef"
-            />
-            <textarea
-              v-else
-              v-model="localValue"
-              :placeholder="placeholder"
-              ref="textareaRef"
-              class="w-full border focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
-            />
-          </div>
-          <div class="text-white text-center">
-            <div
-              class="cursor-pointer py-3 my-2 bg-green-500 rounded-lg drop-shadow"
-              @click="confirm"
-            >
-              {{ confirmText }}
+      <div
+        v-if="modelValue"
+        class="fixed w-screen w-full h-screen top-0 left-0 z-50"
+        style="backdrop-filter: blur(1px)"
+        @click="close"
+      >
+        <div class="w-full h-full px-12 pb-8 flex flex-col justify-end transform">
+          <div class="bg-white p-5 rounded-xl drop-shadow" @click.stop>
+            <div class="text-lg text-gray-600 font-bold">{{ title }}</div>
+            <div class="my-5">
+              <SInput
+                v-if="!multiline"
+                v-model="localValue"
+                :placeholder="placeholder"
+                :autofocus="true"
+                ref="inputRef"
+              />
+              <textarea
+                v-else
+                v-model="localValue"
+                :placeholder="placeholder"
+                ref="textareaRef"
+                class="w-full border focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
+              />
             </div>
-            <div
-              class="cursor-pointer py-3 bg-gray-500 rounded-lg drop-shadow"
-              @click="close"
-            >
-              {{ cancelText }}
+            <div class="text-white text-center">
+              <div
+                class="cursor-pointer py-3 my-2 bg-green-500 rounded-lg drop-shadow"
+                @click="confirm"
+              >
+                {{ confirmText }}
+              </div>
+              <div
+                class="cursor-pointer py-3 bg-gray-500 rounded-lg drop-shadow"
+                @click="close"
+              >
+                {{ cancelText }}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 

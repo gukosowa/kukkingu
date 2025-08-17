@@ -1,52 +1,63 @@
 <template>
   <div v-if="modelValue">
     <div class="fixed w-screen h-screen bg-black top-0 left-0 z-40 opacity-50" />
-    <div
-      class="fixed w-screen w-full h-screen top-0 left-0 z-50"
-      style="backdrop-filter: blur(1px)"
-      @click="close"
+    <Transition
+      appear
+      enter-active-class="transition ease-out duration-150"
+      enter-from-class="opacity-0 translate-y-3"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition ease-in duration-150"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 translate-y-2"
     >
-      <div class="w-full h-full px-12 pb-8 flex flex-col justify-end">
-        <div class="bg-white p-5 rounded-xl drop-shadow" @click.stop>
-          <div class="text-lg text-gray-600 font-bold">{{ title }}</div>
-          <div class="my-5 space-y-4">
-            <div>
-              <div class="text-sm text-gray-600 mb-1">{{ t('Recipe URL') }}</div>
-              <SInput
-                v-model="localUrl"
-                :placeholder="placeholderUrl"
-                :autofocus="true"
-                ref="inputRef"
-              />
+      <div
+        v-if="modelValue"
+        class="fixed w-screen w-full h-screen top-0 left-0 z-50"
+        style="backdrop-filter: blur(1px)"
+        @click="close"
+      >
+        <div class="w-full h-full px-12 pb-8 flex flex-col justify-end transform">
+          <div class="bg-white p-5 rounded-xl drop-shadow" @click.stop>
+            <div class="text-lg text-gray-600 font-bold">{{ title }}</div>
+            <div class="my-5 space-y-4">
+              <div>
+                <div class="text-sm text-gray-600 mb-1">{{ t('Recipe URL') }}</div>
+                <SInput
+                  v-model="localUrl"
+                  :placeholder="placeholderUrl"
+                  :autofocus="true"
+                  ref="inputRef"
+                />
+              </div>
+              <div>
+                <div class="text-sm text-gray-600 mb-1">{{ t('Recipe text') }}</div>
+                <textarea
+                  v-model="localText"
+                  :placeholder="placeholderText"
+                  ref="textareaRef"
+                  rows="6"
+                  class="w-full focus:ring-indigo-500 border text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
+                />
+              </div>
             </div>
-            <div>
-              <div class="text-sm text-gray-600 mb-1">{{ t('Recipe text') }}</div>
-              <textarea
-                v-model="localText"
-                :placeholder="placeholderText"
-                ref="textareaRef"
-                rows="6"
-                class="w-full focus:ring-indigo-500 border text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
-              />
-            </div>
-          </div>
-          <div class="text-white text-center">
-            <div
-              class="cursor-pointer py-3 my-2 bg-green-500 rounded-lg drop-shadow"
-              @click="confirm"
-            >
-              {{ confirmText }}
-            </div>
-            <div
-              class="cursor-pointer py-3 bg-gray-500 rounded-lg drop-shadow"
-              @click="close"
-            >
-              {{ cancelText }}
+            <div class="text-white text-center">
+              <div
+                class="cursor-pointer py-3 my-2 bg-green-500 rounded-lg drop-shadow"
+                @click="confirm"
+              >
+                {{ confirmText }}
+              </div>
+              <div
+                class="cursor-pointer py-3 bg-gray-500 rounded-lg drop-shadow"
+                @click="close"
+              >
+                {{ cancelText }}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </div>
 
 </template>
@@ -114,4 +125,3 @@ function close() {
   filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
 }
 </style>
-

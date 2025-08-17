@@ -49,8 +49,14 @@
       @cancel="cancelImportJson"
     />
 
-    <div class='flex-grow'>
-      <div v-for="(item, index) in recipes" :key="index" v-show="filterMatch(item?.name)">
+    <TransitionGroup name="ov" tag="div" class="flex-grow" appear>
+      <div
+        v-for="(item, index) in recipes"
+        :key="index"
+        v-show="filterMatch(item?.name)"
+        :style="staggerStyle(index)"
+        class="ov-item"
+      >
         <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
           <div class="flex-grow pr-2">
             <template v-if="item.rename">
@@ -86,7 +92,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </TransitionGroup>
 
     <!-- Moved JSON controls to bottom of overview -->
     <div class="mt-12 grid grid-cols-2 gap-2">
@@ -369,7 +375,31 @@ function legacyCopyToClipboard(text: string) {
     }
   }
 }
+
+// Small stagger for enter transitions, clamped to 200ms total
+function staggerStyle(i: number) {
+  const step = 20 // ms between items
+  const delay = Math.min(i * step, 200)
+  return { transitionDelay: `${delay}ms` } as any
+}
 </script>
 
 <style scoped>
+/* Overview list enter animation (fade + slight slide down) */
+.ov-enter-from {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+.ov-enter-active {
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+}
+.ov-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Enable move transitions when reordering */
+.ov-move {
+  transition: transform 150ms ease-out;
+}
 </style>

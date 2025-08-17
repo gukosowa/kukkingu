@@ -1,34 +1,45 @@
 <template>
   <div v-if="modelValue">
     <div class="fixed w-screen h-screen bg-black top-0 left-0 z-40 opacity-50" />
-    <div
-      class="fixed w-screen w-full h-screen top-0 left-0 z-50"
-      style="backdrop-filter: blur(1px)"
-      @click="clickNo"
+    <Transition
+      appear
+      enter-active-class="transition ease-out duration-150"
+      enter-from-class="opacity-0 translate-y-3"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition ease-in duration-150"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 translate-y-2"
     >
-      <div class="w-full h-full px-12 pb-8 flex flex-col justify-end">
-        <div class="w- bg-white p-5 rounded-xl drop-shadow">
-          <div class="text-lg text-gray-600 font-bold">
-            {{ t('Really delete') }}?<br />
-            <span class="text-sm">> {{ removeName }}</span>
-          </div>
-          <div class="text-white text-center">
-            <div
-              class="cursor-pointer py-3 my-5 bg-red-500 rounded-lg drop-shadow"
-              @click.stop="clickYes"
-            >
-              {{ t('Yes') }}
+      <div
+        v-if="modelValue"
+        class="fixed w-screen w-full h-screen top-0 left-0 z-50"
+        style="backdrop-filter: blur(1px)"
+        @click="clickNo"
+      >
+        <div class="w-full h-full px-12 pb-8 flex flex-col justify-end transform">
+          <div class="w- bg-white p-5 rounded-xl drop-shadow">
+            <div class="text-lg text-gray-600 font-bold">
+              {{ t('Really delete') }}?<br />
+              <span class="text-sm">> {{ removeName }}</span>
             </div>
-            <div
-              class="cursor-pointer py-3 bg-gray-500 rounded-lg drop-shadow"
-              @click.stop="clickNo"
-            >
-              {{ t('Cancel') }}
+            <div class="text-white text-center">
+              <div
+                class="cursor-pointer py-3 my-5 bg-red-500 rounded-lg drop-shadow"
+                @click.stop="clickYes"
+              >
+                {{ t('Yes') }}
+              </div>
+              <div
+                class="cursor-pointer py-3 bg-gray-500 rounded-lg drop-shadow"
+                @click.stop="clickNo"
+              >
+                {{ t('Cancel') }}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -52,4 +63,3 @@ function clickNo() {
       drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
   }
 </style>
-
