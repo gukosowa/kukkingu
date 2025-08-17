@@ -89,7 +89,7 @@
     </div>
 
     <!-- Moved JSON controls to bottom of overview -->
-    <div class="mt-2 flex">
+    <div class="mt-12 grid grid-cols-2 gap-2">
       <Button class="mx-2 flex-1 !text-xs" @click="openImportUrl">{{ t('JSON from URL') }}</Button>
       <Button class="mx-2 flex-1 !text-xs" @click="openImportJson">{{ t('Import JSON') }}</Button>
       <Button class="mx-2 flex-1 !text-xs" @click="chooseFile">{{ t('Export to file') }}</Button>
@@ -229,8 +229,16 @@ function confirmImportUrl(payload: { url: string; text: string }) {
   const locale = currentLocale.value === 'jp' ? 'Japanese' : 'English'
   const prompt = buildImportRecipePrompt({ url: importUrl.value, text: importText.value, locale })
 
-  console.log(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`)
-  window.open(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`, '_blank')
+  const url = importUrl.value || ''
+  if (url.includes('youtube.com')) {
+    // Gemini does not support passing query params; copy prompt to clipboard (legacy exec)
+    legacyCopyToClipboard(prompt)
+    showToast(t('Prompt copied. Opening Gemini...'))
+    window.open('https://gemini.google.com/', '_blank')
+  } else {
+    // Default to ChatGPT with query param
+    window.open(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`, '_blank')
+  }
 }
 
 function openImportJson() {
@@ -334,6 +342,33 @@ onMounted(() => {
     showImportUrlModal.value = true
   }
 })
+
+// Legacy clipboard copy using document.execCommand('copy') for wider compatibility
+function legacyCopyToClipboard(text: string) {
+  try {
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.setAttribute('readonly', '')
+    textarea.style.position = 'absolute'
+    textarea.style.left = '-9999px'
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+  } catch (e) {
+    // Best-effort fallback: leave text selected for manual copy
+    try {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      document.body.appendChild(textarea)
+      textarea.focus()
+      textarea.select()
+      showToast(t('Copy failed. Please copy manually.'))
+    } catch (_) {
+      // no-op
+    }
+  }
+}
 </script>
 
 <style scoped>
