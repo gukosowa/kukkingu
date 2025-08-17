@@ -35,8 +35,9 @@
                   v-model="localText"
                   :placeholder="placeholderText"
                   ref="textareaRef"
-                  rows="6"
-                  class="w-full focus:ring-indigo-500 border text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
+                  rows="1"
+                  class="w-full focus:ring-indigo-500 border text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md overflow-hidden resize-none"
+                  @input="autoResize"
                 />
               </div>
               <div class="flex items-center">
@@ -106,6 +107,13 @@ const localFromPicture = ref(props.fromPicture)
 const inputRef = ref<InstanceType<typeof SInput> | null>(null)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
+function autoResize() {
+  const el = textareaRef.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = el.scrollHeight + 'px'
+}
+
 watch(
   () => props.modelValue,
   (v) => {
@@ -115,6 +123,7 @@ watch(
       localFromPicture.value = props.fromPicture || false
       nextTick(() => {
         inputRef.value?.focus?.()
+        autoResize()
       })
     }
   }
