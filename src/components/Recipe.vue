@@ -146,7 +146,7 @@
         </template>
         <template v-else-if="recipe.note">
           <p class="text-sm mt-3 px-2"><b>{{ t('ノート') }}:</b></p>
-          <p class="markdown-body text-sm whitespace-pre-wrap px-2" v-html="markedRender"></p>
+          <p class="markdown-body text-sm whitespace-pre-wrap px-2 !text-gray-900" v-html="markedRender"></p>
         </template>
       </div>
     </div>

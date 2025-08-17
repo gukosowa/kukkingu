@@ -33,5 +33,14 @@
   "full_㏄": "ml",
   "full_大さじ": "tblspoon",
   "full_小さじ": "teaspoon",
-  "full_個": "piece"
+  "full_個": "piece",
+  "JSON from URL": "JSON from URL",
+  "Import JSON": "Import JSON",
+  "Export to JSON": "Export to JSON",
+  "Open GPT": "Open GPT",
+  "Paste JSON": "Paste JSON",
+  "Import": "Import",
+  "https://example.com": "https://example.com",
+  "Invalid JSON": "Invalid JSON",
+  "Export failed": "Export failed"
 }

@@ -9,6 +9,7 @@
     "lint": "eslint . --ext .ts,.js,.vue"
   },
   "dependencies": {
+    "@types/marked": "^5.0.2",
     "github-markdown-css": "^5.1.0",
     "marked": "^4.1.0",
     "thin-backend": "^0.11.0",
@@ -16,19 +17,19 @@
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
-    "@vue/eslint-config-typescript": "^12.0.0",
-    "@vue/eslint-config-prettier": "^9.0.0",
-    "eslint": "^8.57.0",
-    "eslint-plugin-vue": "^9.25.0",
     "@types/chai": "^4.2.13",
     "@types/jest": "^26.0.20",
     "@types/mocha": "^8.2.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "@vitejs/plugin-vue": "^5.0.0",
+    "@vue/eslint-config-prettier": "^9.0.0",
+    "@vue/eslint-config-typescript": "^12.0.0",
     "@web/test-runner": "^0.12.0",
     "autoprefixer": "^10.4.0",
     "chai": "^4.2.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.25.0",
     "postcss": "^8.4.0",
     "prettier": "^3.3.3",
     "tailwindcss": "^3.4.0",

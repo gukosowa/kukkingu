@@ -16,24 +16,21 @@
       <Button class="ml-2 flex-shrink" @click="onCreateNew">{{ t('作成') }}</Button>
     </div>
 
-    <div class="mb-2 flex">
-      <Button class="mx-2 flex-1" @click="openImportUrl">Import from URL</Button>
-      <Button class="mx-2 flex-1" @click="openImportJson">Import from GPT</Button>
-    </div>
+
 
     <ModalInput
       v-model="showImportUrlModal"
       :value="importUrl"
-      title="Import from URL"
-      confirmText="Open GPT"
-      placeholder="https://example.com"
+      :title="t('JSON from URL')"
+      :confirmText="t('Open GPT')"
+      :placeholder="t('https://example.com')"
       @confirm="confirmImportUrl"
     />
     <ModalInput
       v-model="showImportJsonModal"
-      title="Import from GPT"
-      confirmText="Import"
-      placeholder="Paste JSON"
+      :title="t('Import JSON')"
+      :confirmText="t('Import')"
+      :placeholder="t('Paste JSON')"
       :multiline="true"
       @confirm="confirmImportJson"
     />
@@ -74,6 +71,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Moved JSON controls to bottom of overview -->
+    <div class="mt-2 flex">
+      <Button class="mx-2 flex-1" @click="openImportUrl">{{ t('JSON from URL') }}</Button>
+      <Button class="mx-2 flex-1" @click="openImportJson">{{ t('Import JSON') }}</Button>
+      <Button class="mx-2 flex-1" @click="exportAll">{{ t('Export to JSON') }}</Button>
+    </div>
     <Footer />
   </div>
 </template>
@@ -81,7 +85,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { t } from '~src/i18n'
+import { t, currentLocale } from '~src/i18n'
 import Footer from '~components/Footer.vue'
 import { recipes as _recipes } from '~src/store/index'
 import Button from './Button.vue'
@@ -171,10 +175,54 @@ function openImportUrl() {
 function confirmImportUrl(url: string) {
   importUrl.value = url
   showImportUrlModal.value = false
+  const locale = currentLocale.value === 'jp' ? 'Japanese' : 'English'
+  const unitRules = [
+    'Map units to one of: g, ㏄ (ml), 大さじ (tablespoon), 小さじ (teaspoon), 個 (piece).',
+    'If source has ml use ㏄; tablespoon->大さじ; teaspoon->小さじ; piece/whole->個.',
+  ].join(' ')
+  const ingredientRules = [
+    'For each ingredient: remove any text in brackets/parentheses from the name (e.g., "Onion (chopped)" -> name: "Onion").',
+    'Move removed bracket details and any extra descriptors (e.g., "chopped", "to taste") into the ingredient.note field, in ' +
+    locale +
+    '.',
+    'Every ingredient must have an amount. If the source has no numeric amount, set amount to 0 and explain the original wording in ingredient.note (in ' +
+    locale +
+    ').',
+  ].join(' ')
+  const noteRules = [
+    'The top-level note must be present and non-empty.',
+    'Start with a concise, useful description of the dish (what it is, cuisine/style, key flavors/ingredients, typical serving or occasion) in ' +
+    locale +
+    '.',
+    'Then briefly list assumptions you made, details removed from brackets, and any missing/ambiguous amounts, also in ' +
+    locale +
+    '.',
+    'Do not mention this prompt, ChatGPT, or any app/tool; focus only on the recipe itself.',
+    'You may use Markdown formatting in the description including headers, lists, bold and italic text.',
+    'Structure the description with clear sections for overview, ingredients needed, detailed steps, tips/notes.',
+  ].join(' ')
+  const localeRule = 'All text values must be written in ' + locale + '.'
+  const jsonSchema =
+    '{"name":"string","edit":true,"original":number,"desired":number,"note":"string","url":"string","ingredients":[{"name":"string","amount":number,"amountType":"g|㏄|大さじ|小さじ|個","note":"string"}]}'
+  const formattingRule =
+    'Return the result as a Markdown fenced code block using four backticks with the `json` language tag (start with ````json and end with ````). The content of the block must be only valid JSON matching the schema.'
   const prompt =
-    'Get the content of ' +
+    'Fetch the content of ' +
     url +
-    ' and convert it to structured Json. Answer ONLY with the Json, no markdown, just plain Json. The Json must follow this structure: {"name":"string","original":number,"desired":number,"note":"string","url":"string","ingredients":[{"name":"string","amount":"number or string","amountType":"string","note":"string"}]}'
+    ' and convert it into a clean, structured recipe JSON. ' +
+    localeRule +
+    ' Follow these strict rules: ' +
+    unitRules +
+    ' ' +
+    ingredientRules +
+    ' ' +
+    noteRules +
+    ' The JSON must match this exact structure: ' +
+    jsonSchema +
+    ' ' +
+    formattingRule
+
+  console.log('https://chatgpt.com/?q=' + encodeURIComponent(prompt))
   window.open('https://chatgpt.com/?q=' + encodeURIComponent(prompt), '_blank')
 }
 
@@ -185,10 +233,51 @@ function openImportJson() {
 function confirmImportJson(json: string) {
   showImportJsonModal.value = false
   try {
-    const data = JSON.parse(json)
-    recipes.value = [...recipes.value, data]
+    const parsed = parsePastedJson(json)
+    if (!parsed) throw new Error('No JSON found')
+    // Ensure minimal shape expected by the app
+    if (!parsed.edit) parsed.edit = true
+    if (!Array.isArray(parsed.ingredients)) parsed.ingredients = []
+    parsed.ingredients = parsed.ingredients.map((ing: any) => ({
+      name: ing?.name ?? '',
+      amount: typeof ing?.amount === 'number' ? ing.amount : 0,
+      amountType: ing?.amountType ?? 'g',
+      note: ing?.note ?? '',
+    }))
+    recipes.value = [...recipes.value, parsed]
   } catch (e) {
-    alert('Invalid JSON')
+    alert(t('Invalid JSON'))
+  }
+}
+
+function parsePastedJson(input: string): any | null {
+  const text = (input || '').trim()
+  // Try to extract from fenced code block with 3 or 4 backticks
+  const fenceMatch = text.match(/\n?`{3,4}json\s*\n([\s\S]*?)\n`{3,4}\s*$/i) || text.match(/\n?`{3,4}\s*\n([\s\S]*?)\n`{3,4}\s*$/)
+  const jsonText = (fenceMatch ? fenceMatch[1] : text).trim()
+  try {
+    return JSON.parse(jsonText)
+  } catch (_) {
+    return null
+  }
+}
+
+function exportAll() {
+  try {
+    const data = JSON.stringify(recipes.value, null, 2)
+    const blob = new Blob([data], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const ts = new Date().toISOString().replace(/[:.]/g, '-')
+    a.download = `recipes-${ts}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  } catch (e) {
+    console.error('Export failed', e)
+    alert(t('Export failed'))
   }
 }
 
