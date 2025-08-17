@@ -81,7 +81,25 @@
     <div class="mt-2 flex">
       <Button class="mx-2 flex-1 !text-xs" @click="openImportUrl">{{ t('JSON from URL') }}</Button>
       <Button class="mx-2 flex-1 !text-xs" @click="openImportJson">{{ t('Import JSON') }}</Button>
-      <Button class="mx-2 flex-1 !text-xs" @click="exportAll">{{ t('Export to JSON') }}</Button>
+      <Button class="mx-2 flex-1 !text-xs" @click="chooseFile">{{ t('Export to file') }}</Button>
+      <Button
+        v-show="!!exportHandle"
+        class="mx-2 flex-1 !text-xs relative"
+        @click="saveFile"
+      >
+        {{ t('Sync to file') }}
+        <span
+          v-show="exportDirty"
+          class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"
+        />
+      </Button>
+    </div>
+    <div
+      v-if="toastMessage"
+      class="fixed bottom-4 left-1/2 bg-black text-white text-sm px-3 py-2 rounded shadow-lg z-50"
+      style="transform: translateX(-50%)"
+    >
+      {{ toastMessage }}
     </div>
     <Footer />
   </div>
@@ -100,6 +118,13 @@ import Icon from './Icon.vue'
 import ModalConfirm from './ModalConfirm.vue'
 import ModalInput from './ModalInput.vue'
 import { mergeRecipesByExportedAt } from '~src/services/importExport'
+import {
+  chooseExportFile,
+  saveExportFile,
+  exportHandle,
+  exportDirty,
+} from '~src/services/fileExport'
+import { buildImportRecipePrompt } from '~src/services/prompt'
 
 const router = useRouter()
 const recipes = computed({ get: () => _recipes.value, set: (v) => (_recipes.value = v as any) })
@@ -111,6 +136,8 @@ let showImportUrlModal = ref(false)
 let showImportJsonModal = ref(false)
 let importUrl = ref('')
 let importJsonText = ref('')
+let toastMessage = ref('')
+let toastTimer: number | null = null
 
 const route = useRoute()
 
@@ -184,51 +211,10 @@ function confirmImportUrl(url: string) {
   importUrl.value = url
   showImportUrlModal.value = false
   const locale = currentLocale.value === 'jp' ? 'Japanese' : 'English'
-  const unitRules = [
-    'Allowed units (choose only from these and use these exact keys in ingredient.amountType): g, ml, tbl (tablespoon), tea (teaspoon), p (piece), pinch.',
-  ].join(' ')
-  const ingredientRules = [
-    'For each ingredient: remove any text in brackets/parentheses from the name (e.g., "Onion (chopped)" -> name: "Onion").',
-    'Move removed bracket details and any extra descriptors (e.g., "chopped", "to taste") into the ingredient.note field, in ' +
-    locale +
-    '.',
-    'Every ingredient must have an amount. If the source has no numeric amount, set amount to 0 and explain the original wording in ingredient.note (in ' +
-    locale +
-    ').',
-  ].join(' ')
-  const noteRules = [
-    'The top-level note must be present and non-empty.',
-    'Write the note in two parts using bold labels (no Markdown headers):',
-    '**Steps**: first, list all cooking steps as a clear numbered list in ' + locale + '.',
-    '**Overview**: after the steps, write a concise overview in ' +
-      locale +
-      ' covering the dish description (what it is, cuisine/style, key flavors/ingredients, typical serving/occasion), any assumptions made, details removed from brackets, and any missing/ambiguous amounts.',
-    'Do not use Markdown headings (no #). Use bold labels like **Steps** and **Overview** instead. Lists are allowed.',
-    'Do not mention this prompt, ChatGPT, or any app/tool; focus only on the recipe itself.',
-  ].join(' ')
-  const localeRule = 'All text values must be written in ' + locale + '.'
-  const jsonSchema =
-    '{"name":"string","edit":true,"original":number,"desired":number,"note":"string","url":"string","ingredients":[{"name":"string","amount":number,"amountType":"g|ml|tbl|tea|p|pinch","note":"string"}]}'
-  const formattingRule =
-    'Return the result as a Markdown fenced code block using four backticks with the `json` language tag (start with ````json and end with ````). The content of the block must be only valid JSON matching the schema.'
-  const prompt =
-    'Fetch the content of ' +
-    url +
-    ' and convert it into a clean, structured recipe JSON. ' +
-    localeRule +
-    ' Follow these strict rules: ' +
-    unitRules +
-    ' ' +
-    ingredientRules +
-    ' ' +
-    noteRules +
-    ' The JSON must match this exact structure: ' +
-    jsonSchema +
-    ' ' +
-    formattingRule
+  const prompt = buildImportRecipePrompt(url, locale)
 
-  console.log('https://chatgpt.com/?q=' + encodeURIComponent(prompt))
-  window.open('https://chatgpt.com/?q=' + encodeURIComponent(prompt), '_blank')
+  console.log(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`)
+  window.open(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`, '_blank')
 }
 
 function openImportJson() {
@@ -289,26 +275,29 @@ function parsePastedJson(input: string): any | null {
   }
 }
 
-function exportAll() {
+async function chooseFile() {
+  await chooseExportFile()
+}
+
+async function saveFile() {
   try {
-    const now = new Date().toISOString()
-    // Do not mutate in-memory recipes when exporting
-    const payload = (recipes.value as any[]).map((r: any) => ({ ...r, exportedAt: now }))
-    const data = JSON.stringify(payload, null, 2)
-    const blob = new Blob([data], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    const ts = new Date().toISOString().replace(/[:.]/g, '-')
-    a.download = `recipes-${ts}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    const res = await saveExportFile()
+    showToast(res.mergedWithExisting ? t('Synced with file') : t('Saved to file'))
   } catch (e) {
     console.error('Export failed', e)
     alert(t('Export failed'))
   }
+}
+
+function showToast(msg: string) {
+  toastMessage.value = msg
+  if (toastTimer) {
+    clearTimeout(toastTimer as any)
+  }
+  toastTimer = window.setTimeout(() => {
+    toastMessage.value = ''
+    toastTimer = null
+  }, 2500) as any
 }
 
 onMounted(() => {
@@ -319,3 +308,6 @@ onMounted(() => {
   }
 })
 </script>
+
+<style scoped>
+</style>

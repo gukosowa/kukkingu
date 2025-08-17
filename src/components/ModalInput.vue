@@ -15,7 +15,7 @@
               v-model="localValue"
               :placeholder="placeholder"
               :autofocus="true"
-              :ref="(el:any) => (inputRef.value = el)"
+              ref="inputRef"
             />
             <textarea
               v-else
@@ -74,7 +74,7 @@ const emit = defineEmits<{
 }>()
 
 const localValue = ref(props.value)
-const inputRef = ref<any>(null)
+const inputRef = ref<InstanceType<typeof SInput> | null>(null)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 watch(
   () => props.modelValue,
