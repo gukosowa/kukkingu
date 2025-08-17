@@ -197,6 +197,7 @@ import ModalInput from './ModalInput.vue'
 import { t, currentLocale } from '~src/i18n'
 import { buildAskRecipePrompt } from '~src/services/prompt'
 import { normalizeAmountType } from '~src/services/units'
+import { openChatGPT } from '~src/services/chatgpt'
 
 const route = useRoute()
 const router = useRouter()
@@ -244,7 +245,7 @@ function openAskGpt() {
   showAskGpt.value = true
 }
 
-function confirmAskGpt(question: string) {
+async function confirmAskGpt(question: string) {
   showAskGpt.value = false
   const locale =
     currentLocale.value === 'jp'
@@ -253,7 +254,8 @@ function confirmAskGpt(question: string) {
       ? 'German'
       : 'English'
   const prompt = buildAskRecipePrompt(recipe.value, question, locale)
-  window.open(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`, '_blank')
+  const copied = await openChatGPT(prompt)
+  if (copied) alert(t('Prompt copied. Paste into ChatGPT.'))
 }
 
 function norm(type: string): string {
