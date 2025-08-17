@@ -12,37 +12,49 @@
     >
       <div
         v-if="modelValue"
-        class="fixed w-screen w-full h-screen top-0 left-0 z-50"
-        style="backdrop-filter: blur(1px)"
+        class="fixed w-screen h-screen top-0 left-0 z-50"
+        style="backdrop-filter: blur(2px)"
         @click="close"
       >
-        <div class="w-full h-full px-12 pb-8 flex flex-col justify-end transform">
-          <div class="bg-white p-5 rounded-xl drop-shadow" @click.stop>
-            <div class="text-lg text-gray-600 font-bold">{{ t('Language') }}</div>
-            <div class="my-5 text-black">
-              <label v-for="opt in locales" :key="opt.value" class="flex items-center mb-2">
-                <input
-                  type="radio"
-                  class="mr-2"
-                  :value="opt.value"
-                  v-model="localLocale"
-                />
-                <span>{{ opt.label }}</span>
-              </label>
-            </div>
-            <div class="text-white text-center">
+        <div class="w-full h-full px-6 pb-8 flex flex-col justify-end">
+          <div class="bg-white p-6 rounded-2xl shadow-lg" @click.stop>
+            <div class="text-xl text-gray-700 font-bold mb-4">{{ t('Language') }}</div>
+
+            <div class="grid gap-3 my-4">
               <div
-                class="cursor-pointer py-3 my-2 bg-green-500 rounded-lg drop-shadow"
+                v-for="opt in locales"
+                :key="opt.value"
+                @click="localLocale = opt.value"
+                class="cursor-pointer flex items-center justify-between border rounded-xl p-3 transition-all duration-200"
+                :class="localLocale === opt.value
+                  ? 'border-green-500 bg-green-50'
+                  : 'border-gray-300 hover:border-green-400 hover:bg-gray-50'"
+              >
+                <span class="text-lg">{{ opt.label }}</span>
+                <div
+                  class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                  :class="localLocale === opt.value
+                    ? 'border-green-500 bg-green-500'
+                    : 'border-gray-400'"
+                >
+                  <div v-if="localLocale === opt.value" class="w-2 h-2 bg-white rounded-full" />
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+              <button
+                class="flex-1 py-3 bg-green-500 text-white rounded-xl shadow-md font-semibold hover:bg-green-600 transition-colors"
                 @click="confirm"
               >
                 {{ t('OK') }}
-              </div>
-              <div
-                class="cursor-pointer py-3 bg-gray-500 rounded-lg drop-shadow"
+              </button>
+              <button
+                class="flex-1 py-3 bg-gray-500 text-white rounded-xl shadow-md font-semibold hover:bg-gray-600 transition-colors"
                 @click="close"
               >
                 {{ t('Cancel') }}
-              </div>
+              </button>
             </div>
           </div>
         </div>

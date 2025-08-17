@@ -41,7 +41,7 @@
               </div>
               <div class="flex items-center">
                 <Checkbox class="mr-2" v-model="localFromPicture" />
-                <div class="text-sm text-gray-600">{{ t('From picture') }}</div>
+                <div class="text-sm text-gray-600">{{ t('From pictures') }}</div>
               </div>
             </div>
             <div class="text-white text-center">
