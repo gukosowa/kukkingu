@@ -50,5 +50,7 @@
   "https://example.com": "https://example.com",
   "Invalid JSON": "無効なJSON",
   "Export failed": "エクスポートに失敗しました",
-  "Load failed": "読み込みに失敗しました"
+  "Load failed": "読み込みに失敗しました",
+  "Language": "言語",
+  "OK": "OK"
 }

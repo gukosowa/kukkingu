@@ -50,5 +50,7 @@
   "https://example.com": "https://example.com",
   "Invalid JSON": "Invalid JSON",
   "Export failed": "Export failed",
-  "Load failed": "Load failed"
+  "Load failed": "Load failed",
+  "Language": "Language",
+  "OK": "OK"
 }
