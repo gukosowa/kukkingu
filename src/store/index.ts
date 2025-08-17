@@ -19,6 +19,8 @@ export type Recipe = {
   url?: string
   checklist?: boolean
   rename?: boolean
+  // Timestamp of last export (ISO string)
+  exportedAt?: string
   ingredients: Ingredient[]
 }
 

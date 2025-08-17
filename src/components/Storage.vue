@@ -99,6 +99,7 @@ import { newRecipe } from '~plugins/helper'
 import Icon from './Icon.vue'
 import ModalConfirm from './ModalConfirm.vue'
 import ModalInput from './ModalInput.vue'
+import { mergeRecipesByExportedAt } from '~src/services/importExport'
 
 const router = useRouter()
 const recipes = computed({ get: () => _recipes.value, set: (v) => (_recipes.value = v as any) })
@@ -240,16 +241,27 @@ function confirmImportJson(json: string) {
   try {
     const parsed = parsePastedJson(json)
     if (!parsed) throw new Error('No JSON found')
-    // Ensure minimal shape expected by the app
-    if (!parsed.edit) parsed.edit = true
-    if (!Array.isArray(parsed.ingredients)) parsed.ingredients = []
-    parsed.ingredients = parsed.ingredients.map((ing: any) => ({
+    // If an exported file (array) is pasted, merge by id using exportedAt
+    if (Array.isArray(parsed)) {
+      recipes.value = mergeRecipesByExportedAt(recipes.value as any, parsed as any) as any
+      return
+    }
+    // Single recipe: ensure minimal shape expected by the app
+    const single: any = parsed
+    if (!single.edit) single.edit = true
+    if (!Array.isArray(single.ingredients)) single.ingredients = []
+    single.ingredients = single.ingredients.map((ing: any) => ({
       name: ing?.name ?? '',
       amount: typeof ing?.amount === 'number' ? ing.amount : 0,
       amountType: ing?.amountType ?? 'g',
       note: ing?.note ?? '',
     }))
-    recipes.value = [...recipes.value, parsed]
+    // If id present, merge; otherwise append
+    if (single.id) {
+      recipes.value = mergeRecipesByExportedAt(recipes.value as any, [single] as any) as any
+    } else {
+      recipes.value = [...recipes.value, single]
+    }
   } catch (e) {
     alert(t('Invalid JSON'))
   }
@@ -279,7 +291,10 @@ function parsePastedJson(input: string): any | null {
 
 function exportAll() {
   try {
-    const data = JSON.stringify(recipes.value, null, 2)
+    const now = new Date().toISOString()
+    // Do not mutate in-memory recipes when exporting
+    const payload = (recipes.value as any[]).map((r: any) => ({ ...r, exportedAt: now }))
+    const data = JSON.stringify(payload, null, 2)
     const blob = new Blob([data], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
