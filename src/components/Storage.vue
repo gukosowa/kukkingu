@@ -266,7 +266,7 @@ async function confirmImportUrl(payload: { url: string; text: string; fromPictur
   })
 
   const url = importUrl.value || ''
-  if (url.includes('youtube.com')) {
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
     // Gemini does not support passing query params; copy prompt to clipboard (legacy exec)
     legacyCopyToClipboard(prompt)
     showToast(t('Prompt copied. Opening Gemini...'))
