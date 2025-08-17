@@ -53,5 +53,7 @@
   "Export failed": "Export fehlgeschlagen",
   "Load failed": "Laden fehlgeschlagen",
   "Language": "Sprache",
-  "OK": "OK"
+  "OK": "OK",
+  "Ask GPT": "GPT fragen",
+  "Question": "Frage"
 }

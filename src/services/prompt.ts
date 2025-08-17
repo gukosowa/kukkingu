@@ -1,7 +1,7 @@
 // Utility to build the ChatGPT import prompt for a recipe URL
 // Uses template literals for readability and maintainability
 
-export type LocaleText = 'English' | 'Japanese'
+export type LocaleText = 'English' | 'Japanese' | 'German'
 
 export function buildImportRecipePrompt(
   input: { url?: string; text?: string; locale: LocaleText; fromPicture?: boolean }
@@ -52,4 +52,22 @@ export function buildImportRecipePrompt(
   }
 
   return `${sourceInstruction} ${localeRule} Follow these strict rules: ${unitRules} ${ingredientRules} ${noteRules} The JSON must match this exact structure: ${jsonSchema} ${formattingRule}`
+}
+
+export function buildAskRecipePrompt(recipe: any, question: string, locale: LocaleText): string {
+  const recipeJson = JSON.stringify(recipe, null, 2)
+  return `You are a world-class culinary expert and recipe master. 
+You are given the following recipe in JSON format:
+
+\`\`\`json
+${recipeJson}
+\`\`\`
+
+Your task is to carefully analyze the recipe and answer the following question:
+"${question}"
+
+Guidelines:
+- Respond only in ${locale}.
+- Be clear, accurate, and concise.
+- If relevant, provide helpful cooking tips or clarifications.`
 }

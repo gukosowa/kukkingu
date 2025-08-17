@@ -53,5 +53,7 @@
   "Export failed": "エクスポートに失敗しました",
   "Load failed": "読み込みに失敗しました",
   "Language": "言語",
-  "OK": "OK"
+  "OK": "OK",
+  "Ask GPT": "GPTに質問",
+  "Question": "質問"
 }

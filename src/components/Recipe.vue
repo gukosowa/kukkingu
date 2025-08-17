@@ -135,24 +135,29 @@
           </Button>
         </template>
       </div>
-      <div class="flex mt-4">
-        <template v-if="recipe.edit">
-          <SInput :placeholder="t('Recipe URL')" class="flex-grow" @update="saveChange" v-model="recipe.url" />
-        </template>
-        <template v-if="recipe.url">
-          <a :href="recipe.url" class="ml-2" target="_blank" rel="noreferrer">
-            <Button class="whitespace-nowrap">
-              {{ t('Open recipe web page') }}
-              <i class="fal fa-external-link ml-2" />
-            </Button>
-          </a>
-        </template>
-      </div>
-      <div>
-        <template v-if="recipe.edit">
-          <textarea
-            :placeholder="t('Note')"
-            style="height: 200px"
+        <div class="flex mt-4">
+          <template v-if="recipe.edit">
+            <SInput :placeholder="t('Recipe URL')" class="flex-grow" @update="saveChange" v-model="recipe.url" />
+          </template>
+          <template v-if="recipe.url">
+            <a :href="recipe.url" class="ml-2" target="_blank" rel="noreferrer">
+              <Button class="whitespace-nowrap">
+                {{ t('Open recipe web page') }}
+                <i class="fal fa-external-link ml-2" />
+              </Button>
+            </a>
+          </template>
+        </div>
+        <div class="mt-2">
+          <Button class="ml-2 whitespace-nowrap" @click="openAskGpt">
+            {{ t('Ask GPT') }}
+          </Button>
+        </div>
+        <div>
+          <template v-if="recipe.edit">
+            <textarea
+              :placeholder="t('Note')"
+              style="height: 200px"
             class="mt-2 w-full focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
             @input="saveChange"
             v-model="recipe.note"
@@ -164,9 +169,18 @@
         </template>
       </div>
     </div>
-    <Footer />
-  </div>
-</template>
+      <Footer />
+    </div>
+    <ModalInput
+      v-model="showAskGpt"
+      :title="t('Ask GPT')"
+      :confirmText="t('Ask GPT')"
+      :placeholder="t('Question')"
+      :cancelText="t('Cancel')"
+      :multiline="true"
+      @confirm="confirmAskGpt"
+    />
+  </template>
 
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
@@ -179,7 +193,9 @@ import SInput from './Input.vue'
 import Icon from './Icon.vue'
 import Checkbox from './Checkbox.vue'
 import AmountTypeModal from './AmountTypeModal.vue'
-import { t } from '~src/i18n'
+import ModalInput from './ModalInput.vue'
+import { t, currentLocale } from '~src/i18n'
+import { buildAskRecipePrompt } from '~src/services/prompt'
 import { normalizeAmountType } from '~src/services/units'
 
 const route = useRoute()
@@ -222,6 +238,23 @@ watch(
 
 const markedRender = computed(() => marked.parse(recipe.value?.note || ''))
 const ratio = computed(() => (recipe.value ? recipe.value.original / recipe.value.desired : 1))
+const showAskGpt = ref(false)
+
+function openAskGpt() {
+  showAskGpt.value = true
+}
+
+function confirmAskGpt(question: string) {
+  showAskGpt.value = false
+  const locale =
+    currentLocale.value === 'jp'
+      ? 'Japanese'
+      : currentLocale.value === 'de'
+      ? 'German'
+      : 'English'
+  const prompt = buildAskRecipePrompt(recipe.value, question, locale)
+  window.open(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`, '_blank')
+}
 
 function norm(type: string): string {
   return normalizeAmountType(type)

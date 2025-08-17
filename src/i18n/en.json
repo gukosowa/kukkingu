@@ -53,5 +53,7 @@
   "Export failed": "Export failed",
   "Load failed": "Load failed",
   "Language": "Language",
-  "OK": "OK"
+  "OK": "OK",
+  "Ask GPT": "Ask GPT",
+  "Question": "Question"
 }
