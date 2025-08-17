@@ -255,7 +255,10 @@ async function confirmAskGpt(question: string) {
       : 'English'
   const prompt = buildAskRecipePrompt(recipe.value, question, locale)
   const copied = await openChatGPT(prompt)
-  if (copied) alert(t('Prompt copied. Paste into ChatGPT.'))
+  if (copied) {
+    alert(t('Prompt copied. Paste into ChatGPT.'))
+    window.open('https://chatgpt.com/', '_blank')
+  }
 }
 
 function norm(type: string): string {

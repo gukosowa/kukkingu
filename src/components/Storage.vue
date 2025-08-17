@@ -273,7 +273,10 @@ async function confirmImportUrl(payload: { url: string; text: string; fromPictur
     window.open('https://gemini.google.com/', '_blank')
   } else {
     const copied = await openChatGPT(prompt)
-    if (copied) showToast(t('Prompt copied. Opening ChatGPT...'))
+    if (copied) {
+      showToast(t('Prompt copied. Opening ChatGPT...'))
+      window.open('https://chatgpt.com/', '_blank')
+    }
   }
 }
 
