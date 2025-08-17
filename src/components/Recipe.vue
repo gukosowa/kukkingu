@@ -65,6 +65,15 @@
               @update="saveChange"
               v-model="item.amountType"
             />
+            <SInput
+              :placeholder="t('Note')"
+              class="col-span-12"
+              inputClass="input-field"
+              :id="'input-note-' + index"
+              @update="saveChange"
+              @enter="() => focusNext(index)"
+              v-model="item.note"
+            />
           </template>
           <div class="col-span-12 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white">
             <div class="grid grid-cols-12">
@@ -72,23 +81,30 @@
                 <div class="absolute left-0 text-gray-600 top-0 text-xs ml-3 mt-1">
                   {{ t('Needed amount') }}
                 </div>
-                  <span class="text-gray-300 font-bold mr-2" @click="() => clickName(index)">{{ item.name || '-' }}</span>
-                  <template v-if="unitBefore(item.amountType as any)">
-                    <span
-                      class="text-red-300"
-                      @click="() => clickAmountType(index)"
-                      style="font-size: 1.2rem;"
-                      >{{ unitLabel(item.amountType as any) }}</span>
-                    <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item) }}</span>
-                  </template>
-                  <template v-else>
-                    <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item) }}</span>
-                    <span
-                      class="text-red-300"
-                      @click="() => clickAmountType(index)"
-                      style="font-size: 1.2rem;"
-                      >{{ unitLabel(item.amountType as any) }}</span>
-                  </template>
+                <span class="text-gray-300 font-bold mr-2" @click="() => clickName(index)">{{ item.name || '-' }}</span>
+                <template v-if="unitBefore(item.amountType as any)">
+                  <span
+                    class="text-red-300"
+                    @click="() => clickAmountType(index)"
+                    style="font-size: 1.2rem;"
+                    >{{ unitLabel(item.amountType as any) }}</span>
+                  <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item) }}</span>
+                </template>
+                <template v-else>
+                  <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item) }}</span>
+                  <span
+                    class="text-red-300"
+                    @click="() => clickAmountType(index)"
+                    style="font-size: 1.2rem;"
+                    >{{ unitLabel(item.amountType as any) }}</span>
+                </template>
+                <div
+                  v-if="item.note"
+                  class="text-sm text-gray-400 mt-1"
+                  @click="() => clickNote(index)"
+                >
+                  {{ item.note }}
+                </div>
               </div>
               <div class="col-span-2 relative text-right">
                 <template v-if="recipe.checklist">
@@ -283,6 +299,9 @@ function clickAmount(index: number) {
 function clickAmountType(index: number) {
   amountRefs.value?.[index]?.focus?.()
 }
+function clickNote(index: number) {
+  document.getElementById('input-note-' + index)?.focus()
+}
 function focusNext(index: number) {
   const active = document.activeElement as HTMLElement | null
   if (active?.id === 'input-name-' + index) {
@@ -291,6 +310,11 @@ function focusNext(index: number) {
   }
   if (active?.id === 'input-amount-' + index) {
     amountRefs.value?.[index]?.focus?.()
+    return
+  }
+  if (active?.id === 'input-note-' + index) {
+    const nextName = document.getElementById('input-name-' + (index + 1))
+    nextName?.focus()
     return
   }
   const nextName = document.getElementById('input-name-' + (index + 1))
@@ -302,7 +326,7 @@ function addIngredient() {
   _recipes.value = copy
   setTimeout(() => {
     const items = [...document.getElementsByClassName('input-field')] as HTMLElement[]
-    items[items.length - 2]?.focus()
+    items[items.length - 3]?.focus()
   }, 0)
 }
 function switchEdit() {
