@@ -1,7 +1,7 @@
 <template>
-  <div v-if="recipe">
+  <div v-if="recipe" class='flex-grow flex flex-col'>
     <div class="flex items-center my-1">
-      <div class="title flex-1 whitespace-no-wrap overflow-hidden text-xs px-1 font-bold text-gray-700">
+      <div class="title flex-1 whitespace-nowrap overflow-hidden text-xs px-1 font-bold text-gray-700">
         {{ recipe?.name }}
       </div>
 
@@ -36,7 +36,7 @@
         </Button>
       </template>
     </div>
-    <div class="flex flex-col">
+    <div class="flex flex-col flex-grow">
       <div class="mb-3 mt-2">
         <div class="grid grid-cols-12 mb-3 gap-1" v-for="(item, index) in recipe.ingredients" :key="index">
           <template v-if="recipe.edit">
@@ -72,30 +72,31 @@
                 <div class="absolute left-0 text-gray-600 top-0 text-xs ml-3 mt-1">
                   {{ t('Needed amount') }}
                 </div>
-                <span class="text-gray-300 font-bold" @click="() => clickName(index)">{{ item.name || '-' }}</span>
-                <span
-                  class="text-red-300"
-                  v-if="['tbl', 'tea'].includes(norm(item.amountType as any))"
-                  @click="() => clickAmountType(index)"
-                  style="font-size: 1.2rem;"
-                  >{{ t('full_' + norm(item.amountType as any)) }}</span
-                >
-                <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item, norm(item.amountType as any)) }}</span>
-                <span
-                  class="text-red-300"
-                  v-if="!['tbl', 'tea'].includes(norm(item.amountType as any))"
-                  @click="() => clickAmountType(index)"
-                  style="font-size: 1.2rem;"
-                  >{{ t('full_' + norm(item.amountType as any)) }}</span
-                >
+                  <span class="text-gray-300 font-bold mr-2" @click="() => clickName(index)">{{ item.name || '-' }}</span>
+                  <template v-if="unitBefore(item.amountType as any)">
+                    <span
+                      class="text-red-300"
+                      @click="() => clickAmountType(index)"
+                      style="font-size: 1.2rem;"
+                      >{{ unitLabel(item.amountType as any) }}</span>
+                    <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item) }}</span>
+                  </template>
+                  <template v-else>
+                    <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item) }}</span>
+                    <span
+                      class="text-red-300"
+                      @click="() => clickAmountType(index)"
+                      style="font-size: 1.2rem;"
+                      >{{ unitLabel(item.amountType as any) }}</span>
+                  </template>
               </div>
               <div class="col-span-2 relative text-right">
                 <template v-if="recipe.checklist">
                   <Checkbox class="absolute right-0 top-0 -mt-1" v-model="item.checked" @input="saveChange" />
                 </template>
                 <template v-else-if="!recipe.edit">
-                  <div class="text-xs whitespace-no-wrap absolute top-0 -mt-4 right-0 text-gray-500">
-                    <span class="text-gray-700">{{ t('Original') }} </span>
+                  <div class="text-xs whitespace-nowrap absolute top-0 -mt-4 right-0 text-gray-500">
+                    <span class="text-gray-600">{{ t('Original') }} </span>
                     {{ item.amount || '0' }}
                   </div>
                   <i
@@ -127,7 +128,7 @@
         </template>
         <template v-if="recipe.url">
           <a :href="recipe.url" class="ml-2" target="_blank" rel="noreferrer">
-            <Button class="whitespace-no-wrap">
+            <Button class="whitespace-nowrap">
               {{ t('Open recipe web page') }}
               <i class="fal fa-external-link ml-2" />
             </Button>
@@ -213,26 +214,64 @@ function norm(type: string): string {
   return normalizeAmountType(type)
 }
 
-function amount(item: any, amountType: string): string {
-  amountType = norm(amountType)
-  const original = parseFloat(item.amount || '0')
-  if (!original || !ratio.value) return '-'
-  const desired = original / ratio.value
-  switch (amountType) {
-    case 'g':
-      return desired.toFixed(2)//  + 'g'
-    case 'ml':
-      return desired.toFixed(2)//  + 'ml'
-    case 'tbl':
-      return (desired / 15).toFixed(2)//  + 'tbl'
-    case 'tea':
-      return (desired / 5).toFixed(2)//  + 'tea'
-    case 'p':
-      return desired.toFixed(2)//  + 'pc'
-    default:
-      return desired.toFixed(2)
+  function amount(item: any): string | number {
+    const rat = ratio.value || 1
+    const raw = parseFloat((item?.amount ?? 0) as any)
+    if (!raw) return '0'
+    const type = norm(item?.amountType)
+
+    // Pinch: round up to an integer count
+    if (type === 'pinch') {
+      return Math.ceil(raw / rat).toFixed(0)
+    }
+
+    // Grams/ml: show integer when > 1, otherwise fall through to precise display
+    if (type === 'g' || type === 'ml') {
+      if (raw > 1) {
+        return Math.round(raw / rat)
+      }
+      // else fall through to generic handling below
+    }
+
+    // Units that prefer quarters (¼ ½ ¾)
+    const quarterUnits = ['tbl', 'tea', 'p']
+    const useQuarter = quarterUnits.includes(type)
+    if (useQuarter) {
+      let amt = ((Math.round((raw / rat) * 4) / 4).toFixed(2))
+      if (amt.includes('.')) {
+        let [num, dec] = amt.split('.')
+        if (dec) {
+          num = +num === 0 ? '' : num
+        }
+        switch (dec) {
+          case '25':
+            amt = (num ? num + ' ' : '') + '¼'
+            break
+          case '50':
+            amt = (num ? num + ' ' : '') + '½'
+            break
+          case '75':
+            amt = (num ? num + ' ' : '') + '¾'
+            break
+          default:
+            amt = num
+        }
+      }
+      return amt ? amt : 0
+    }
+
+    // Generic: show up to 2 decimals, trim trailing zeros
+    const precise = parseFloat(((raw / rat).toFixed(2)))
+    return (isNaN(precise) ? 0 : precise)
   }
-}
+
+  function unitBefore(type: string): boolean {
+    return ['tbl', 'tea'].includes(norm(type))
+  }
+
+  function unitLabel(type: string): string {
+    return t('full_' + norm(type))
+  }
 
 const amountRefs = ref<any[]>([])
 function clickName(index: number) {

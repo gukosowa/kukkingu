@@ -51,12 +51,12 @@
               />
             </template>
             <template v-else>
-              <Button color="pink" @click="open(index)" class="font-hairline text-lg leading-5 tracking-wider">
+              <Button color="pink" @click="open(index)" class="font-hairline text-[1.2rem] leading-5 tracking-wider">
                 {{ item.name }}
               </Button>
             </template>
           </div>
-          <div class="flex-grow whitespace-no-wrap text-right">
+          <div class="flex-grow whitespace-nowrap text-right">
             <template v-if="item.rename">
               <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
               <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600" />

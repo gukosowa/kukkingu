@@ -1,6 +1,6 @@
 <template>
   <div @click="() => (show = true)" :class="[cls, 'cursor-pointer bg-white focus:ring-indigo-500 text-gray-700 p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md']">
-    <div class="whitespace-no-wrap pl-1 text-sm">
+    <div class="whitespace-nowrap pl-1 text-sm">
       {{ t(norm(modelValue)) }}
       <i class="text-gray-500 float-right mt-1 mr-2 fas fa-sort-down" />
     </div>
