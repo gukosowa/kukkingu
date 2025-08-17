@@ -34,12 +34,14 @@
   "full_tbl": "大さじ",
   "full_tea": "小さじ",
   "full_p": "個",
-  "JSON from URL": "URLからJSON作成",
+  "JSON from URL": "GPT",
   "Import JSON": "JSONをインポート",
   "Export to file": "ファイルに書き出す",
+  "Load from file": "ファイルから読み込む",
   "Save": "保存",
   "Sync to file": "ファイルと同期",
   "Saved to file": "ファイルに保存しました",
+  "Loaded from file": "ファイルから読み込みました",
   "Synced with file": "ファイルと同期しました",
   "Open GPT": "GPT",
   "Recipe text": "レシピ本文",
@@ -47,5 +49,6 @@
   "Import": "インポート",
   "https://example.com": "https://example.com",
   "Invalid JSON": "無効なJSON",
-  "Export failed": "エクスポートに失敗しました"
+  "Export failed": "エクスポートに失敗しました",
+  "Load failed": "読み込みに失敗しました"
 }

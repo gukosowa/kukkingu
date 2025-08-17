@@ -147,7 +147,7 @@
         </template>
         <template v-else-if="recipe.note">
           <p class="text-sm mt-3 px-2"><b>{{ t('Note') }}:</b></p>
-          <p class="markdown-body text-sm whitespace-pre-wrap px-2 !text-gray-900" v-html="markedRender"></p>
+          <div class="markdown text-sm px-2" v-html="markedRender"></div>
         </template>
       </div>
     </div>
@@ -369,22 +369,9 @@ function saveChange() {
 </script>
 
 <style scoped>
-@import 'github-markdown-css';
 .title {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.markdown-body {
-  background: initial;
-  box-sizing: border-box;
-  min-width: 200px;
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 45px;
-}
-@media (max-width: 767px) {
-  .markdown-body {
-    padding: 15px;
-  }
-}
+
 </style>

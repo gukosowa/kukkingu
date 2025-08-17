@@ -34,12 +34,14 @@
   "full_tbl": "tblspoon",
   "full_tea": "teaspoon",
   "full_p": "piece",
-  "JSON from URL": "JSON from URL",
+  "JSON from URL": "GPT",
   "Import JSON": "Import JSON",
   "Export to file": "Export to file",
+  "Load from file": "Load from file",
   "Save": "Save",
   "Sync to file": "Sync to file",
   "Saved to file": "Saved to file",
+  "Loaded from file": "Loaded from file",
   "Synced with file": "Synced with file",
   "Open GPT": "GPT",
   "Recipe text": "Recipe text",
@@ -47,5 +49,6 @@
   "Import": "Import",
   "https://example.com": "https://example.com",
   "Invalid JSON": "Invalid JSON",
-  "Export failed": "Export failed"
+  "Export failed": "Export failed",
+  "Load failed": "Load failed"
 }

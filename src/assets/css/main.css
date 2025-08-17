@@ -13,3 +13,97 @@
 
 /* noinspection CssInvalidAtRule */
 @tailwind utilities;
+
+/* Typography styles for rendered Markdown inside a scoped container */
+@layer components {
+  .markdown {
+    @apply text-gray-900 leading-7 break-words;
+  }
+
+  .markdown a {
+    @apply text-blue-600 underline hover:text-blue-800;
+  }
+
+  .markdown h1 {
+    @apply text-3xl font-bold mt-6 mb-4;
+  }
+  .markdown h2 {
+    @apply text-2xl font-bold mt-5 mb-3;
+  }
+  .markdown h3 {
+    @apply text-xl font-semibold mt-4 mb-2;
+  }
+  .markdown h4 {
+    @apply text-lg font-semibold mt-4 mb-2;
+  }
+  .markdown h5 {
+    @apply text-base font-semibold mt-3 mb-2;
+  }
+  .markdown h6 {
+    @apply text-sm font-semibold mt-3 mb-2 uppercase tracking-wide text-gray-600;
+  }
+
+  .markdown p {
+    @apply my-3;
+  }
+
+  .markdown ul {
+    @apply list-disc pl-6 my-3;
+  }
+  .markdown ol {
+    @apply list-decimal pl-6 my-3;
+  }
+  .markdown li {
+    @apply my-1;
+  }
+
+  .markdown blockquote {
+    @apply border-l-4 border-gray-300 pl-4 italic text-gray-700 my-4;
+  }
+
+  .markdown hr {
+    @apply my-6 border-gray-200;
+  }
+
+  .markdown strong {
+    @apply font-semibold;
+  }
+  .markdown em {
+    @apply italic;
+  }
+
+  .markdown code {
+    @apply font-mono text-sm bg-gray-100 px-1 py-0.5 rounded;
+  }
+  .markdown pre {
+    @apply bg-gray-900 text-gray-100 rounded-md p-4 overflow-x-auto my-4;
+  }
+  .markdown pre code {
+    @apply bg-transparent p-0;
+  }
+
+  .markdown table {
+    @apply w-full border-collapse my-4 text-sm;
+  }
+  .markdown th {
+    @apply border-b border-gray-200 font-semibold text-left p-2;
+  }
+  .markdown td {
+    @apply border-b border-gray-200 p-2 align-top;
+  }
+
+  .markdown img {
+    @apply max-w-full h-auto rounded;
+  }
+
+  .markdown kbd {
+    @apply bg-gray-100 border border-gray-300 px-1 py-0.5 rounded text-xs font-mono;
+  }
+
+  .markdown :first-child {
+    @apply mt-0;
+  }
+  .markdown :last-child {
+    @apply mb-0;
+  }
+}
