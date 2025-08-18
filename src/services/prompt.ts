@@ -11,6 +11,12 @@ export function buildImportRecipePrompt(
     'Allowed units (choose only from these and use these exact keys in ingredient.amountType): g, ml, tbl (tablespoon), tea (teaspoon), p (piece), pinch.',
   ].join(' ')
 
+  const servingsRule = [
+    'Determine the number of servings/persons from the source.',
+    'Insert it as the first ingredient named "Persons" with amount equal to that number and amountType "p".',
+    'Set both top-level original and desired to this value.',
+  ].join(' ')
+
   const ingredientRules = [
     `For each ingredient: remove any text in brackets/parentheses from the name (e.g., "Onion (chopped)" -> name: "Onion").`,
     `Move removed bracket details and any extra descriptors (e.g., "chopped", "to taste") into the ingredient.note field, in ${locale}.`,
@@ -52,7 +58,7 @@ export function buildImportRecipePrompt(
     sourceInstruction = 'Extract the recipe information from the attached pictures and convert it into a clean, structured recipe JSON.'
   }
 
-  return `${sourceInstruction} ${localeRule} Follow these strict rules: ${unitRules} ${ingredientRules} ${noteRules} The JSON must match this exact structure: ${jsonSchema} ${formattingRule}`
+  return `${sourceInstruction} ${localeRule} Follow these strict rules: ${unitRules} ${servingsRule} ${ingredientRules} ${noteRules} The JSON must match this exact structure: ${jsonSchema} ${formattingRule}`
 }
 
 export function buildAskRecipePrompt(recipe: any, question: string, locale: LocaleText): string {
