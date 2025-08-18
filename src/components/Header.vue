@@ -86,8 +86,8 @@ const elDesire = ref<any>(null)
 function focusNext() {
   elDesire.value?.focus()
 }
-function blurInput(e: any) {
-  e.detail?.el?.blur?.()
+function blurInput(e: { el: HTMLInputElement | null }) {
+  e.el?.blur()
 }
 function home() {
   router.push('/')
