@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import SInput from './Input.vue'
 import { t } from '~src/i18n'
 
@@ -88,6 +88,27 @@ const emit = defineEmits<{
 const localValue = ref(props.value)
 const inputRef = ref<InstanceType<typeof SInput> | null>(null)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
+function refocusTextarea() {
+  const el = textareaRef.value
+  if (!el) return
+  el.blur()
+  window.setTimeout(() => {
+    el.focus()
+  }, 200)
+}
+function handleVisibility() {
+  if (document.visibilityState === 'visible' && props.modelValue && props.multiline) {
+    refocusTextarea()
+  }
+}
+onMounted(() => {
+  document.addEventListener('visibilitychange', handleVisibility)
+  window.addEventListener('focus', handleVisibility)
+})
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', handleVisibility)
+  window.removeEventListener('focus', handleVisibility)
+})
 watch(
   () => props.modelValue,
   (v) => {
