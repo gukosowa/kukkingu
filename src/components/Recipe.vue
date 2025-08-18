@@ -98,7 +98,7 @@
                       style="font-size: 1.2rem;"
                       >{{ unitLabel(item.amountType as any) }}</span>
                   </template>
-                <div v-if="item.note" class="text-sm text-gray-400 mt-1">
+                <div v-if="item.note && (recipe.edit || showNotes)" class="text-sm text-gray-400 mt-1">
                   <b>{{ t('Note') }}:</b>
                   <span @click="() => clickNote(index)">{{ item.note }}</span>
                 </div>
@@ -167,6 +167,10 @@
           <p class="text-sm mt-3 px-2"><b>{{ t('Note') }}:</b></p>
           <div class="markdown text-sm px-2" v-html="markedRender"></div>
         </template>
+        <div v-if="!recipe.edit" class="text-sm mt-3 px-2 flex items-center">
+          <Checkbox v-model="showNotes" />
+          <span class="ml-2">{{ t('Show ingredient notes') }}</span>
+        </div>
       </div>
     </div>
       <Footer />
@@ -210,6 +214,7 @@ import { normalizeAmountType } from '~src/services/units'
 
 const route = useRoute()
 const router = useRouter()
+const showNotes = ref(true)
 
 const recipeId = computed(() => {
   return +(route.params.id as any)
