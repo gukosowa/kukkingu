@@ -153,6 +153,7 @@ import { mergeRecipesByExportedAt } from '~src/services/importExport'
 import { chooseExportFile, saveExportFile, loadFromFile } from '~src/services/fileExport'
 import { buildImportRecipePrompt } from '~src/services/prompt'
 import { openChatGPT } from '~src/services/chatgpt'
+import { handlePromptNoticeOk } from '~src/services/notice'
 
 const router = useRouter()
 const recipes = computed({ get: () => _recipes.value, set: (v) => (_recipes.value = v as any) })
@@ -461,8 +462,7 @@ function showAppNotice(title: string, message: string, icon?: string, okText?: s
 }
 
 function handleNoticeOk() {
-  const url = noticeOkUrl.value
-  if (url) window.open(url, '_blank')
+  handlePromptNoticeOk(noticeOkUrl.value, openImportJson)
 }
 
 onMounted(() => {
