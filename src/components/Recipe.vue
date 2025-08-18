@@ -36,7 +36,13 @@
     </div>
     <div class="flex flex-col flex-grow">
       <div class="mb-3 mt-2">
-        <div class="grid grid-cols-12 mb-3 gap-1" v-for="(item, index) in recipe.ingredients" :key="index">
+        <TransitionGroup name="ri" tag="div" appear>
+          <div
+            v-for="(item, index) in recipe.ingredients"
+            :key="index"
+            class="grid grid-cols-12 mb-3 gap-1"
+            :style="staggerStyle(index)"
+          >
           <template v-if="recipe.edit">
             <SInput
               :placeholder="t('Ingredient')"
@@ -76,9 +82,7 @@
           <div class="col-span-12 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white">
             <div class="grid grid-cols-12">
               <div class="col-span-10">
-                <div class="absolute left-0 text-gray-600 top-0 text-xs ml-3 mt-1">
-                  {{ t('Needed amount') }}
-                </div>
+
                   <span class="text-gray-300 font-bold mr-2" @click="() => clickName(index)">{{ item.name || '-' }}</span>
                   <template v-if="unitBefore(item.amountType as any)">
                     <span
@@ -97,7 +101,7 @@
                       >{{ unitLabel(item.amountType as any) }}</span>
                   </template>
                 <div v-if="item.note && (recipe.edit || showNotes)" class="text-sm text-gray-400 mt-1">
-                  <b>{{ t('Note') }}:</b>
+                  <b class='mr-1'>{{ t('Note') }}:</b>
                   <span @click="() => clickNote(index)">{{ item.note }}</span>
                 </div>
               </div>
@@ -112,7 +116,7 @@
                   </div>
                   <i
                     @click="() => doOriginal(index)"
-                    class="cursor-pointer fal fa-ruler p-2 top-0 -mt-1 absolute right-0 text-gray-600"
+                    class="cursor-pointer fal fa-ruler p-2 top-0 -mt-1 absolute right-0 text-gray-500"
                   />
                 </template>
                 <template v-if="recipe.edit">
@@ -122,8 +126,9 @@
                 </template>
               </div>
             </div>
+            </div>
           </div>
-        </div>
+        </TransitionGroup>
       </div>
       <div class="mb-4 mt-2 text-right">
         <template v-if="recipe.edit">
@@ -517,6 +522,13 @@ function openChatGPTTab() {
   window.open('https://chatgpt.com/', '_blank')
 }
 
+// Small stagger for enter transitions, clamped to 200ms total
+function staggerStyle(i: number) {
+  const step = 20
+  const delay = Math.min(i * step, 200)
+  return { transitionDelay: `${delay}ms` } as any
+}
+
 // Legacy clipboard copy for widest compatibility
 function legacyCopyToClipboard(text: string) {
   try {
@@ -535,3 +547,22 @@ function legacyCopyToClipboard(text: string) {
 }
 </script>
 
+<style scoped>
+/* Ingredient list enter animation (fade + slight slide down) */
+.ri-enter-from {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+.ri-enter-active {
+  transition: opacity 150ms ease-out, transform 150ms ease-out;
+}
+.ri-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Enable move transitions when reordering */
+.ri-move {
+  transition: transform 150ms ease-out;
+}
+</style>
