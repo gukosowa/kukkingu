@@ -11,9 +11,17 @@ export function buildImportRecipePrompt(
     'Allowed units (choose only from these and use these exact keys in ingredient.amountType): g, ml, tbl (tablespoon), tea (teaspoon), p (piece), pinch.',
   ].join(' ')
 
+  const servingsNameMap = {
+    English: 'Servings',
+    German: 'Portionen',
+    Japanese: '人前',
+  } as const
+
+  const servingsName = servingsNameMap[locale]
+
   const servingsRule = [
     'Determine the number of servings/persons from the source.',
-    'Insert it as the first ingredient named "Persons" with amount equal to that number and amountType "p".',
+    `Insert it as the first ingredient named "${servingsName}" with amount equal to that number and amountType "p".`,
     'Set both top-level original and desired to this value.',
   ].join(' ')
 

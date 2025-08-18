@@ -37,10 +37,18 @@ describe('buildImportRecipePrompt source selection', () => {
 })
 
 describe('buildImportRecipePrompt servings rule', () => {
-  it('asks for persons as first ingredient and sets original/desired', () => {
-    const p = buildImportRecipePrompt({ url: 'https://example.com/recipe', locale: L })
-    expect(p).to.contain('first ingredient named "Persons"')
-    expect(p).to.contain('original and desired')
+  const locales: Record<LocaleText, string> = {
+    English: 'Servings',
+    German: 'Portionen',
+    Japanese: '人前',
+  }
+
+  Object.entries(locales).forEach(([locale, name]) => {
+    it(`uses "${name}" as the first ingredient for ${locale}`, () => {
+      const p = buildImportRecipePrompt({ url: 'https://example.com/recipe', locale: locale as LocaleText })
+      expect(p).to.contain(`first ingredient named "${name}"`)
+      expect(p).to.contain('original and desired')
+    })
   })
 })
 
