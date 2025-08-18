@@ -206,7 +206,7 @@ import ModalNotice from './ModalNotice.vue'
 import { t, currentLocale } from '~src/i18n'
 import { buildAskRecipePrompt } from '~src/services/prompt'
 import { normalizeAmountType } from '~src/services/units'
-import { openChatGPT } from '~src/services/chatgpt'
+// no auto-opening; we'll copy prompt and show CTA
 
 const route = useRoute()
 const router = useRouter()
@@ -268,15 +268,21 @@ async function confirmAskGpt(question: string) {
       ? 'German'
       : 'English'
   const prompt = buildAskRecipePrompt(recipe.value, question, locale)
-  const copied = await openChatGPT(prompt)
-  if (copied) {
-    showAppNotice(
-      t('Prompt ready'),
-      t('We copied the prompt to your clipboard. Open ChatGPT, paste the prompt, and send it.'),
-      'fal fa-comment-alt',
-      t('Goto ChatGPT')
-    )
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(prompt)
+    } else {
+      legacyCopyToClipboard(prompt)
+    }
+  } catch (_) {
+    legacyCopyToClipboard(prompt)
   }
+  showAppNotice(
+    t('Prompt ready'),
+    t('We copied the prompt to your clipboard. Paste the prompt and send it.'),
+    'fal fa-comment-alt',
+    t('Goto ChatGPT')
+  )
 }
 
 function norm(type: string): string {
@@ -501,6 +507,23 @@ function showAppNotice(title: string, message: string, icon?: string, okText?: s
 
 function openChatGPTTab() {
   window.open('https://chatgpt.com/', '_blank')
+}
+
+// Legacy clipboard copy for widest compatibility
+function legacyCopyToClipboard(text: string) {
+  try {
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.setAttribute('readonly', '')
+    textarea.style.position = 'absolute'
+    textarea.style.left = '-9999px'
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+  } catch (_) {
+    /* no-op */
+  }
 }
 </script>
 

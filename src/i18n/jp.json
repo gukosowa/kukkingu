@@ -58,6 +58,7 @@
   "Question": "質問",
   "Got it": "了解",
   "Goto ChatGPT": "ChatGPTへ移動",
+  "Goto Gemini": "Geminiへ移動",
   "Close": "閉じる",
   "Copy failed. Please copy manually.": "コピーに失敗しました。手動でコピーしてください。",
   "Could not read the file. Please select a valid Kukkingu export and try again.": "ファイルを読み込めませんでした。有効なKukkinguエクスポートを選択して再度お試しください。",
@@ -68,6 +69,7 @@
   "Prompt copied. Opening Gemini...": "プロンプトをコピーしました。Geminiを開きます…",
   "Prompt ready": "プロンプト準備完了",
   "The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.": "貼り付けたテキストを解析できませんでした。単一のレシピJSONまたはエクスポートされたファイルを貼り付けて再試行してください。",
-  "We copied the prompt to your clipboard. Open ChatGPT, paste the prompt, and send it.": "プロンプトをクリップボードにコピーしました。ChatGPTを開き、プロンプトを貼り付けて送信してください。",
+  "We copied the prompt to your clipboard. Paste the prompt and send it.": "プロンプトをクリップボードにコピーしました。プロンプトを貼り付けて送信してください。",
+  "We copied the prompt to your clipboard. We are using Gemini because YouTube extraction only works with Gemini. Paste the prompt and send it.": "プロンプトをクリップボードにコピーしました。YouTubeの抽出はGeminiでのみ可能なためGeminiを使用します。プロンプトを貼り付けて送信してください。",
   "Privacy Policy": "プライバシーポリシー"
 }

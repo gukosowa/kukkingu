@@ -58,6 +58,7 @@
   "Question": "Question",
   "Got it": "Got it",
   "Goto ChatGPT": "Go to ChatGPT",
+  "Goto Gemini": "Go to Gemini",
   "Close": "Close",
   "Copy failed. Please copy manually.": "Copy failed. Please copy manually.",
   "Could not read the file. Please select a valid Kukkingu export and try again.": "Could not read the file. Please select a valid Kukkingu export and try again.",
@@ -68,6 +69,7 @@
   "Prompt copied. Opening Gemini...": "Prompt copied. Opening Gemini...",
   "Prompt ready": "Prompt ready",
   "The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.": "The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.",
-  "We copied the prompt to your clipboard. Open ChatGPT, paste the prompt, and send it.": "We copied the prompt to your clipboard. Open ChatGPT, paste the prompt, and send it.",
+  "We copied the prompt to your clipboard. Paste the prompt and send it.": "We copied the prompt to your clipboard. Paste the prompt and send it.",
+  "We copied the prompt to your clipboard. We are using Gemini because YouTube extraction only works with Gemini. Paste the prompt and send it.": "We copied the prompt to your clipboard. We are using Gemini because YouTube extraction only works with Gemini. Paste the prompt and send it.",
   "Privacy Policy": "Privacy Policy"
 }

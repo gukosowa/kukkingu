@@ -58,7 +58,8 @@
       :title="noticeTitle"
       :message="noticeMessage"
       :icon="noticeIcon"
-      :okText="t('Got it')"
+      :okText="noticeOkText"
+      @ok="handleNoticeOk"
     />
     <ModalInput
       v-model="showImportJsonModal"
@@ -175,6 +176,8 @@ let showNotice = ref(false)
 let noticeTitle = ref('')
 let noticeMessage = ref('')
 let noticeIcon = ref('fal fa-info-circle')
+let noticeOkText = ref(t('Got it'))
+let noticeOkUrl = ref<string | null>(null)
 
 const route = useRoute()
 
@@ -283,18 +286,44 @@ async function confirmImportUrl(payload: { url: string; text: string; fromPictur
   })
 
   const url = importUrl.value || ''
-  if (url.includes('youtube.com') || url.includes('youtu.be')) {
-    // Gemini does not support passing query params; copy prompt to clipboard (legacy exec)
-    legacyCopyToClipboard(prompt)
-    showToast(t('Prompt copied. Opening Gemini...'))
-    window.open('https://gemini.google.com/', '_blank')
+  const isYouTube = url.includes('youtube.com') || url.includes('youtu.be')
+
+  if (isYouTube) {
+    // YouTube flow: always copy + guide to Gemini
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(prompt)
+      } else {
+        legacyCopyToClipboard(prompt)
+      }
+    } catch (_) {
+      legacyCopyToClipboard(prompt)
+    }
+    showAppNotice(
+      t('Prompt ready'),
+      t('We copied the prompt to your clipboard. We are using Gemini because YouTube extraction only works with Gemini. Paste the prompt and send it.'),
+      'fal fa-magic',
+      t('Goto Gemini'),
+      'https://gemini.google.com/'
+    )
   } else {
+    // Non-YouTube: if prompt fits ?q=, open ChatGPT directly; otherwise fall back to copy + notice
     const copied = await openChatGPT(prompt)
     if (copied) {
-      showToast(t('Prompt copied. Opening ChatGPT...'))
-      window.open('https://chatgpt.com/', '_blank')
+      showAppNotice(
+        t('Prompt ready'),
+        t('We copied the prompt to your clipboard. Paste the prompt and send it.'),
+        'fal fa-comments',
+        t('Goto ChatGPT'),
+        'https://chatgpt.com/'
+      )
     }
   }
+
+  // After opening GPT/Gemini, clear inputs so next open starts fresh
+  importUrl.value = ''
+  importText.value = ''
+  importFromPicture.value = false
 }
 
 function openImportJson() {
@@ -404,11 +433,18 @@ function showToast(msg: string) {
   }, 2500) as any
 }
 
-function showAppNotice(title: string, message: string, icon?: string) {
+function showAppNotice(title: string, message: string, icon?: string, okText?: string, okUrl?: string | null) {
   noticeTitle.value = title
   noticeMessage.value = message
   noticeIcon.value = icon || 'fal fa-info-circle'
+  noticeOkText.value = okText || t('Got it')
+  noticeOkUrl.value = okUrl || null
   showNotice.value = true
+}
+
+function handleNoticeOk() {
+  const url = noticeOkUrl.value
+  if (url) window.open(url, '_blank')
 }
 
 onMounted(() => {
@@ -424,6 +460,33 @@ onMounted(() => {
 watch(
   () => route.query,
   () => handleSharedFromQuery(),
+)
+
+// When the share modal opens with prefilled data, copy the prompt immediately.
+watch(
+  () => showImportUrlModal.value,
+  async (v) => {
+    if (!v) return
+    const hasData = !!(importUrl.value || importText.value || importFromPicture.value)
+    if (!hasData) return
+    const locale =
+      currentLocale.value === 'jp' ? 'Japanese' : currentLocale.value === 'de' ? 'German' : 'English'
+    const prompt = buildImportRecipePrompt({
+      url: importUrl.value,
+      text: importText.value,
+      locale,
+      fromPicture: importFromPicture.value,
+    })
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(prompt)
+      } else {
+        legacyCopyToClipboard(prompt)
+      }
+    } catch (_) {
+      legacyCopyToClipboard(prompt)
+    }
+  }
 )
 
 function escapeRegExp(s: string) {

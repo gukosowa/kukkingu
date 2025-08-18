@@ -1,5 +1,3 @@
-const MAX_QUERY_LENGTH = 2000
-
 function legacyCopyToClipboard(text: string) {
   try {
     const textarea = document.createElement('textarea')
@@ -17,11 +15,7 @@ function legacyCopyToClipboard(text: string) {
 }
 
 export async function openChatGPT(prompt: string): Promise<boolean> {
-  const encoded = encodeURIComponent(prompt)
-  if (encoded.length < MAX_QUERY_LENGTH) {
-    window.open(`https://chatgpt.com/?q=${encoded}`, '_blank')
-    return false
-  }
+  // Always copy to clipboard; do not rely on query string
   try {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       await navigator.clipboard.writeText(prompt)

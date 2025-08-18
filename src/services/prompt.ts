@@ -36,19 +36,20 @@ export function buildImportRecipePrompt(
 
   let sourceInstruction = ''
   if (url && !text) {
-    sourceInstruction = `Fetch the content of ${url} and convert it into a clean, structured recipe JSON.`
+    sourceInstruction = `Fetch the content of ${url} and extract the recipe from that page into a clean, structured recipe JSON.`
   } else if (!url && text) {
     const safeText = text.trim()
     sourceInstruction = `From the provided recipe text, convert it into a clean, structured recipe JSON. Use only this text:\n\n\`\`\`\n${safeText}\n\`\`\``
   } else if (url && text) {
     const safeText = text.trim()
-    sourceInstruction = `Fetch the content of ${url} and also use the provided recipe text below. Combine and deduplicate details from both sources to produce a single clean, structured recipe JSON. If there is a conflict, prefer explicit amounts/units and mention assumptions in the note. Provided text:\n\n\`\`\`\n${safeText}\n\`\`\``
+    sourceInstruction = `Fetch the content of ${url} and extract the recipe from that page. Additionally, here is context about extraction that may help (do not treat this as the source of truth; the web page is primary). If something in the context clarifies ambiguous parts of the page, you may incorporate it and mention any assumptions in the note. Context:\n\n\`\`\`\n${safeText}\n\`\`\``
   } else {
     sourceInstruction = 'Convert the provided recipe into a clean, structured recipe JSON.'
   }
 
-  if (fromPicture) {
-    sourceInstruction += ' Extract the recipe information from the attached pictures.'
+  // When the user indicates "from picture" and no URL/text is provided, rely on the attached images only
+  if (fromPicture && !url && !text) {
+    sourceInstruction = 'Extract the recipe information from the attached pictures and convert it into a clean, structured recipe JSON.'
   }
 
   return `${sourceInstruction} ${localeRule} Follow these strict rules: ${unitRules} ${ingredientRules} ${noteRules} The JSON must match this exact structure: ${jsonSchema} ${formattingRule}`
