@@ -27,6 +27,12 @@ describe('buildImportRecipePrompt source selection', () => {
     expect(p).to.not.contain('Use only this text:')
   })
 
+  it('acknowledges when no url, text, or pictures provided', () => {
+    const p = buildImportRecipePrompt({ locale: L })
+    expect(p).to.contain('Remember all the information')
+    expect(p).to.contain("Understood. Now write anything and I'll try to convert it to the json")
+  })
+
   it('treats url as primary and text as context when both provided', () => {
     const p = buildImportRecipePrompt({ url: 'https://example.com/r', text: 'Some notes', locale: L })
     expect(p).to.contain('Fetch the content of https://example.com/r')

@@ -7,6 +7,12 @@ export function buildImportRecipePrompt(
   input: { url?: string; text?: string; locale: LocaleText; fromPicture?: boolean }
 ): string {
   const { url, text, locale, fromPicture } = input
+  const ackMap = {
+    English: "Understood. Now write anything and I'll try to convert it to the json.",
+    German: 'Verstanden. Schreibe jetzt irgendetwas und ich versuche, es in JSON umzuwandeln.',
+    Japanese: '了解です。何でも書いてください。JSONに変換してみます。',
+  } as const
+  const acknowledge = ackMap[locale]
   const unitRules = [
     'Allowed units (choose only from these and use these exact keys in ingredient.amountType): g, ml, tbl (tablespoon), tea (teaspoon), p (piece), pinch.',
   ].join(' ')
@@ -58,7 +64,7 @@ export function buildImportRecipePrompt(
     const safeText = text.trim()
     sourceInstruction = `Fetch the content of ${url} and extract the recipe from that page. Additionally, here is context about extraction that may help (do not treat this as the source of truth; the web page is primary). If something in the context clarifies ambiguous parts of the page, you may incorporate it and mention any assumptions in the note. Context:\n\n\`\`\`\n${safeText}\n\`\`\``
   } else {
-    sourceInstruction = 'Convert the provided recipe into a clean, structured recipe JSON.'
+    sourceInstruction = `Remember all the information provided in this conversation. For now, reply only with: "${acknowledge}"`
   }
 
   // When the user indicates "from picture" and no URL/text is provided, rely on the attached images only
