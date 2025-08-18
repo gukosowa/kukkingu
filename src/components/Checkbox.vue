@@ -3,7 +3,7 @@
     <div
       v-if="modelValue"
       @click="toggle"
-      class="w-10 h-10 bg-blue-600 border-2 border-blue-400 block text-center rounded-lg flex items-center justify-center"
+      class="w-10 h-10 bg-blue-600 border-2 text-white border-blue-400 block text-center rounded-lg flex items-center justify-center"
     >
       <i class="fas fa-check text-md" />
     </div>

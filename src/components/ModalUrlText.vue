@@ -42,7 +42,12 @@
               </div>
               <div class="flex items-center">
                 <Checkbox class="mr-2" v-model="localFromPicture" />
-                <div class="text-sm text-gray-600">{{ t('From pictures') }}</div>
+                <label
+                  class="text-sm text-gray-600 cursor-pointer"
+                  @click="localFromPicture = !localFromPicture"
+                >
+                  {{ t('From pictures') }}
+                </label>
               </div>
             </div>
             <div class="text-white text-center">

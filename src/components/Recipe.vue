@@ -167,7 +167,12 @@
         </template>
         <div v-if="!recipe.edit" class="text-sm mt-3 px-2 flex items-center">
           <Checkbox v-model="showNotes" />
-          <span class="ml-2">{{ t('Show ingredient notes') }}</span>
+          <label
+            class="ml-2 cursor-pointer"
+            @click="showNotes = !showNotes"
+          >
+            {{ t('Show ingredient notes') }}
+          </label>
         </div>
       </div>
     </div>
