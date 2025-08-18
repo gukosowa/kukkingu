@@ -91,7 +91,7 @@
               />
             </template>
             <template v-else>
-              <Button color="pink" @click="open(index)" class="text-[1.1rem] leading-5 tracking-wider !px-2">
+              <Button color="pink" @click="open(index)" class="text-[1.1rem] leading-5 tracking-wider !px-2 !text-left">
                 {{ item.name }}
               </Button>
             </template>
