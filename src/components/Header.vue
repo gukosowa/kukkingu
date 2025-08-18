@@ -24,7 +24,7 @@
           @update="onchange"
           v-model="recipe.original"
         />
-        <Icon class="mx-1" style="top: 3px;" size="1.6rem" icon="fal fa-play-circle" />
+        <Icon class="mx-1" style="top: 3px;" size="1.6rem" icon="fal fa-play-circle cursor-pointer px-1" @click="recipe.desired = recipe.original" />
         <SInput
           class="w-20"
           :placeholder="t('Target amount')"
@@ -90,6 +90,12 @@ function blurInput(e: { el: HTMLInputElement | null }) {
   e.el?.blur()
 }
 function home() {
-  router.push('/')
+  // Prefer history back so Vue Router restores saved scroll position
+  const canGoBack = typeof window !== 'undefined' && (window.history?.state as any)?.back
+  if (canGoBack) {
+    router.back()
+  } else {
+    router.push('/')
+  }
 }
 </script>

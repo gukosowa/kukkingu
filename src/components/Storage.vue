@@ -53,6 +53,13 @@
       @confirm="confirmCreate"
       @cancel="cancelCreate"
     />
+    <ModalNotice
+      v-model="showNotice"
+      :title="noticeTitle"
+      :message="noticeMessage"
+      :icon="noticeIcon"
+      :okText="t('Got it')"
+    />
     <ModalInput
       v-model="showImportJsonModal"
       :value="importJsonText"
@@ -140,6 +147,7 @@ import Icon from './Icon.vue'
 import ModalConfirm from './ModalConfirm.vue'
 import ModalInput from './ModalInput.vue'
 import ModalUrlText from './ModalUrlText.vue'
+import ModalNotice from './ModalNotice.vue'
 import { mergeRecipesByExportedAt } from '~src/services/importExport'
 import { chooseExportFile, saveExportFile, loadFromFile } from '~src/services/fileExport'
 import { buildImportRecipePrompt } from '~src/services/prompt'
@@ -163,6 +171,10 @@ let importJsonText = ref('')
 let toastMessage = ref('')
 let toastTimer: number | null = null
 const transitionName = ref('ov')
+let showNotice = ref(false)
+let noticeTitle = ref('')
+let noticeMessage = ref('')
+let noticeIcon = ref('fal fa-info-circle')
 
 const route = useRoute()
 
@@ -312,7 +324,11 @@ function confirmImportJson(json: string) {
       recipes.value = [...recipes.value, single]
     }
   } catch (e) {
-    alert(t('Invalid JSON'))
+    showAppNotice(
+      t('Invalid JSON'),
+      t('The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.'),
+      'fal fa-exclamation-triangle'
+    )
   }
 }
 
@@ -350,7 +366,11 @@ async function saveFile() {
     showToast(t('Saved to file'))
   } catch (e) {
     console.error('Export failed', e)
-    alert(t('Export failed'))
+    showAppNotice(
+      t('Export failed'),
+      t('Could not save the file. Check your browser download permissions or try a different filename.'),
+      'fal fa-file-export'
+    )
   }
 }
 
@@ -360,7 +380,11 @@ async function loadFile() {
     showToast(t('Loaded from file'))
   } catch (e) {
     console.error('Load failed', e)
-    alert(t('Load failed'))
+    showAppNotice(
+      t('Load failed'),
+      t('Could not read the file. Please select a valid Kukkingu export and try again.'),
+      'fal fa-file-import'
+    )
   }
 }
 
@@ -373,6 +397,13 @@ function showToast(msg: string) {
     toastMessage.value = ''
     toastTimer = null
   }, 2500) as any
+}
+
+function showAppNotice(title: string, message: string, icon?: string) {
+  noticeTitle.value = title
+  noticeMessage.value = message
+  noticeIcon.value = icon || 'fal fa-info-circle'
+  showNotice.value = true
 }
 
 onMounted(() => {

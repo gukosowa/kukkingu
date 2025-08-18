@@ -180,6 +180,14 @@
       :multiline="true"
       @confirm="confirmAskGpt"
     />
+    <ModalNotice
+      v-model="showNotice"
+      :title="noticeTitle"
+      :message="noticeMessage"
+      :icon="noticeIcon"
+      :okText="noticeOkText"
+      @ok="openChatGPTTab"
+    />
   </template>
 
 <script lang="ts" setup>
@@ -194,6 +202,7 @@ import Icon from './Icon.vue'
 import Checkbox from './Checkbox.vue'
 import AmountTypeModal from './AmountTypeModal.vue'
 import ModalInput from './ModalInput.vue'
+import ModalNotice from './ModalNotice.vue'
 import { t, currentLocale } from '~src/i18n'
 import { buildAskRecipePrompt } from '~src/services/prompt'
 import { normalizeAmountType } from '~src/services/units'
@@ -240,6 +249,11 @@ watch(
 const markedRender = computed(() => marked.parse(recipe.value?.note || ''))
 const ratio = computed(() => (recipe.value ? recipe.value.original / recipe.value.desired : 1))
 const showAskGpt = ref(false)
+const showNotice = ref(false)
+const noticeTitle = ref('')
+const noticeMessage = ref('')
+const noticeIcon = ref('fal fa-info-circle')
+const noticeOkText = ref(t('Got it'))
 
 function openAskGpt() {
   showAskGpt.value = true
@@ -256,8 +270,12 @@ async function confirmAskGpt(question: string) {
   const prompt = buildAskRecipePrompt(recipe.value, question, locale)
   const copied = await openChatGPT(prompt)
   if (copied) {
-    alert(t('Prompt copied. Paste into ChatGPT.'))
-    window.open('https://chatgpt.com/', '_blank')
+    showAppNotice(
+      t('Prompt ready'),
+      t('We copied the prompt to your clipboard. Open ChatGPT, paste the prompt, and send it.'),
+      'fal fa-comment-alt',
+      t('Goto ChatGPT')
+    )
   }
 }
 
@@ -471,6 +489,18 @@ function deleteIngredient(index: number) {
 }
 function saveChange() {
   // recipes ref is reactive; assigning above triggers persistence via external calls
+}
+
+function showAppNotice(title: string, message: string, icon?: string, okText?: string) {
+  noticeTitle.value = title
+  noticeMessage.value = message
+  noticeIcon.value = icon || 'fal fa-info-circle'
+  noticeOkText.value = okText || t('Got it')
+  showNotice.value = true
+}
+
+function openChatGPTTab() {
+  window.open('https://chatgpt.com/', '_blank')
 }
 </script>
 
