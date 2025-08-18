@@ -1,9 +1,7 @@
 <template>
   <div v-if="recipe" class='flex-grow flex flex-col'>
     <div class="flex items-center my-1">
-      <div class="title flex-1 whitespace-nowrap overflow-hidden text-xs px-1 font-bold text-gray-700">
-        {{ recipe?.name }}
-      </div>
+      <div class="flex-1"></div>
 
       <template v-if="!recipe.checklist">
         <Button @click="switchEdit" class="mr-1" color="green">
@@ -532,10 +530,3 @@ function legacyCopyToClipboard(text: string) {
 }
 </script>
 
-<style scoped>
-.title {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-</style>

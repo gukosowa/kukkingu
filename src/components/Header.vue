@@ -12,10 +12,13 @@
         </div>
       </template>
       <template v-else>
-        <div class="flex-grow">
+        <div class="flex-grow flex items-center">
           <Button class="shadow-none" @click="home">
             <Icon icon="fal fa-arrow-alt-left" size="1.2rem" />
           </Button>
+          <div class="recipe-title flex-1 mr-2 text-xs font-bold leading-tight overflow-hidden">
+            {{ recipe?.name }}
+          </div>
         </div>
       </template>
 
@@ -104,3 +107,11 @@ function home() {
   }
 }
 </script>
+
+<style scoped>
+.recipe-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+</style>
