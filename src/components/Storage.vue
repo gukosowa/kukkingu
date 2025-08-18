@@ -267,6 +267,20 @@ function openImportUrl() {
   showImportUrlModal.value = true
 }
 
+// Remove share data (url/text/title) from the route so the modal
+// does not auto-open again on refresh after the user acted once.
+function clearShareQuery() {
+  try {
+    const q = { ...(route.query || {}) }
+    delete (q as any).url
+    delete (q as any).text
+    delete (q as any).title
+    router.replace({ path: route.path, query: q })
+  } catch (_) {
+    // noop – best effort to keep UX clean
+  }
+}
+
 async function confirmImportUrl(payload: { url: string; text: string; fromPicture: boolean }) {
   importUrl.value = payload.url
   importText.value = payload.text
@@ -324,6 +338,8 @@ async function confirmImportUrl(payload: { url: string; text: string; fromPictur
   importUrl.value = ''
   importText.value = ''
   importFromPicture.value = false
+  // Also clear the share query params to avoid auto-open on refresh
+  clearShareQuery()
 }
 
 function openImportJson() {
@@ -371,6 +387,8 @@ function cancelImportUrl() {
   importText.value = ''
   importFromPicture.value = false
   showImportUrlModal.value = false
+  // Clear share query params so it won't reopen on refresh
+  clearShareQuery()
 }
 
 function cancelImportJson() {
