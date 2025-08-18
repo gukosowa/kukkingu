@@ -12,11 +12,11 @@
     >
       <div
         v-if="modelValue"
-        class="fixed w-screen w-full h-screen top-0 left-0 z-50"
+        class="fixed w-screen w-full h-screen top-0 left-0 z-50 overflow-y-auto"
         style="backdrop-filter: blur(1px)"
         @click="clickNo"
       >
-        <div class="w-full h-full px-12 pb-8 flex flex-col justify-end transform">
+        <div class="w-full min-h-full px-12 py-8 flex flex-col transform">
           <div class="w- bg-white p-5 rounded-xl drop-shadow">
             <div class="text-lg text-gray-600 font-bold">
               {{ t('Really delete') }}?<br />

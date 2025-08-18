@@ -12,11 +12,11 @@
     >
       <div
         v-if="modelValue"
-        class="fixed w-screen h-screen top-0 left-0 z-50"
+        class="fixed w-screen h-screen top-0 left-0 z-50 overflow-y-auto"
         style="backdrop-filter: blur(2px)"
         @click="close"
       >
-        <div class="w-full h-full px-6 pb-8 flex flex-col justify-end">
+        <div class="w-full min-h-full px-6 py-8 flex flex-col">
           <div class="bg-white p-6 rounded-2xl shadow-lg" @click.stop>
             <div class="text-xl text-gray-700 font-bold mb-4">{{ t('Language') }}</div>
 
