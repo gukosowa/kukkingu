@@ -36,3 +36,11 @@ describe('buildImportRecipePrompt source selection', () => {
   })
 })
 
+describe('buildImportRecipePrompt servings rule', () => {
+  it('asks for persons as first ingredient and sets original/desired', () => {
+    const p = buildImportRecipePrompt({ url: 'https://example.com/recipe', locale: L })
+    expect(p).to.contain('first ingredient named "Persons"')
+    expect(p).to.contain('original and desired')
+  })
+})
+
