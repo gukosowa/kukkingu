@@ -108,9 +108,10 @@
               </Button>
             </template>
             <template v-else>
-              <Button color="gray" :tone="400" @click="() => initRename(index)">
-                <Icon icon="fal fa-pen" size="1.2rem" />
-              </Button>
+              <i
+                @click="() => initRename(index)"
+                class="text-sm cursor-pointer fal fa-pen p-2 text-gray-600"
+              />
             </template>
           </div>
         </div>
