@@ -86,10 +86,10 @@ const props = withDefaults(
     fromPicture?: boolean
   }>(),
   {
-    placeholderUrl: 'https://example.com',
+    placeholderUrl: t('https://example.com'),
     placeholderText: '',
-    confirmText: 'OK',
-    cancelText: 'Cancel',
+    confirmText: t('OK'),
+    cancelText: t('Cancel'),
     url: '',
     text: '',
     fromPicture: false,

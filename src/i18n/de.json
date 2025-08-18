@@ -57,5 +57,17 @@
   "Ask GPT": "GPT fragen",
   "Question": "Frage",
   "Got it": "Verstanden",
-  "Goto ChatGPT": "Zu ChatGPT"
+  "Goto ChatGPT": "Zu ChatGPT",
+  "Close": "Schließen",
+  "Copy failed. Please copy manually.": "Kopieren fehlgeschlagen. Bitte manuell kopieren.",
+  "Could not read the file. Please select a valid Kukkingu export and try again.": "Datei konnte nicht gelesen werden. Bitte eine gültige Kukkingu-Exportdatei auswählen und erneut versuchen.",
+  "Could not save the file. Check your browser download permissions or try a different filename.": "Datei konnte nicht gespeichert werden. Überprüfe die Download-Berechtigungen deines Browsers oder versuche einen anderen Dateinamen.",
+  "Create Recipe": "Rezept erstellen",
+  "Filter recipes": "Rezepte filtern",
+  "Prompt copied. Opening ChatGPT...": "Prompt kopiert. ChatGPT wird geöffnet...",
+  "Prompt copied. Opening Gemini...": "Prompt kopiert. Gemini wird geöffnet...",
+  "Prompt ready": "Prompt bereit",
+  "The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.": "Der eingefügte Text konnte nicht verarbeitet werden. Füge ein einzelnes Rezept-JSON oder eine exportierte Datei ein und versuche es erneut.",
+  "We copied the prompt to your clipboard. Open ChatGPT, paste the prompt, and send it.": "Wir haben den Prompt in deine Zwischenablage kopiert. Öffne ChatGPT, füge den Prompt ein und sende ihn.",
+  "Privacy Policy": "Datenschutzerklärung"
 }

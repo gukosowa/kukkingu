@@ -16,7 +16,7 @@
       <div class="w-full text-xs flex items-baseline">
         <div class="flex-grow flex">
           <div class="flex-grow self-center">
-            <a class="" href="/privacy-statement.txt">Privacy Policy</a>
+            <a class="" href="/privacy-statement.txt">{{ t('Privacy Policy') }}</a>
             <div class="mt-1 mb-2 cursor-pointer" @click="initClearAll">
               {{ t('Clear data') }}
             </div>

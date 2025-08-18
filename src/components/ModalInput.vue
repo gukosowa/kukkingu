@@ -59,6 +59,7 @@
 <script lang="ts" setup>
 import { ref, watch, nextTick } from 'vue'
 import SInput from './Input.vue'
+import { t } from '~src/i18n'
 
 const props = withDefaults(
   defineProps<{
@@ -72,8 +73,8 @@ const props = withDefaults(
   }>(),
   {
     placeholder: '',
-    confirmText: 'OK',
-    cancelText: 'Cancel',
+    confirmText: t('OK'),
+    cancelText: t('Cancel'),
     value: '',
     multiline: false,
   }

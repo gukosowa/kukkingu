@@ -2,8 +2,13 @@
   <header class="z-10 px-2 text-white h-16 bg-blue-600 fixed flex w-full items-center shadow-md border-b border-blue-700">
     <div class="w-full flex items-baseline">
       <template v-if="!recipe">
-        <div class="flex-grow flex">
-          <div class="flex-grow self-center">{{ t('Ingredient converter') }}</div>
+        <div class="flex-grow flex items-center">
+          <img
+            src="/android-chrome-192x192.png"
+            alt="Kukkingu"
+            class="h-10 w-10 select-none"
+            draggable="false"
+          />
         </div>
       </template>
       <template v-else>

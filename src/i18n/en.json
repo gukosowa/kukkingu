@@ -57,5 +57,17 @@
   "Ask GPT": "Ask GPT",
   "Question": "Question",
   "Got it": "Got it",
-  "Goto ChatGPT": "Go to ChatGPT"
+  "Goto ChatGPT": "Go to ChatGPT",
+  "Close": "Close",
+  "Copy failed. Please copy manually.": "Copy failed. Please copy manually.",
+  "Could not read the file. Please select a valid Kukkingu export and try again.": "Could not read the file. Please select a valid Kukkingu export and try again.",
+  "Could not save the file. Check your browser download permissions or try a different filename.": "Could not save the file. Check your browser download permissions or try a different filename.",
+  "Create Recipe": "Create Recipe",
+  "Filter recipes": "Filter recipes",
+  "Prompt copied. Opening ChatGPT...": "Prompt copied. Opening ChatGPT...",
+  "Prompt copied. Opening Gemini...": "Prompt copied. Opening Gemini...",
+  "Prompt ready": "Prompt ready",
+  "The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.": "The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.",
+  "We copied the prompt to your clipboard. Open ChatGPT, paste the prompt, and send it.": "We copied the prompt to your clipboard. Open ChatGPT, paste the prompt, and send it.",
+  "Privacy Policy": "Privacy Policy"
 }

@@ -43,6 +43,7 @@
 
 <script lang="ts" setup>
 import Icon from './Icon.vue'
+import { t } from '~src/i18n'
 
 const props = withDefaults(
   defineProps<{
@@ -54,7 +55,7 @@ const props = withDefaults(
   }>(),
   {
     icon: 'fal fa-info-circle',
-    okText: 'OK',
+    okText: t('OK'),
   }
 )
 const emit = defineEmits<{

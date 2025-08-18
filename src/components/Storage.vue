@@ -269,7 +269,12 @@ async function confirmImportUrl(payload: { url: string; text: string; fromPictur
   importText.value = payload.text
   importFromPicture.value = payload.fromPicture
   showImportUrlModal.value = false
-  const locale = currentLocale.value === 'jp' ? 'Japanese' : 'English'
+  const locale =
+    currentLocale.value === 'jp'
+      ? 'Japanese'
+      : currentLocale.value === 'de'
+      ? 'German'
+      : 'English'
   const prompt = buildImportRecipePrompt({
     url: importUrl.value,
     text: importText.value,
