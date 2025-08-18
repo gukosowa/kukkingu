@@ -390,15 +390,52 @@ watch(
   () => handleSharedFromQuery(),
 )
 
+function escapeRegExp(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function stripUrlFromText(text: string, url: string) {
+  if (!text || !url) return text || ''
+  // Remove exact URL occurrence(s), then collapse whitespace
+  const cleaned = text.replace(new RegExp(escapeRegExp(url), 'g'), ' ')
+  return cleaned.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim()
+}
+
+function extractUrlFromText(text: string): { url: string; text: string } {
+  const input = text || ''
+  // Match http(s) URLs or bare www.* domains
+  const m = input.match(/(https?:\/\/[^\s]+|www\.[^\s]+(?:\.[^\s]+)+)/i)
+  if (!m) return { url: '', text: input.trim() }
+
+  // Trim common trailing punctuation from URL match
+  const raw = m[0]
+  const url = raw.replace(/[),.;!?]+$/, '')
+  const without = stripUrlFromText(input, raw)
+  return { url, text: without }
+}
+
 function handleSharedFromQuery() {
   const q: any = route.query || {}
   const sharedUrl = typeof q.url === 'string' ? q.url : ''
   const sharedText = typeof q.text === 'string' ? q.text : ''
   const sharedTitle = typeof q.title === 'string' ? q.title : ''
   const combinedText = [sharedTitle, sharedText].filter(Boolean).join('\n')
-  if (sharedUrl || combinedText) {
-    importUrl.value = sharedUrl
-    importText.value = combinedText
+
+  let finalUrl = sharedUrl || ''
+  let finalText = combinedText
+
+  if (!finalUrl) {
+    const extracted = extractUrlFromText(combinedText)
+    finalUrl = extracted.url
+    finalText = extracted.text
+  } else {
+    // If URL is present separately, strip it from the combined text to avoid duplication
+    finalText = stripUrlFromText(combinedText, finalUrl)
+  }
+
+  if (finalUrl || finalText) {
+    importUrl.value = finalUrl
+    importText.value = finalText
     importFromPicture.value = false
     showImportUrlModal.value = true
   }
