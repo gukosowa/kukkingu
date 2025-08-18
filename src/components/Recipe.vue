@@ -69,15 +69,20 @@
               @update="() => { saveChange(); clickNote(index) }"
               v-model="item.amountType"
             />
-            <SInput
-              :placeholder="t('Note')"
-              class="col-span-12"
-              inputClass="input-field"
-              :id="'input-note-' + index"
-              @update="saveChange"
-              @enter="() => focusNext(index)"
-              v-model="item.note"
-            />
+            <div class="col-span-12 flex">
+              <SInput
+                :placeholder="t('Note')"
+                class="flex-1"
+                inputClass="input-field"
+                :id="'input-note-' + index"
+                @update="saveChange"
+                @enter="() => focusNext(index)"
+                v-model="item.note"
+              />
+              <Button v-if="item.note" @click="() => clearNote(index)" class="ml-1" color="gray">
+                <Icon icon="fal fa-broom" class="mr-1" size="0.8rem" />
+              </Button>
+            </div>
           </template>
           <div class="col-span-12 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white">
             <div class="grid grid-cols-12">
@@ -129,21 +134,34 @@
             </div>
           </div>
         </TransitionGroup>
+
+        <div class="w-full flex justify-end">
+          <Button @click="showNotes = !showNotes" class="" color="gray">
+            <template v-if="showNotes">
+              <Icon icon="fal fa-eye-slash" class="mr-1" size="0.8rem" />
+              {{ t('Notes') }}
+            </template>
+            <template v-else>
+              <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
+              {{ t('Notes') }}
+            </template>
+          </Button>
+        </div>
       </div>
-      <div class="mb-4 mt-2 text-right">
-        <template v-if="recipe.edit">
+      <div class="mb-4 mt-2 text-right"  v-if="recipe.edit">
+        <template>
           <Button @click="addIngredient" color="green">
             <Icon icon="fal fa-plus" class="mr-1" size="1.2rem" />
             {{ t('Add') }}
           </Button>
         </template>
       </div>
-        <div class="flex mt-4">
+        <div class="flex flex-col mt-4">
           <template v-if="recipe.edit">
             <SInput :placeholder="t('Recipe URL')" class="flex-grow" @update="saveChange" v-model="recipe.url" />
           </template>
           <template v-if="recipe.url">
-            <a :href="recipe.url" class="ml-2" target="_blank" rel="noreferrer">
+            <a :href="recipe.url" class="mt-1" target="_blank" rel="noreferrer">
               <Button class="whitespace-nowrap">
                 {{ t('Open recipe web page') }}
                 <i class="fal fa-external-link ml-2" />
@@ -152,7 +170,7 @@
           </template>
         </div>
         <div class="mt-2">
-          <Button class="ml-2 whitespace-nowrap" @click="openAskGpt">
+          <Button class="whitespace-nowrap" @click="openAskGpt">
             {{ t('Ask GPT') }}
           </Button>
         </div>
@@ -170,15 +188,6 @@
           <p class="text-sm mt-3 px-2"><b>{{ t('Note') }}:</b></p>
           <div class="markdown text-sm px-2" v-html="markedRender"></div>
         </template>
-        <div v-if="!recipe.edit" class="text-sm mt-3 px-2 flex items-center">
-          <Checkbox v-model="showNotes" />
-          <label
-            class="ml-2 cursor-pointer"
-            @click="showNotes = !showNotes"
-          >
-            {{ t('Show ingredient notes') }}
-          </label>
-        </div>
       </div>
     </div>
       <Footer />
@@ -222,7 +231,7 @@ import { normalizeAmountType } from '~src/services/units'
 
 const route = useRoute()
 const router = useRouter()
-const showNotes = ref(true)
+const showNotes = ref(false)
 
 const recipeId = computed(() => {
   return +(route.params.id as any)
@@ -461,6 +470,11 @@ function switchCheck() {
 function clearCheck() {
   const copy = [..._recipes.value]
   copy[recipeId.value].ingredients.forEach((i: any) => (i.checked = false))
+  _recipes.value = copy
+}
+function clearNote(index: number) {
+  const copy = [..._recipes.value]
+  copy[recipeId.value].ingredients[index].note = ''
   _recipes.value = copy
 }
 function doOriginal(index: number) {
