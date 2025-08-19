@@ -84,35 +84,35 @@
               </Button>
             </div>
           </template>
-          <div class="col-span-12 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white">
+          <div class="col-span-12 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white" @click="handleItemClick(index)">
             <div class="grid grid-cols-12">
               <div class="col-span-10">
 
-                  <span class="text-gray-300 font-bold mr-2" @click="() => clickName(index)">{{ item.name || '-' }}</span>
+                  <span class="text-gray-300 font-bold mr-2" @click.stop="() => clickName(index)">{{ item.name || '-' }}</span>
                   <template v-if="unitBefore(item.amountType as any)">
                     <span
                       class="text-red-300"
-                      @click="() => clickAmountType(index)"
+                      @click.stop="() => clickAmountType(index)"
                       style="font-size: 1.2rem;"
                       >{{ unitLabel(item.amountType as any) }}</span>
-                    <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item) }}</span>
+                    <span class="font-bold" @click.stop="() => clickAmount(index)">{{ amount(item) }}</span>
                   </template>
                   <template v-else>
-                    <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item) }}</span>
+                    <span class="font-bold" @click.stop="() => clickAmount(index)">{{ amount(item) }}</span>
                     <span
                       class="text-red-300"
-                      @click="() => clickAmountType(index)"
+                      @click.stop="() => clickAmountType(index)"
                       style="font-size: 1.2rem;"
                       >{{ unitLabel(item.amountType as any) }}</span>
                   </template>
                 <div v-if="item.note && (recipe.edit || showNotes)" class="text-sm text-gray-400 mt-1">
                   <b class='mr-1'>{{ t('Note') }}:</b>
-                  <span @click="() => clickNote(index)">{{ item.note }}</span>
+                  <span @click.stop="() => clickNote(index)">{{ item.note }}</span>
                 </div>
               </div>
               <div class="col-span-2 relative text-right">
                 <template v-if="recipe.checklist">
-                  <Checkbox class="absolute right-0 top-0 -mt-1" v-model="item.checked" @input="saveChange" />
+                  <Checkbox class="absolute right-0 top-0 -mt-1" v-model="item.checked" @input.stop="saveChange" @click.stop />
                 </template>
                 <template v-else-if="!recipe.edit">
                   <div class="text-xs whitespace-nowrap absolute top-0 -mt-4 right-0 text-gray-500">
@@ -120,14 +120,13 @@
                     {{ item.amount || '0' }}
                   </div>
                   <i
-                    @click="() => doOriginal(index)"
                     class="cursor-pointer fal fa-ruler p-2 top-0 -mt-1 absolute right-0 text-gray-500"
                   />
                 </template>
                 <template v-if="recipe.edit">
-                  <i @click="() => moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 top-0 mr-24 absolute right-0 text-gray-600" />
-                  <i @click="() => moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 top-0 mr-16 absolute right-0 text-gray-600" />
-                  <i @click="() => deleteIngredient(index)" class="cursor-pointer fal fa-minus-circle p-2 top-0 -mt-1 absolute right-0 text-gray-600" />
+                  <i @click.stop="() => moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 top-0 mr-24 absolute right-0 text-gray-600" />
+                  <i @click.stop="() => moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 top-0 mr-16 absolute right-0 text-gray-600" />
+                  <i @click.stop="() => deleteIngredient(index)" class="cursor-pointer fal fa-minus-circle p-2 top-0 -mt-1 absolute right-0 text-gray-600" />
                 </template>
               </div>
             </div>
@@ -472,6 +471,12 @@ function clearCheck() {
   copy[recipeId.value].ingredients.forEach((i: any) => (i.checked = false))
   _recipes.value = copy
 }
+function toggleCheck(index: number) {
+  const copy = [..._recipes.value]
+  const item = copy[recipeId.value].ingredients[index]
+  item.checked = !item.checked
+  _recipes.value = copy
+}
 function clearNote(index: number) {
   const copy = [..._recipes.value]
   copy[recipeId.value].ingredients[index].note = ''
@@ -491,6 +496,14 @@ function doOriginal(index: number) {
     document.getElementById('input-desired')?.select()
 
   }, 0)
+}
+function handleItemClick(index: number) {
+  if (recipe.value?.edit) return
+  if (recipe.value?.checklist) {
+    toggleCheck(index)
+  } else {
+    doOriginal(index)
+  }
 }
 function array_move<T>(array: T[], sourceIndex: number, destinationIndex: number): T[] {
   const smallerIndex = Math.min(sourceIndex, destinationIndex)
