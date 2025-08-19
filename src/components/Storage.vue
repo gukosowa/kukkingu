@@ -80,7 +80,7 @@
         :style="transitionName === 'ov' ? staggerStyle(index) : null"
         class="ov-item"
       >
-        <div v-if="item.rename" data-scroller class="flex items-baseline rounded-xl bg-pink-600 text-white px-2 py-2 my-1">
+        <div v-if="item.rename" data-scroller class="flex items-baseline rounded-xl bg-pink-600 text-white px-1.5 py-1.5 my-1">
           <div class="flex-grow pr-2">
             <SInput
               @enter="() => rename(index)"
@@ -107,14 +107,14 @@
         <div
           v-else
           data-scroller
-          class="flex items-center rounded-xl bg-pink-600 text-white px-2 py-2 my-1 overflow-x-auto md:overflow-visible no-scrollbar"
+          class="flex items-center rounded-xl bg-pink-600 text-white px-1.5 py-1.5 my-1 overflow-x-auto md:overflow-visible no-scrollbar"
         >
           <div
             class="flex items-baseline w-full flex-shrink-0 pr-2 md:w-auto md:flex-1 md:flex-shrink"
           >
             <div
               @click="open(index)"
-              class="flex-grow cursor-pointer text-[1.1rem] leading-5 tracking-wider px-2 text-left"
+              class="flex-grow cursor-pointer text-[1.1rem] leading-5 tracking-wider px-1.5 text-left"
             >
               {{ item.name }}
             </div>
@@ -176,6 +176,7 @@ import { chooseExportFile, saveExportFile, loadFromFile } from '~src/services/fi
 import { buildImportRecipePrompt } from '~src/services/prompt'
 import { openChatGPT } from '~src/services/chatgpt'
 import { handlePromptNoticeOk } from '~src/services/notice'
+import { vibrate } from '~src/services/vibrate'
 
 const router = useRouter()
 const recipes = computed({ get: () => _recipes.value, set: (v) => (_recipes.value = v as any) })
@@ -228,6 +229,7 @@ function clearFilter() {
   nextTick(() => filterInputRef.value?.focus?.())
 }
 function open(index: number) {
+  vibrate()
   router.push('/recipe/' + index)
 }
 function initRename(index: number) {
