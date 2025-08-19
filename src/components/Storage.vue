@@ -80,7 +80,7 @@
         :style="transitionName === 'ov' ? staggerStyle(index) : null"
         class="ov-item"
       >
-        <div v-if="item.rename" class="flex items-baseline rounded-xl bg-pink-400 px-2 py-2 my-1">
+        <div v-if="item.rename" class="flex items-baseline rounded-xl bg-pink-600 text-white px-2 py-2 my-1">
           <div class="flex-grow pr-2">
             <SInput
               @enter="() => rename(index)"
@@ -90,11 +90,15 @@
             />
           </div>
           <div class="flex-grow whitespace-nowrap text-right">
-            <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-pink-600" />
-            <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-pink-600 mr-2" />
-            <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
+            <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-white" />
+            <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-white mr-2" />
+            <button
+              @click="() => initRemove(index, item.name)"
+              type="button"
+              class="mr-1 p-2 text-white hover:text-red-200 focus:outline-none"
+            >
               <Icon icon="fal fa-trash-alt" size="1.2rem" />
-            </Button>
+            </button>
             <Button color="green" :tone="400" @click="() => rename(index)">
               <Icon icon="fal fa-check" size="1.2rem" />
             </Button>
@@ -102,7 +106,7 @@
         </div>
         <div
           v-else
-          class="flex items-center rounded-xl bg-pink-400 px-2 py-2 my-1 overflow-x-auto md:overflow-visible no-scrollbar"
+          class="flex items-center rounded-xl bg-pink-600 text-white px-2 py-2 my-1 overflow-x-auto md:overflow-visible no-scrollbar"
         >
           <div
             class="flex items-baseline w-full flex-shrink-0 pr-2 md:w-auto md:flex-1 md:flex-shrink"
@@ -113,17 +117,21 @@
             >
               {{ item.name }}
             </div>
-            <i class="fal fa-angle-right text-pink-500 ml-2 flex-none" />
+            <i class="fal fa-angle-right text-white ml-2 flex-none" />
           </div>
           <div class="flex items-center flex-none pl-4">
-            <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-pink-600" />
-            <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-pink-600 mr-2" />
-            <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
+            <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-white" />
+            <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-white mr-2" />
+            <button
+              @click="() => initRemove(index, item.name)"
+              type="button"
+              class="mr-1 p-2 text-white hover:text-red-200 focus:outline-none"
+            >
               <Icon icon="fal fa-trash-alt" size="1.2rem" />
-            </Button>
+            </button>
             <i
               @click="() => initRename(index)"
-              class="text-sm cursor-pointer fal fa-pen p-2 text-pink-600"
+              class="text-sm cursor-pointer fal fa-pen p-2 text-white"
             />
           </div>
         </div>
