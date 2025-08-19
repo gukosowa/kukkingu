@@ -226,6 +226,7 @@ import ModalNotice from './ModalNotice.vue'
 import { t, currentLocale } from '~src/i18n'
 import { buildAskRecipePrompt } from '~src/services/prompt'
 import { normalizeAmountType } from '~src/services/units'
+import { vibrate } from '~src/services/vibrate'
 // no auto-opening; we'll copy prompt and show CTA
 
 const route = useRoute()
@@ -498,6 +499,7 @@ function doOriginal(index: number) {
   }, 0)
 }
 function handleItemClick(index: number) {
+  vibrate()
   if (recipe.value?.edit) return
   if (recipe.value?.checklist) {
     toggleCheck(index)
