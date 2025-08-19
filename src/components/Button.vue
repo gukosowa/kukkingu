@@ -9,13 +9,14 @@
       `focus:ring-${color}-${tone}`,
       cls
     ]"
-    @click="$emit('click')"
+    @click="handleClick"
   >
     <slot>{{ text }}</slot>
   </button>
 </template>
 
 <script lang="ts" setup>
+import { vibrate } from '~src/services/vibrate'
 const props = withDefaults(
   defineProps<{
     text?: string
@@ -26,6 +27,11 @@ const props = withDefaults(
   { text: '', color: 'blue', tone: 500, class: '' }
 )
 const cls = props.class || ''
-defineEmits<{ (e: 'click'): void }>()
+const emit = defineEmits<{ (e: 'click'): void }>()
+
+function handleClick() {
+  vibrate()
+  emit('click')
+}
 </script>
 

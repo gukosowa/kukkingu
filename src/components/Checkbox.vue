@@ -16,6 +16,7 @@
 </template>
 
 <script lang="ts" setup>
+import { vibrate } from '~src/services/vibrate'
 const props = withDefaults(defineProps<{ modelValue?: boolean; class?: string }>(), {
   modelValue: false,
   class: '',
@@ -23,6 +24,7 @@ const props = withDefaults(defineProps<{ modelValue?: boolean; class?: string }>
 const emit = defineEmits<{ (e: 'update:modelValue', v: boolean): void; (e: 'input', v: boolean): void }>()
 const cls = props.class || ''
 const toggle = () => {
+  vibrate()
   emit('update:modelValue', !props.modelValue)
   emit('input', !props.modelValue)
 }
