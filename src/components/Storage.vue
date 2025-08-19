@@ -80,39 +80,50 @@
         :style="transitionName === 'ov' ? staggerStyle(index) : null"
         class="ov-item"
       >
-        <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
+        <div v-if="item.rename" class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
           <div class="flex-grow pr-2">
-            <template v-if="item.rename">
-              <SInput
-                @enter="() => rename(index)"
-                :autofocus="true"
-                :modelValue="item.name"
-                @update="(v:any) => changeName(v, index)"
-              />
-            </template>
-            <template v-else>
-              <Button color="pink" @click="open(index)" class="text-[1.1rem] leading-5 tracking-wider !px-2 !text-left">
-                {{ item.name }}
-              </Button>
-            </template>
+            <SInput
+              @enter="() => rename(index)"
+              :autofocus="true"
+              :modelValue="item.name"
+              @update="(v:any) => changeName(v, index)"
+            />
           </div>
           <div class="flex-grow whitespace-nowrap text-right">
-            <template v-if="item.rename">
-              <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
-              <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600 mr-2" />
-              <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
-                <Icon icon="fal fa-trash-alt" size="1.2rem" />
-              </Button>
-              <Button color="green" :tone="400" @click="() => rename(index)">
-                <Icon icon="fal fa-check" size="1.2rem" />
-              </Button>
-            </template>
-            <template v-else>
-              <i
-                @click="() => initRename(index)"
-                class="text-sm cursor-pointer fal fa-pen p-2 text-gray-600"
-              />
-            </template>
+            <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
+            <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600 mr-2" />
+            <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
+              <Icon icon="fal fa-trash-alt" size="1.2rem" />
+            </Button>
+            <Button color="green" :tone="400" @click="() => rename(index)">
+              <Icon icon="fal fa-check" size="1.2rem" />
+            </Button>
+          </div>
+        </div>
+        <div
+          v-else
+          class="flex items-center rounded-xl bg-gray-300 px-2 py-2 my-1 overflow-x-auto no-scrollbar"
+        >
+          <div class="flex items-baseline w-full flex-shrink-0 pr-2">
+            <Button
+              color="pink"
+              @click="open(index)"
+              class="flex-grow text-[1.1rem] leading-5 tracking-wider !px-2 !text-left"
+            >
+              {{ item.name }}
+            </Button>
+            <i class="fal fa-angle-right text-gray-500 ml-2 flex-none" />
+          </div>
+          <div class="flex items-center flex-none pl-4">
+            <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
+            <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600 mr-2" />
+            <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
+              <Icon icon="fal fa-trash-alt" size="1.2rem" />
+            </Button>
+            <i
+              @click="() => initRename(index)"
+              class="text-sm cursor-pointer fal fa-pen p-2 text-gray-600"
+            />
           </div>
         </div>
       </div>
@@ -611,5 +622,14 @@ function staggerStyle(i: number) {
 /* Enable move transitions when reordering */
 .ov-move {
   transition: transform 150ms ease-out;
+}
+
+/* Hide scrollbars in horizontal action reveal */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>
