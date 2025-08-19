@@ -78,9 +78,9 @@
         :key="index"
         v-show="filterMatch(item?.name)"
         :style="transitionName === 'ov' ? staggerStyle(index) : null"
-        class="ov-item"
+        class="ov-item overflow-x-auto"
       >
-        <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
+        <div class="flex items-center rounded-xl bg-gray-300 px-2 py-2 my-1 w-max">
           <div class="flex-grow pr-2">
             <template v-if="item.rename">
               <SInput
@@ -96,24 +96,30 @@
               </Button>
             </template>
           </div>
-          <div class="flex-grow whitespace-nowrap text-right">
-            <template v-if="item.rename">
+          <template v-if="item.rename">
+            <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
+            <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600 mr-2" />
+            <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
+              <Icon icon="fal fa-trash-alt" size="1.2rem" />
+            </Button>
+            <Button color="green" :tone="400" @click="() => rename(index)">
+              <Icon icon="fal fa-check" size="1.2rem" />
+            </Button>
+          </template>
+          <template v-else>
+            <i class="text-sm fal fa-arrow-right p-2 text-gray-600 flex-shrink-0" />
+            <div class="flex flex-shrink-0 whitespace-nowrap">
+              <i
+                @click="() => initRename(index)"
+                class="text-sm cursor-pointer fal fa-pen p-2 text-gray-600"
+              />
               <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
               <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600 mr-2" />
               <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
                 <Icon icon="fal fa-trash-alt" size="1.2rem" />
               </Button>
-              <Button color="green" :tone="400" @click="() => rename(index)">
-                <Icon icon="fal fa-check" size="1.2rem" />
-              </Button>
-            </template>
-            <template v-else>
-              <i
-                @click="() => initRename(index)"
-                class="text-sm cursor-pointer fal fa-pen p-2 text-gray-600"
-              />
-            </template>
-          </div>
+            </div>
+          </template>
         </div>
       </div>
     </TransitionGroup>
