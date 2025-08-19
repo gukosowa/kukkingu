@@ -80,7 +80,7 @@
         :style="transitionName === 'ov' ? staggerStyle(index) : null"
         class="ov-item"
       >
-        <div v-if="item.rename" class="flex items-baseline rounded-xl bg-pink-600 text-white px-2 py-2 my-1">
+        <div v-if="item.rename" data-scroller class="flex items-baseline rounded-xl bg-pink-600 text-white px-2 py-2 my-1">
           <div class="flex-grow pr-2">
             <SInput
               @enter="() => rename(index)"
@@ -106,6 +106,7 @@
         </div>
         <div
           v-else
+          data-scroller
           class="flex items-center rounded-xl bg-pink-600 text-white px-2 py-2 my-1 overflow-x-auto md:overflow-visible no-scrollbar"
         >
           <div
@@ -274,17 +275,34 @@ function array_move<T>(array: T[], sourceIndex: number, destinationIndex: number
     ...array.slice(largerIndex + 1),
   ]
 }
+function swapHorizontalScroll(a: number, b: number) {
+  if (a === b) return
+  const els = document.querySelectorAll<HTMLElement>('.ov-item > [data-scroller]')
+  const elA = els[a]
+  const elB = els[b]
+  if (elA && elB) {
+    const temp = elA.scrollLeft
+    elA.scrollLeft = elB.scrollLeft
+    elB.scrollLeft = temp
+  }
+}
 function moveUp(index: number) {
   const clamp = Math.max(0, index - 1)
   const top = window.scrollY
   recipes.value = array_move(recipes.value as any, index, clamp) as any
-  nextTick(() => window.scrollTo({ top }))
+  nextTick(() => {
+    window.scrollTo({ top })
+    swapHorizontalScroll(index, clamp)
+  })
 }
 function moveDown(index: number) {
   const clamp = Math.min(recipes.value.length - 1, index + 1)
   const top = window.scrollY
   recipes.value = array_move(recipes.value as any, index, clamp) as any
-  nextTick(() => window.scrollTo({ top }))
+  nextTick(() => {
+    window.scrollTo({ top })
+    swapHorizontalScroll(index, clamp)
+  })
 }
 
 function openImportUrl() {
