@@ -80,39 +80,69 @@
         :style="transitionName === 'ov' ? staggerStyle(index) : null"
         class="ov-item"
       >
-        <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
-          <div class="flex-grow pr-2">
-            <template v-if="item.rename">
-              <SInput
-                @enter="() => rename(index)"
-                :autofocus="true"
-                :modelValue="item.name"
-                @update="(v:any) => changeName(v, index)"
-              />
-            </template>
-            <template v-else>
-              <Button color="pink" @click="open(index)" class="text-[1.1rem] leading-5 tracking-wider !px-2 !text-left">
-                {{ item.name }}
-              </Button>
-            </template>
-          </div>
-          <div class="flex-grow whitespace-nowrap text-right">
-            <template v-if="item.rename">
-              <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
-              <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600 mr-2" />
-              <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
-                <Icon icon="fal fa-trash-alt" size="1.2rem" />
-              </Button>
-              <Button color="green" :tone="400" @click="() => rename(index)">
-                <Icon icon="fal fa-check" size="1.2rem" />
-              </Button>
-            </template>
-            <template v-else>
-              <i
-                @click="() => initRename(index)"
-                class="text-sm cursor-pointer fal fa-pen p-2 text-gray-600"
-              />
-            </template>
+        <div class="my-1 overflow-x-auto rounded-xl bg-gray-300">
+          <div class="flex items-center w-max px-2 py-2">
+            <div class="flex items-center min-w-full pr-2">
+              <div class="flex-grow">
+                <template v-if="item.rename">
+                  <SInput
+                    @enter="() => rename(index)"
+                    :autofocus="true"
+                    :modelValue="item.name"
+                    @update="(v:any) => changeName(v, index)"
+                  />
+                </template>
+                <template v-else>
+                  <Button
+                    color="pink"
+                    @click="open(index)"
+                    class="text-[1.1rem] leading-5 tracking-wider !px-2 !text-left"
+                  >
+                    {{ item.name }}
+                  </Button>
+                </template>
+              </div>
+              <div v-if="!item.rename" class="px-2 text-gray-600">
+                <Icon icon="fal fa-angle-right" size="1.1rem" />
+              </div>
+            </div>
+            <div class="flex items-center flex-shrink-0 whitespace-nowrap">
+              <template v-if="item.rename">
+                <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
+                <i
+                  @click="moveUp(index)"
+                  class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600 mr-2"
+                />
+                <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
+                  <Icon icon="fal fa-trash-alt" size="1.2rem" />
+                </Button>
+                <Button color="green" :tone="400" @click="() => rename(index)">
+                  <Icon icon="fal fa-check" size="1.2rem" />
+                </Button>
+              </template>
+              <template v-else>
+                <i
+                  @click="moveDown(index)"
+                  class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600"
+                />
+                <i
+                  @click="moveUp(index)"
+                  class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600"
+                />
+                <Button
+                  color="red"
+                  class="mx-1"
+                  :tone="300"
+                  @click="() => initRemove(index, item.name)"
+                >
+                  <Icon icon="fal fa-trash-alt" size="1.2rem" />
+                </Button>
+                <i
+                  @click="() => initRename(index)"
+                  class="text-sm cursor-pointer fal fa-pen p-2 text-gray-600"
+                />
+              </template>
+            </div>
           </div>
         </div>
       </div>
