@@ -122,8 +122,8 @@
     <div class="mt-12 grid grid-cols-2 gap-2">
       <Button class="mx-2 flex-1 !text-xs" @click="openImportUrl">{{ t('JSON from URL') }}</Button>
       <Button class="mx-2 flex-1 !text-xs" @click="openImportJson">{{ t('Import JSON') }}</Button>
-      <Button class="mx-2 flex-1 !text-xs" @click="chooseFile">{{ t('Export to file') }}</Button>
-      <Button class="mx-2 flex-1 !text-xs" @click="loadFile">{{ t('Load from file') }}</Button>
+      <Button class="mx-2 flex-1 !text-xs" @click="chooseFile">{{ t('Save backup') }}</Button>
+      <Button class="mx-2 flex-1 !text-xs" @click="loadFile">{{ t('Load from backup') }}</Button>
     </div>
     <div
       v-if="toastMessage"
@@ -417,7 +417,7 @@ async function chooseFile() {
 async function saveFile() {
   try {
     const res = await saveExportFile()
-    showToast(t('Saved to file'))
+    showToast(t('Backup saved'))
   } catch (e) {
     console.error('Export failed', e)
     showAppNotice(
@@ -431,7 +431,7 @@ async function saveFile() {
 async function loadFile() {
   try {
     await loadFromFile()
-    showToast(t('Loaded from file'))
+    showToast(t('Loaded from backup'))
   } catch (e) {
     console.error('Load failed', e)
     showAppNotice(
