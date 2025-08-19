@@ -80,24 +80,17 @@
         :style="transitionName === 'ov' ? staggerStyle(index) : null"
         class="ov-item"
       >
-        <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
-          <div class="flex-grow pr-2">
-            <template v-if="item.rename">
+        <template v-if="item.rename">
+          <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
+            <div class="flex-grow pr-2">
               <SInput
                 @enter="() => rename(index)"
                 :autofocus="true"
                 :modelValue="item.name"
                 @update="(v:any) => changeName(v, index)"
               />
-            </template>
-            <template v-else>
-              <Button color="pink" @click="open(index)" class="text-[1.1rem] leading-5 tracking-wider !px-2 !text-left">
-                {{ item.name }}
-              </Button>
-            </template>
-          </div>
-          <div class="flex-grow whitespace-nowrap text-right">
-            <template v-if="item.rename">
+            </div>
+            <div class="flex-grow whitespace-nowrap text-right">
               <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
               <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600 mr-2" />
               <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
@@ -106,15 +99,36 @@
               <Button color="green" :tone="400" @click="() => rename(index)">
                 <Icon icon="fal fa-check" size="1.2rem" />
               </Button>
-            </template>
-            <template v-else>
-              <i
-                @click="() => initRename(index)"
-                class="text-sm cursor-pointer fal fa-pen p-2 text-gray-600"
-              />
-            </template>
+            </div>
           </div>
-        </div>
+        </template>
+        <template v-else>
+          <div class="scroll-x overflow-x-auto rounded-xl bg-gray-300 my-1">
+            <div class="flex items-baseline px-2 py-2" :style="{ width: 'calc(100% + 8rem)' }">
+              <div class="flex-grow pr-2">
+                <Button
+                  color="pink"
+                  @click="open(index)"
+                  class="text-[1.1rem] leading-5 tracking-wider !px-2 !text-left"
+                >
+                  {{ item.name }}
+                </Button>
+              </div>
+              <i class="text-sm flex-shrink-0 fal fa-angle-right p-2 text-gray-600" />
+              <div class="flex items-center flex-shrink-0 whitespace-nowrap">
+                <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
+                <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600" />
+                <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
+                  <Icon icon="fal fa-trash-alt" size="1.2rem" />
+                </Button>
+                <i
+                  @click="() => initRename(index)"
+                  class="text-sm cursor-pointer fal fa-pen p-2 text-gray-600"
+                />
+              </div>
+            </div>
+          </div>
+        </template>
       </div>
     </TransitionGroup>
 
@@ -611,5 +625,14 @@ function staggerStyle(i: number) {
 /* Enable move transitions when reordering */
 .ov-move {
   transition: transform 150ms ease-out;
+}
+
+/* Hide scrollbars for horizontal action reveal */
+.scroll-x::-webkit-scrollbar {
+  display: none;
+}
+.scroll-x {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>
