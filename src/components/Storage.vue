@@ -80,7 +80,7 @@
         :style="transitionName === 'ov' ? staggerStyle(index) : null"
         class="ov-item"
       >
-        <div v-if="item.rename" class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
+        <div v-if="item.rename" class="flex items-baseline rounded-xl bg-gray-400 px-2 py-2 my-1">
           <div class="flex-grow pr-2">
             <SInput
               @enter="() => rename(index)"
@@ -102,11 +102,10 @@
         </div>
         <div
           v-else
-          class="flex items-center rounded-xl bg-gray-300 px-2 py-2 my-1 overflow-x-auto no-scrollbar"
+          class="flex items-center rounded-xl bg-gray-400 px-2 py-2 my-1 overflow-x-auto md:overflow-visible no-scrollbar"
         >
-          <div class="flex items-baseline w-full flex-shrink-0 pr-2">
+          <div class="flex items-baseline w-full flex-shrink-0 pr-2 md:w-auto md:flex-1 md:flex-shrink">
             <Button
-              color="pink"
               @click="open(index)"
               class="flex-grow text-[1.1rem] leading-5 tracking-wider !px-2 !text-left"
             >
