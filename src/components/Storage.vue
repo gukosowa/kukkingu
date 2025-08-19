@@ -80,7 +80,7 @@
         :style="transitionName === 'ov' ? staggerStyle(index) : null"
         class="ov-item"
       >
-        <div v-if="item.rename" class="flex items-baseline rounded-xl bg-gray-400 px-2 py-2 my-1">
+        <div v-if="item.rename" class="flex items-baseline rounded-xl bg-pink-400 px-2 py-2 my-1">
           <div class="flex-grow pr-2">
             <SInput
               @enter="() => rename(index)"
@@ -90,8 +90,8 @@
             />
           </div>
           <div class="flex-grow whitespace-nowrap text-right">
-            <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
-            <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600 mr-2" />
+            <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-pink-600" />
+            <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-pink-600 mr-2" />
             <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
               <Icon icon="fal fa-trash-alt" size="1.2rem" />
             </Button>
@@ -102,28 +102,28 @@
         </div>
         <div
           v-else
-          class="flex items-center rounded-xl bg-gray-400 px-2 py-2 my-1 overflow-x-auto md:overflow-visible no-scrollbar"
+          class="flex items-center rounded-xl bg-pink-400 px-2 py-2 my-1 overflow-x-auto md:overflow-visible no-scrollbar"
         >
-          <div class="flex items-baseline w-full flex-shrink-0 pr-2 md:w-auto md:flex-1 md:flex-shrink">
-            <Button
+          <div
+            class="flex items-baseline w-full flex-shrink-0 pr-2 md:w-auto md:flex-1 md:flex-shrink"
+          >
+            <div
               @click="open(index)"
-              color="gray"
-              :tone="300"
-              class="flex-grow text-[1.1rem] leading-5 tracking-wider !px-2 !text-left"
+              class="flex-grow cursor-pointer text-[1.1rem] leading-5 tracking-wider px-2 text-left"
             >
               {{ item.name }}
-            </Button>
-            <i class="fal fa-angle-right text-gray-500 ml-2 flex-none" />
+            </div>
+            <i class="fal fa-angle-right text-pink-500 ml-2 flex-none" />
           </div>
           <div class="flex items-center flex-none pl-4">
-            <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
-            <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600 mr-2" />
+            <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-pink-600" />
+            <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-pink-600 mr-2" />
             <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
               <Icon icon="fal fa-trash-alt" size="1.2rem" />
             </Button>
             <i
               @click="() => initRename(index)"
-              class="text-sm cursor-pointer fal fa-pen p-2 text-gray-600"
+              class="text-sm cursor-pointer fal fa-pen p-2 text-pink-600"
             />
           </div>
         </div>
