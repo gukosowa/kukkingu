@@ -84,7 +84,7 @@
               </Button>
             </div>
           </template>
-          <div class="col-span-12 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white" @click="handleItemClick(index)">
+          <div class="col-span-12 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white select-none" @click="handleItemClick(index)">
             <div class="grid grid-cols-12">
               <div class="col-span-10">
 

@@ -66,6 +66,7 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
 import { t } from '~src/i18n'
+import { vibrate } from '~src/services/vibrate'
 
 const props = defineProps<{ modelValue: boolean; locale: string }>()
 const emit = defineEmits<{
@@ -92,9 +93,11 @@ watch(
 )
 
 function confirm() {
+  vibrate()
   emit('confirm', localLocale.value)
 }
 function close() {
+  vibrate()
   emit('cancel')
   emit('update:modelValue', false)
 }
