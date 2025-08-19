@@ -88,26 +88,26 @@
             <div class="grid grid-cols-12">
               <div class="col-span-10">
 
-                  <span class="text-gray-300 font-bold mr-2" @click.stop="() => clickName(index)">{{ item.name || '-' }}</span>
+                  <span class="text-gray-300 font-bold mr-2" @click="() => clickName(index)">{{ item.name || '-' }}</span>
                   <template v-if="unitBefore(item.amountType as any)">
                     <span
                       class="text-red-300"
-                      @click.stop="() => clickAmountType(index)"
+                      @click="() => clickAmountType(index)"
                       style="font-size: 1.2rem;"
                       >{{ unitLabel(item.amountType as any) }}</span>
-                    <span class="font-bold" @click.stop="() => clickAmount(index)">{{ amount(item) }}</span>
+                    <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item) }}</span>
                   </template>
                   <template v-else>
-                    <span class="font-bold" @click.stop="() => clickAmount(index)">{{ amount(item) }}</span>
+                    <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item) }}</span>
                     <span
                       class="text-red-300"
-                      @click.stop="() => clickAmountType(index)"
+                      @click="() => clickAmountType(index)"
                       style="font-size: 1.2rem;"
                       >{{ unitLabel(item.amountType as any) }}</span>
                   </template>
                 <div v-if="item.note && (recipe.edit || showNotes)" class="text-sm text-gray-400 mt-1">
                   <b class='mr-1'>{{ t('Note') }}:</b>
-                  <span @click.stop="() => clickNote(index)">{{ item.note }}</span>
+                  <span @click="() => clickNote(index)">{{ item.note }}</span>
                 </div>
               </div>
               <div class="col-span-2 relative text-right">
