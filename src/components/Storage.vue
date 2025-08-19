@@ -75,7 +75,7 @@
     <TransitionGroup :name="transitionName" tag="div" class="flex-grow" appear>
       <div
         v-for="(item, index) in recipes"
-        :key="index"
+        :key="item.id"
         v-show="filterMatch(item?.name)"
         :style="transitionName === 'ov' ? staggerStyle(index) : null"
         class="ov-item"
