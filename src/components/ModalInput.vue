@@ -60,6 +60,7 @@
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import SInput from './Input.vue'
 import { t } from '~src/i18n'
+import { vibrate } from '~src/services/vibrate'
 
 const props = withDefaults(
   defineProps<{
@@ -126,9 +127,11 @@ watch(
 )
 
 function confirm() {
+  vibrate()
   emit('confirm', localValue.value)
 }
 function close() {
+  vibrate()
   emit('cancel')
   emit('update:modelValue', false)
 }

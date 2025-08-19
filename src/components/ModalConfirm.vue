@@ -45,14 +45,17 @@
 
 <script lang="ts" setup>
 import { t } from '~src/i18n'
+import { vibrate } from '~src/services/vibrate'
 
 defineProps<{ modelValue: boolean; removeName?: string }>()
 const emit = defineEmits<{ (e: 'confirm'): void; (e: 'cancel'): void; (e: 'update:modelValue', v: boolean): void }>()
 
 function clickYes() {
+  vibrate()
   emit('confirm')
 }
 function clickNo() {
+  vibrate()
   emit('cancel')
 }
 </script>

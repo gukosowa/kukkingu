@@ -44,6 +44,7 @@
 <script lang="ts" setup>
 import Icon from './Icon.vue'
 import { t } from '~src/i18n'
+import { vibrate } from '~src/services/vibrate'
 
 const props = withDefaults(
   defineProps<{
@@ -64,10 +65,12 @@ const emit = defineEmits<{
 }>()
 
 function acknowledge() {
+  vibrate()
   emit('ok')
   emit('update:modelValue', false)
 }
 function close() {
+  vibrate()
   emit('update:modelValue', false)
 }
 </script>

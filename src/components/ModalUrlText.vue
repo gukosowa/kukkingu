@@ -77,6 +77,7 @@ import { ref, watch, nextTick } from 'vue'
 import SInput from './Input.vue'
 import Checkbox from './Checkbox.vue'
 import { t } from '~src/i18n'
+import { vibrate } from '~src/services/vibrate'
 
 const props = withDefaults(
   defineProps<{
@@ -135,6 +136,7 @@ watch(
 )
 
 function confirm() {
+  vibrate()
   emit('confirm', {
     url: (localUrl.value || '').trim(),
     text: (localText.value || '').trim(),
@@ -142,6 +144,7 @@ function confirm() {
   })
 }
 function close() {
+  vibrate()
   emit('cancel')
   emit('update:modelValue', false)
 }
