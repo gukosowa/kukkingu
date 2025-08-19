@@ -107,6 +107,8 @@
           <div class="flex items-baseline w-full flex-shrink-0 pr-2 md:w-auto md:flex-1 md:flex-shrink">
             <Button
               @click="open(index)"
+              color="gray"
+              :tone="300"
               class="flex-grow text-[1.1rem] leading-5 tracking-wider !px-2 !text-left"
             >
               {{ item.name }}
@@ -266,11 +268,15 @@ function array_move<T>(array: T[], sourceIndex: number, destinationIndex: number
 }
 function moveUp(index: number) {
   const clamp = Math.max(0, index - 1)
+  const top = window.scrollY
   recipes.value = array_move(recipes.value as any, index, clamp) as any
+  nextTick(() => window.scrollTo({ top }))
 }
 function moveDown(index: number) {
   const clamp = Math.min(recipes.value.length - 1, index + 1)
+  const top = window.scrollY
   recipes.value = array_move(recipes.value as any, index, clamp) as any
+  nextTick(() => window.scrollTo({ top }))
 }
 
 function openImportUrl() {
