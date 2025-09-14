@@ -1,15 +1,17 @@
 import { ref } from 'vue'
 import { uuidv4 } from '~src/store/index'
+import { getRecipes, saveRecipes } from '~src/services/indexeddb'
 
-export function getLocalRecipesStringified() {
-  return localStorage.getItem('recipes') || '[]'
+export async function getLocalRecipesStringified() {
+  const recipes = await getRecipes()
+  return JSON.stringify(recipes)
 }
-export function getLocalRecipesArray() {
-  return JSON.parse(getLocalRecipesStringified())
+export async function getLocalRecipesArray() {
+  return await getRecipes()
 }
 
-function ensureRecipesId() {
-  let recs = getLocalRecipesArray()
+async function ensureRecipesId() {
+  let recs = await getLocalRecipesArray()
   let changeId = false
   recs = recs.map((r: any) => {
     if (!r.id) {
@@ -19,7 +21,7 @@ function ensureRecipesId() {
     return r
   })
   if (changeId) {
-    localStorage.setItem('recipes', JSON.stringify(recs))
+    await saveRecipes(recs)
   }
 }
 
@@ -28,4 +30,4 @@ export const user = ref<any>(null)
 export const userLoading = ref<boolean>(false)
 
 // Ensure local recipes have IDs after startup
-ensureRecipesId()
+ensureRecipesId().catch(console.error)

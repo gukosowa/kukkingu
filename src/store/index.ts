@@ -1,5 +1,6 @@
 import { ref, Ref, watch } from 'vue'
 import { migrateRecipeUnits, normalizeAmountType } from '~src/services/units'
+import { getRecipes, saveRecipes, getSetting, setSetting } from '~src/services/indexeddb'
 
 export type Ingredient = {
   name: string
@@ -24,20 +25,25 @@ export type Recipe = {
   ingredients: Ingredient[]
 }
 
-const storedRecipes: Recipe[] = JSON.parse(localStorage.getItem('recipes') || '[]')
-  .map((r: any) => migrateRecipeUnits(r))
+// Initialize recipes from IndexedDB
+export const recipes: Ref<Recipe[]> = ref([])
 
-// Thin Backend removed: no remote sync
+// Load recipes from IndexedDB on initialization
+getRecipes().then(storedRecipes => {
+  recipes.value = storedRecipes.map((r: any) => migrateRecipeUnits(r))
+}).catch(error => {
+  console.error('Failed to load recipes from IndexedDB:', error)
+  // Fallback to empty array
+  recipes.value = []
+})
 
-export const recipes: Ref<Recipe[]> = ref(storedRecipes)
-
-// persist changes to local storage and backend
-watch(recipes, (val) => {
-  updateRecipesToStore(val)
+// persist changes to IndexedDB
+watch(recipes, async (val) => {
+  await updateRecipesToStore(val)
 }, { deep: true })
 
-// Keep localStorage and backend in sync whenever recipes changes
-export function updateRecipesToStore(value: Recipe[]) {
+// Keep IndexedDB in sync whenever recipes changes
+export async function updateRecipesToStore(value: Recipe[]) {
   value = value.map((r) => {
     if (r.ingredients) {
       r.ingredients.forEach((i: any) => {
@@ -51,16 +57,31 @@ export function updateRecipesToStore(value: Recipe[]) {
     }
     return r
   })
-  const stringified = JSON.stringify(value)
-  localStorage.setItem('recipes', stringified)
+
+  try {
+    await saveRecipes(value)
+  } catch (error) {
+    console.error('Failed to save recipes to IndexedDB:', error)
+  }
 }
 
-export const storedOpenedRecipe = JSON.parse(
-  localStorage.getItem('openedRecipe') || '-1'
-)
-export const openedRecipe = ref<number>(storedOpenedRecipe)
-watch(openedRecipe, (val) => {
-  localStorage.setItem('openedRecipe', JSON.stringify(val))
+// Initialize opened recipe from IndexedDB
+export const openedRecipe = ref<number>(-1)
+
+// Load opened recipe from IndexedDB
+getSetting<number>('openedRecipe', -1).then(value => {
+  openedRecipe.value = value
+}).catch(error => {
+  console.error('Failed to load opened recipe from IndexedDB:', error)
+  openedRecipe.value = -1
+})
+
+watch(openedRecipe, async (val) => {
+  try {
+    await setSetting('openedRecipe', val)
+  } catch (error) {
+    console.error('Failed to save opened recipe to IndexedDB:', error)
+  }
 })
 
 export const routeState = ref<Record<string, any>>({})

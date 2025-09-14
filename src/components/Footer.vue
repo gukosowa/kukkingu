@@ -46,10 +46,7 @@ let showDeleteConfirm = ref(false)
 let deleteConfirmName = ref(t('All recipes'))
 let showLocaleModal = ref(false)
 
-onMounted(() => {
-  const stored = localStorage.getItem('locale') || defaultLocale
-  setLocale(stored as any)
-})
+// Locale is now loaded asynchronously in i18n/index.ts
 
 function initClearAll() {
   showDeleteConfirm.value = true
@@ -63,8 +60,8 @@ function cancelClearAll() {
 function openLocaleModal() {
   showLocaleModal.value = true
 }
-function confirmLocale(locale: string) {
-  setLocale(locale as any)
+async function confirmLocale(locale: string) {
+  await setLocale(locale as any)
   showLocaleModal.value = false
 }
 </script>

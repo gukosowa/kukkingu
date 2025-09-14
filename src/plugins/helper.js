@@ -1,15 +1,7 @@
-export const getStorage = (key, fallback) => {
-  let k = localStorage.getItem(key)
-  if (!k) {
-    k = JSON.stringify(fallback || '')
-    localStorage.setItem(key, k)
-    dispatchEvent(key, k)
-  }
-  return JSON.parse(k)
-}
+import { getRecipes } from '~src/services/indexeddb'
 
-export const newRecipe = (name) => {
-  let localRecipes = getStorage('recipes', [])
+export const newRecipe = async (name) => {
+  let localRecipes = await getRecipes()
 
   if (!name) {
     let defaultNames = localRecipes
@@ -32,11 +24,7 @@ export const newRecipe = (name) => {
     ingredients: [newIngredient('person', '2', 'p')],
   }
 
-  if (localRecipes.length) {
-    return [...localRecipes, recipeObj]
-  } else {
-    return [recipeObj]
-  }
+  return [...localRecipes, recipeObj]
 }
 
 export const dispatchEvent = (event, body) => {

@@ -150,8 +150,8 @@ function openCreateModal() {
   createName.value = ''
   showCreateModal.value = true
 }
-function confirmCreate(name: string) {
-  _recipes.value = newRecipe((name || '').trim())
+async function confirmCreate(name: string) {
+  _recipes.value = await newRecipe((name || '').trim())
   showCreateModal.value = false
   createName.value = ''
 }

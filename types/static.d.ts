@@ -56,4 +56,16 @@ declare module '*.png' {
   export default ref;
 }
 
+/* PLUGINS */
+declare module '~plugins/helper' {
+  export const newRecipe: (name?: string) => Promise<any[]>
+  export const dispatchEvent: (event: string, body: any) => void
+  export const newIngredient: (
+    name?: string,
+    amount?: string,
+    amountType?: string,
+    note?: string
+  ) => any
+}
+
 /* CUSTOM: ADD YOUR OWN HERE */
