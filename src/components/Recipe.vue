@@ -3,6 +3,9 @@
     <div class="flex items-center my-1">
       <div class="flex-1"></div>
 
+      <Button @click="denseMode = !denseMode" class="mr-2" color="gray">
+        <Icon :icon="denseMode ? 'fal fa-expand' : 'fal fa-compress'" class="py-[3px]" size="0.8rem" />
+      </Button>
       <template v-if="!recipe.checklist">
         <Button @click="switchEdit" class="mr-1" color="green">
           <template v-if="recipe.edit">
@@ -40,7 +43,10 @@
           <div
             v-for="(item, index) in recipe.ingredients"
             :key="index"
-            class="grid grid-cols-12 mb-3 gap-1"
+            :class="[
+              'grid grid-cols-12 gap-1',
+              denseMode ? 'mb-1' : 'mb-3'
+            ]"
             :style="staggerStyle(index)"
           >
           <template v-if="recipe.edit">
@@ -79,54 +85,73 @@
                 @enter="() => focusNext(index)"
                 v-model="item.note"
               />
-              <Button v-if="item.note" @click="() => clearNote(index)" class="ml-1" color="gray">
+              <Button v-if="item.note" @click.stop="() => clearNote(index)" class="ml-1" color="gray">
                 <Icon icon="fal fa-broom" class="mr-1" size="0.8rem" />
               </Button>
             </div>
           </template>
-          <div class="col-span-12 px-3 pb-3 pt-5 rounded-lg relative bg-gray-900 text-2xl text-white select-none" @click="handleItemClick(index)">
+          <div
+            :class="[
+              'col-span-12 rounded-lg relative bg-gray-900 text-white',
+              denseMode ? 'px-2 py-2 text-lg' : 'px-3 pb-3 pt-5 text-2xl'
+            ]"
+            @click="handleIngredientClick(index)"
+          >
             <div class="grid grid-cols-12">
               <div class="col-span-10">
 
-                  <span class="text-gray-300 font-bold mr-2" @click="() => clickName(index)">{{ item.name || '-' }}</span>
+                  <span class="text-gray-300 font-bold mr-2" @click.stop="() => clickName(index)">{{ item.name || '-' }}</span>
                   <template v-if="unitBefore(item.amountType as any)">
                     <span
                       class="text-red-300"
-                      @click="() => clickAmountType(index)"
-                      style="font-size: 1.2rem;"
+                      @click.stop="() => clickAmountType(index)"
+                      :style="{ fontSize: denseMode ? '1rem' : '1.2rem' }"
                       >{{ unitLabel(item.amountType as any) }}</span>
-                    <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item) }}</span>
+                    <span class="font-bold" @click.stop="() => clickAmount(index)">{{ amount(item) }}</span>
                   </template>
                   <template v-else>
-                    <span class="font-bold" @click="() => clickAmount(index)">{{ amount(item) }}</span>
+                    <span class="font-bold" @click.stop="() => clickAmount(index)">{{ amount(item) }}</span>
                     <span
                       class="text-red-300"
-                      @click="() => clickAmountType(index)"
-                      style="font-size: 1.2rem;"
+                      @click.stop="() => clickAmountType(index)"
+                      :style="{ fontSize: denseMode ? '1rem' : '1.2rem' }"
                       >{{ unitLabel(item.amountType as any) }}</span>
                   </template>
-                <div v-if="item.note && (recipe.edit || showNotes)" class="text-sm text-gray-400 mt-1">
+                <div v-if="item.note && (recipe.edit || showNotes)" :class="[
+                  'text-gray-400 mt-1',
+                  denseMode ? 'text-xs' : 'text-sm'
+                ]">
                   <b class='mr-1'>{{ t('Note') }}:</b>
-                  <span @click="() => clickNote(index)">{{ item.note }}</span>
+                  <span @click.stop="() => clickNote(index)">{{ item.note }}</span>
                 </div>
               </div>
               <div class="col-span-2 relative text-right">
                 <template v-if="recipe.checklist">
-                  <Checkbox class="absolute right-0 top-0 -mt-1" v-model="item.checked" @input.stop="saveChange" @click.stop />
+                  <Checkbox class="absolute right-0 top-0 -mt-1" v-model="item.checked" @input="saveChange" />
                 </template>
-                <template v-else-if="!recipe.edit">
+                <template v-else-if="!recipe.edit && !denseMode">
                   <div class="text-xs whitespace-nowrap absolute top-0 -mt-4 right-0 text-gray-500">
                     <span class="text-gray-600">{{ t('Original') }} </span>
                     {{ item.amount || '0' }}
                   </div>
                   <i
+                    @click.stop="() => doOriginal(index)"
                     class="cursor-pointer fal fa-ruler p-2 top-0 -mt-1 absolute right-0 text-gray-500"
                   />
                 </template>
                 <template v-if="recipe.edit">
-                  <i @click.stop="() => moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 top-0 mr-24 absolute right-0 text-gray-600" />
-                  <i @click.stop="() => moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 top-0 mr-16 absolute right-0 text-gray-600" />
-                  <i @click.stop="() => deleteIngredient(index)" class="cursor-pointer fal fa-minus-circle p-2 top-0 -mt-1 absolute right-0 text-gray-600" />
+                  <i @click.stop="() => moveDown(index)" :class="[
+                    'cursor-pointer fal fa-arrow-down top-0 absolute right-0 text-gray-600',
+                    denseMode ? 'text-xs p-1 mr-20' : 'text-sm p-2 mr-24'
+                  ]" />
+                  <i @click.stop="() => moveUp(index)" :class="[
+                    'cursor-pointer fal fa-arrow-up top-0 absolute right-0 text-gray-600',
+                    denseMode ? 'text-xs p-1 mr-16' : 'text-sm p-2 mr-16'
+                  ]" />
+                  <i @click.stop="() => deleteIngredient(index)" :class="[
+                    'cursor-pointer fal fa-minus-circle top-0 absolute right-0 text-gray-600',
+                    denseMode ? 'text-xs p-1 -mt-0.5' : 'p-2 -mt-1'
+                  ]" />
                 </template>
               </div>
             </div>
@@ -226,12 +251,12 @@ import ModalNotice from './ModalNotice.vue'
 import { t, currentLocale } from '~src/i18n'
 import { buildAskRecipePrompt } from '~src/services/prompt'
 import { normalizeAmountType } from '~src/services/units'
-import { vibrate } from '~src/services/vibrate'
 // no auto-opening; we'll copy prompt and show CTA
 
 const route = useRoute()
 const router = useRouter()
 const showNotes = ref(false)
+const denseMode = ref(false)
 
 const recipeId = computed(() => {
   return +(route.params.id as any)
@@ -472,12 +497,6 @@ function clearCheck() {
   copy[recipeId.value].ingredients.forEach((i: any) => (i.checked = false))
   _recipes.value = copy
 }
-function toggleCheck(index: number) {
-  const copy = [..._recipes.value]
-  const item = copy[recipeId.value].ingredients[index]
-  item.checked = !item.checked
-  _recipes.value = copy
-}
 function clearNote(index: number) {
   const copy = [..._recipes.value]
   copy[recipeId.value].ingredients[index].note = ''
@@ -498,14 +517,26 @@ function doOriginal(index: number) {
 
   }, 0)
 }
-function handleItemClick(index: number) {
-  vibrate()
-  if (recipe.value?.edit) return
-  if (recipe.value?.checklist) {
-    toggleCheck(index)
-  } else {
+
+function handleIngredientClick(index: number) {
+  if (!recipe.value?.edit && !recipe.value?.checklist) {
+    // In both dense and normal mode: set both original and desired (same as ruler button)
     doOriginal(index)
   }
+}
+
+function setDesiredFromIngredient(index: number) {
+  const item = recipe.value?.ingredients?.[index]
+  if (!item) return
+  const amount = parseFloat(item.amount || '0')
+  if (!amount) return
+  const copy = [..._recipes.value]
+  copy[recipeId.value].desired = amount
+  _recipes.value = copy
+  setTimeout(() => {
+    document.getElementById('input-desired')?.focus()
+    document.getElementById('input-desired')?.select()
+  }, 0)
 }
 function array_move<T>(array: T[], sourceIndex: number, destinationIndex: number): T[] {
   const smallerIndex = Math.min(sourceIndex, destinationIndex)
