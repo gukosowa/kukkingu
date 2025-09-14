@@ -31,18 +31,6 @@
 
 
 
-    <ModalUrlText
-      v-model="showImportUrlModal"
-      :url="importUrl"
-      :text="importText"
-      :fromPicture="importFromPicture"
-      :title="t('JSON from URL')"
-      :confirmText="t('Open GPT')"
-      :placeholderUrl="t('https://example.com')"
-      :placeholderText="t('Recipe text')"
-      @confirm="confirmImportUrl"
-      @cancel="cancelImportUrl"
-    />
     <ModalInput
       v-model="showCreateModal"
       :value="createName"
@@ -52,14 +40,6 @@
       :placeholder="t('Recipe name')"
       @confirm="confirmCreate"
       @cancel="cancelCreate"
-    />
-    <ModalNotice
-      v-model="showNotice"
-      :title="noticeTitle"
-      :message="noticeMessage"
-      :icon="noticeIcon"
-      :okText="noticeOkText"
-      @ok="handleNoticeOk"
     />
     <ModalInput
       v-model="showImportJsonModal"
@@ -80,60 +60,38 @@
         :style="transitionName === 'ov' ? staggerStyle(index) : null"
         class="ov-item"
       >
-        <div v-if="item.rename" data-scroller class="flex items-baseline rounded-xl bg-pink-600 text-white px-1.5 py-1.5 my-1">
+        <div class="flex items-baseline rounded-xl bg-gray-300 px-2 py-2 my-1">
           <div class="flex-grow pr-2">
-            <SInput
-              @enter="() => rename(index)"
-              :autofocus="true"
-              :modelValue="item.name"
-              @update="(v:any) => changeName(v, index)"
-            />
+            <template v-if="item.rename">
+              <SInput
+                @enter="() => rename(index)"
+                :autofocus="true"
+                :modelValue="item.name"
+                @update="(v:any) => changeName(v, index)"
+              />
+            </template>
+            <template v-else>
+              <Button color="pink" @click="open(index)" class="text-[1.1rem] leading-5 tracking-wider !px-2 !text-left">
+                {{ item.name }}
+              </Button>
+            </template>
           </div>
           <div class="flex-grow whitespace-nowrap text-right">
-            <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-white" />
-            <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-white mr-2" />
-            <button
-              @click="() => initRemove(index, item.name)"
-              type="button"
-              class="mr-1 p-2 text-white hover:text-red-200 focus:outline-none"
-            >
-              <Icon icon="fal fa-trash-alt" size="1.2rem" />
-            </button>
-            <Button color="green" :tone="400" @click="() => rename(index)">
-              <Icon icon="fal fa-check" size="1.2rem" />
-            </Button>
-          </div>
-        </div>
-        <div
-          v-else
-          data-scroller
-          class="flex items-center rounded-xl bg-pink-600 text-white px-1.5 py-1.5 my-1 overflow-x-auto md:overflow-visible no-scrollbar"
-        >
-          <div
-            class="flex items-baseline w-full flex-shrink-0 pr-2 md:w-auto md:flex-1 md:flex-shrink"
-          >
-            <div
-              @click="open(index)"
-              class="flex-grow cursor-pointer text-[1.1rem] leading-5 tracking-wider px-1.5 text-left"
-            >
-              {{ item.name }}
-            </div>
-            <i class="fal fa-angle-right text-white ml-2 flex-none" />
-          </div>
-          <div class="flex items-center flex-none pl-4">
-            <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-white" />
-            <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-white mr-2" />
-            <button
-              @click="() => initRemove(index, item.name)"
-              type="button"
-              class="mr-1 p-2 text-white hover:text-red-200 focus:outline-none"
-            >
-              <Icon icon="fal fa-trash-alt" size="1.2rem" />
-            </button>
-            <i
-              @click="() => initRename(index)"
-              class="text-sm cursor-pointer fal fa-pen p-2 text-white"
-            />
+            <template v-if="item.rename">
+              <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
+              <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600 mr-2" />
+              <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
+                <Icon icon="fal fa-trash-alt" size="1.2rem" />
+              </Button>
+              <Button color="green" :tone="400" @click="() => rename(index)">
+                <Icon icon="fal fa-check" size="1.2rem" />
+              </Button>
+            </template>
+            <template v-else>
+              <Button color="gray" :tone="400" @click="() => initRename(index)">
+                <Icon icon="fal fa-pen" size="1.2rem" />
+              </Button>
+            </template>
           </div>
         </div>
       </div>
@@ -141,10 +99,9 @@
 
     <!-- Moved JSON controls to bottom of overview -->
     <div class="mt-12 grid grid-cols-2 gap-2">
-      <Button class="mx-2 flex-1 !text-xs" @click="openImportUrl">{{ t('JSON from URL') }}</Button>
       <Button class="mx-2 flex-1 !text-xs" @click="openImportJson">{{ t('Import JSON') }}</Button>
-      <Button class="mx-2 flex-1 !text-xs" @click="chooseFile">{{ t('Save backup') }}</Button>
-      <Button class="mx-2 flex-1 !text-xs" @click="loadFile">{{ t('Load from backup') }}</Button>
+      <Button class="mx-2 flex-1 !text-xs" @click="chooseFile">{{ t('Export to file') }}</Button>
+      <Button class="mx-2 flex-1 !text-xs" @click="loadFile">{{ t('Load from file') }}</Button>
     </div>
     <div
       v-if="toastMessage"
@@ -162,21 +119,15 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { t, currentLocale } from '~src/i18n'
 import Footer from '~components/Footer.vue'
-import { recipes as _recipes } from '~src/store/index'
+import { recipes as _recipes, modalStates } from '~src/store/index'
 import Button from './Button.vue'
 import SInput from './Input.vue'
 import { newRecipe } from '~plugins/helper'
 import Icon from './Icon.vue'
 import ModalConfirm from './ModalConfirm.vue'
 import ModalInput from './ModalInput.vue'
-import ModalUrlText from './ModalUrlText.vue'
-import ModalNotice from './ModalNotice.vue'
 import { mergeRecipesByExportedAt } from '~src/services/importExport'
 import { chooseExportFile, saveExportFile, loadFromFile } from '~src/services/fileExport'
-import { buildImportRecipePrompt } from '~src/services/prompt'
-import { openChatGPT } from '~src/services/chatgpt'
-import { handlePromptNoticeOk } from '~src/services/notice'
-import { vibrate } from '~src/services/vibrate'
 
 const router = useRouter()
 const recipes = computed({ get: () => _recipes.value, set: (v) => (_recipes.value = v as any) })
@@ -187,21 +138,11 @@ let createName = ref('')
 let showDeleteConfirm = ref(false)
 let deleteConfirmName = ref('')
 let deleteIndex = ref<number | null>(null)
-let showImportUrlModal = ref(false)
 let showImportJsonModal = ref(false)
-let importUrl = ref('')
-let importText = ref('')
-let importFromPicture = ref(false)
 let importJsonText = ref('')
 let toastMessage = ref('')
 let toastTimer: number | null = null
 const transitionName = ref('ov')
-let showNotice = ref(false)
-let noticeTitle = ref('')
-let noticeMessage = ref('')
-let noticeIcon = ref('fal fa-info-circle')
-let noticeOkText = ref(t('Got it'))
-let noticeOkUrl = ref<string | null>(null)
 
 const route = useRoute()
 
@@ -229,7 +170,6 @@ function clearFilter() {
   nextTick(() => filterInputRef.value?.focus?.())
 }
 function open(index: number) {
-  vibrate()
   router.push('/recipe/' + index)
 }
 function initRename(index: number) {
@@ -277,116 +217,17 @@ function array_move<T>(array: T[], sourceIndex: number, destinationIndex: number
     ...array.slice(largerIndex + 1),
   ]
 }
-function swapHorizontalScroll(a: number, b: number) {
-  if (a === b) return
-  const els = document.querySelectorAll<HTMLElement>('.ov-item > [data-scroller]')
-  const elA = els[a]
-  const elB = els[b]
-  if (elA && elB) {
-    const temp = elA.scrollLeft
-    elA.scrollLeft = elB.scrollLeft
-    elB.scrollLeft = temp
-  }
-}
 function moveUp(index: number) {
   const clamp = Math.max(0, index - 1)
-  const top = window.scrollY
   recipes.value = array_move(recipes.value as any, index, clamp) as any
-  nextTick(() => {
-    window.scrollTo({ top })
-    swapHorizontalScroll(index, clamp)
-  })
 }
 function moveDown(index: number) {
   const clamp = Math.min(recipes.value.length - 1, index + 1)
-  const top = window.scrollY
   recipes.value = array_move(recipes.value as any, index, clamp) as any
-  nextTick(() => {
-    window.scrollTo({ top })
-    swapHorizontalScroll(index, clamp)
-  })
 }
 
-function openImportUrl() {
-  importUrl.value = ''
-  importFromPicture.value = false
-  showImportUrlModal.value = true
-}
 
-// Remove share data (url/text/title) from the route so the modal
-// does not auto-open again on refresh after the user acted once.
-function clearShareQuery() {
-  try {
-    const q = { ...(route.query || {}) }
-    delete (q as any).url
-    delete (q as any).text
-    delete (q as any).title
-    router.replace({ path: route.path, query: q })
-  } catch (_) {
-    // noop – best effort to keep UX clean
-  }
-}
 
-async function confirmImportUrl(payload: { url: string; text: string; fromPicture: boolean }) {
-  importUrl.value = payload.url
-  importText.value = payload.text
-  importFromPicture.value = payload.fromPicture
-  showImportUrlModal.value = false
-  const locale =
-    currentLocale.value === 'jp'
-      ? 'Japanese'
-      : currentLocale.value === 'de'
-      ? 'German'
-      : 'English'
-  const prompt = buildImportRecipePrompt({
-    url: importUrl.value,
-    text: importText.value,
-    locale,
-    fromPicture: importFromPicture.value,
-  })
-
-  const url = importUrl.value || ''
-  const isYouTube = url.includes('youtube.com') || url.includes('youtu.be')
-
-  if (isYouTube) {
-    // YouTube flow: always copy + guide to Gemini
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(prompt)
-      } else {
-        legacyCopyToClipboard(prompt)
-      }
-    } catch (_) {
-      legacyCopyToClipboard(prompt)
-    }
-    showAppNotice(
-      t('Prompt ready'),
-      t('We copied the prompt to your clipboard. We are using Gemini because YouTube extraction only works with Gemini. Paste the prompt and send it.'),
-      'fal fa-magic',
-      t('Goto Gemini'),
-      'https://gemini.google.com/'
-    )
-  } else {
-    // Non-YouTube: if prompt fits ?q=, open ChatGPT directly; otherwise fall back to copy + notice
-    const copied = await openChatGPT(prompt)
-    if (copied) {
-      showAppNotice(
-        t('Prompt ready'),
-        t('We copied the prompt to your clipboard. Paste the prompt and send it.'),
-        'fal fa-comments',
-        t('Goto ChatGPT'),
-        'https://chatgpt.com/'
-      )
-    }
-  }
-
-  // After opening GPT/Gemini, clear inputs so next open starts fresh
-  importUrl.value = ''
-  importText.value = ''
-  importFromPicture.value = false
-  // Also clear the share query params to avoid auto-open on refresh
-  clearShareQuery()
-}
 
 function openImportJson() {
   importJsonText.value = ''
@@ -420,22 +261,10 @@ function confirmImportJson(json: string) {
       recipes.value = [...recipes.value, single]
     }
   } catch (e) {
-    showAppNotice(
-      t('Invalid JSON'),
-      t('The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.'),
-      'fal fa-exclamation-triangle'
-    )
+    showToast(t('Invalid JSON'))
   }
 }
 
-function cancelImportUrl() {
-  importUrl.value = ''
-  importText.value = ''
-  importFromPicture.value = false
-  showImportUrlModal.value = false
-  // Clear share query params so it won't reopen on refresh
-  clearShareQuery()
-}
 
 function cancelImportJson() {
   importJsonText.value = ''
@@ -461,28 +290,20 @@ async function chooseFile() {
 async function saveFile() {
   try {
     const res = await saveExportFile()
-    showToast(t('Backup saved'))
+    showToast(t('Saved to file'))
   } catch (e) {
     console.error('Export failed', e)
-    showAppNotice(
-      t('Export failed'),
-      t('Could not save the file. Check your browser download permissions or try a different filename.'),
-      'fal fa-file-export'
-    )
+    showToast(t('Export failed'))
   }
 }
 
 async function loadFile() {
   try {
     await loadFromFile()
-    showToast(t('Loaded from backup'))
+    showToast(t('Loaded from file'))
   } catch (e) {
     console.error('Load failed', e)
-    showAppNotice(
-      t('Load failed'),
-      t('Could not read the file. Please select a valid Kukkingu export and try again.'),
-      'fal fa-file-import'
-    )
+    showToast(t('Load failed'))
   }
 }
 
@@ -497,60 +318,26 @@ function showToast(msg: string) {
   }, 2500) as any
 }
 
-function showAppNotice(title: string, message: string, icon?: string, okText?: string, okUrl?: string | null) {
-  noticeTitle.value = title
-  noticeMessage.value = message
-  noticeIcon.value = icon || 'fal fa-info-circle'
-  noticeOkText.value = okText || t('Got it')
-  noticeOkUrl.value = okUrl || null
-  showNotice.value = true
-}
-
-function handleNoticeOk() {
-  handlePromptNoticeOk(noticeOkUrl.value, openImportJson)
-}
 
 onMounted(() => {
-  // Handle Web Share Target (GET) params on first load
-  handleSharedFromQuery()
   // Disable list transitions after initial appear
   window.setTimeout(() => {
     transitionName.value = 'none'
   }, 220)
 })
 
-// Also handle subsequent shares when app is already open
+// Watch for global modal state changes
 watch(
-  () => route.query,
-  () => handleSharedFromQuery(),
-)
-
-// When the share modal opens with prefilled data, copy the prompt immediately.
-watch(
-  () => showImportUrlModal.value,
-  async (v) => {
-    if (!v) return
-    const hasData = !!(importUrl.value || importText.value || importFromPicture.value)
-    if (!hasData) return
-    const locale =
-      currentLocale.value === 'jp' ? 'Japanese' : currentLocale.value === 'de' ? 'German' : 'English'
-    const prompt = buildImportRecipePrompt({
-      url: importUrl.value,
-      text: importText.value,
-      locale,
-      fromPicture: importFromPicture.value,
-    })
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(prompt)
-      } else {
-        legacyCopyToClipboard(prompt)
-      }
-    } catch (_) {
-      legacyCopyToClipboard(prompt)
+  () => modalStates.value.showImportJson,
+  (newValue) => {
+    if (newValue) {
+      showImportJsonModal.value = true
+      modalStates.value.showImportJson = false // Reset the state
     }
   }
 )
+
+
 
 function escapeRegExp(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -576,59 +363,7 @@ function extractUrlFromText(text: string): { url: string; text: string } {
   return { url, text: without }
 }
 
-function handleSharedFromQuery() {
-  const q: any = route.query || {}
-  const sharedUrl = typeof q.url === 'string' ? q.url : ''
-  const sharedText = typeof q.text === 'string' ? q.text : ''
-  const sharedTitle = typeof q.title === 'string' ? q.title : ''
-  const combinedText = [sharedTitle, sharedText].filter(Boolean).join('\n')
 
-  let finalUrl = sharedUrl || ''
-  let finalText = combinedText
-
-  if (!finalUrl) {
-    const extracted = extractUrlFromText(combinedText)
-    finalUrl = extracted.url
-    finalText = extracted.text
-  } else {
-    // If URL is present separately, strip it from the combined text to avoid duplication
-    finalText = stripUrlFromText(combinedText, finalUrl)
-  }
-
-  if (finalUrl || finalText) {
-    importUrl.value = finalUrl
-    importText.value = finalText
-    importFromPicture.value = false
-    showImportUrlModal.value = true
-  }
-}
-
-// Legacy clipboard copy using document.execCommand('copy') for wider compatibility
-function legacyCopyToClipboard(text: string) {
-  try {
-    const textarea = document.createElement('textarea')
-    textarea.value = text
-    textarea.setAttribute('readonly', '')
-    textarea.style.position = 'absolute'
-    textarea.style.left = '-9999px'
-    document.body.appendChild(textarea)
-    textarea.select()
-    document.execCommand('copy')
-    document.body.removeChild(textarea)
-  } catch (e) {
-    // Best-effort fallback: leave text selected for manual copy
-    try {
-      const textarea = document.createElement('textarea')
-      textarea.value = text
-      document.body.appendChild(textarea)
-      textarea.focus()
-      textarea.select()
-      showToast(t('Copy failed. Please copy manually.'))
-    } catch (_) {
-      // no-op
-    }
-  }
-}
 
 // Small stagger for enter transitions, clamped to 200ms total
 function staggerStyle(i: number) {
@@ -655,14 +390,5 @@ function staggerStyle(i: number) {
 /* Enable move transitions when reordering */
 .ov-move {
   transition: transform 150ms ease-out;
-}
-
-/* Hide scrollbars in horizontal action reveal */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }
 </style>

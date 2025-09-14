@@ -55,7 +55,7 @@
   "Load failed": "読み込みに失敗しました",
   "Language": "言語",
   "OK": "OK",
-  "Ask GPT": "GPTに質問",
+  "GPT": "GPT",
   "Question": "質問",
   "Got it": "了解",
   "Goto ChatGPT": "ChatGPTへ移動",
@@ -70,7 +70,7 @@
   "Prompt copied. Opening Gemini...": "プロンプトをコピーしました。Geminiを開きます…",
   "Prompt ready": "プロンプト準備完了",
   "The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.": "貼り付けたテキストを解析できませんでした。単一のレシピJSONまたはエクスポートされたファイルを貼り付けて再試行してください。",
-  "We copied the prompt to your clipboard. Paste the prompt and send it.": "プロンプトをクリップボードにコピーしました。プロンプトを貼り付けて送信してください。",
+  "We copied the prompt to your clipboard. Paste the prompt and send it.": "1. 「ChatGPTへ移動」ボタンをクリック\n2. ChatGPTでプロンプトを貼り付けて送信\n3. ChatGPTのレシピ応答をコピー\n4. 左上のXを押す\n5. コピーしたテキストをここに貼り付け\n6. レシピがリストに表示されます。",
   "We copied the prompt to your clipboard. We are using Gemini because YouTube extraction only works with Gemini. Paste the prompt and send it.": "プロンプトをクリップボードにコピーしました。YouTubeの抽出はGeminiでのみ可能なためGeminiを使用します。プロンプトを貼り付けて送信してください。",
   "Privacy Policy": "プライバシーポリシー"
 }

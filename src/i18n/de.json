@@ -55,7 +55,7 @@
   "Load failed": "Laden fehlgeschlagen",
   "Language": "Sprache",
   "OK": "OK",
-  "Ask GPT": "GPT fragen",
+  "GPT": "GPT",
   "Question": "Frage",
   "Got it": "Verstanden",
   "Goto ChatGPT": "Zu ChatGPT",
@@ -70,7 +70,7 @@
   "Prompt copied. Opening Gemini...": "Prompt kopiert. Gemini wird geöffnet...",
   "Prompt ready": "Prompt bereit",
   "The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.": "Der eingefügte Text konnte nicht verarbeitet werden. Füge ein einzelnes Rezept-JSON oder eine exportierte Datei ein und versuche es erneut.",
-  "We copied the prompt to your clipboard. Paste the prompt and send it.": "Wir haben den Prompt in deine Zwischenablage kopiert. Füge den Prompt ein und sende ihn.",
+  "We copied the prompt to your clipboard. Paste the prompt and send it.": "1. Klicke 'Zu ChatGPT' Button\n2. In ChatGPT Prompt einfügen und senden\n3. ChatGPT's Rezeptantwort kopieren\n4. X oben links drücken\n5. Kopierten Text hier einfügen\n6. Rezept erscheint in der Liste.",
   "We copied the prompt to your clipboard. We are using Gemini because YouTube extraction only works with Gemini. Paste the prompt and send it.": "Wir haben den Prompt in deine Zwischenablage kopiert. Wir verwenden Gemini, weil die Extraktion von YouTube-Inhalten nur mit Gemini funktioniert. Füge den Prompt ein und sende ihn.",
   "Privacy Policy": "Datenschutzerklärung"
 }
