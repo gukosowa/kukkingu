@@ -22,6 +22,7 @@ export type Recipe = {
   rename?: boolean
   // Timestamp of last export (ISO string)
   exportedAt?: string
+  image?: string // Base64 encoded image data
   ingredients: Ingredient[]
 }
 

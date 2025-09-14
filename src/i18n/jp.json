@@ -72,5 +72,14 @@
   "The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.": "貼り付けたテキストを解析できませんでした。単一のレシピJSONまたはエクスポートされたファイルを貼り付けて再試行してください。",
   "We copied the prompt to your clipboard. Paste the prompt and send it.": "1. 「ChatGPTへ移動」ボタンをクリック\n2. ChatGPTでプロンプトを貼り付けて送信\n3. ChatGPTのレシピ応答をコピー\n4. 左上のXを押す\n5. コピーしたテキストをここに貼り付け\n6. レシピがリストに表示されます。",
   "We copied the prompt to your clipboard. We are using Gemini because YouTube extraction only works with Gemini. Paste the prompt and send it.": "プロンプトをクリップボードにコピーしました。YouTubeの抽出はGeminiでのみ可能なためGeminiを使用します。プロンプトを貼り付けて送信してください。",
-  "Privacy Policy": "プライバシーポリシー"
+  "Privacy Policy": "プライバシーポリシー",
+  "Image": "画像",
+  "Paste image here": "ここに画像を貼り付ける",
+  "Error": "エラー",
+  "Failed to process image file": "画像ファイルの処理に失敗しました",
+  "Invalid file": "無効なファイル",
+  "Please select a valid image file (JPEG, PNG, GIF, WebP) under 5MB": "5MB以下の有効な画像ファイル（JPEG、PNG、GIF、WebP）を選択してください",
+  "No image found": "画像が見つかりません",
+  "No valid image found in clipboard": "クリップボードに有効な画像が見つかりません",
+  "Failed to paste image from clipboard": "クリップボードからの画像貼り付けに失敗しました"
 }

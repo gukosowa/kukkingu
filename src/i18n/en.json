@@ -72,5 +72,14 @@
   "The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.": "The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.",
   "We copied the prompt to your clipboard. Paste the prompt and send it.": "1. Click 'Go to ChatGPT' button\n2. In ChatGPT, paste prompt and send\n3. Copy ChatGPT's recipe response\n4. Press X (top left)\n5. Paste copied text here\n6. Recipe appears in list.",
   "We copied the prompt to your clipboard. We are using Gemini because YouTube extraction only works with Gemini. Paste the prompt and send it.": "We copied the prompt to your clipboard. We are using Gemini because YouTube extraction only works with Gemini. Paste the prompt and send it.",
-  "Privacy Policy": "Privacy Policy"
+  "Privacy Policy": "Privacy Policy",
+  "Image": "Image",
+  "Paste image here": "Paste image here",
+  "Error": "Error",
+  "Failed to process image file": "Failed to process image file",
+  "Invalid file": "Invalid file",
+  "Please select a valid image file (JPEG, PNG, GIF, WebP) under 5MB": "Please select a valid image file (JPEG, PNG, GIF, WebP) under 5MB",
+  "No image found": "No image found",
+  "No valid image found in clipboard": "No valid image found in clipboard",
+  "Failed to paste image from clipboard": "Failed to paste image from clipboard"
 }

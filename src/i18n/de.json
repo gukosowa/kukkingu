@@ -72,5 +72,14 @@
   "The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.": "Der eingefügte Text konnte nicht verarbeitet werden. Füge ein einzelnes Rezept-JSON oder eine exportierte Datei ein und versuche es erneut.",
   "We copied the prompt to your clipboard. Paste the prompt and send it.": "1. Klicke 'Zu ChatGPT' Button\n2. In ChatGPT Prompt einfügen und senden\n3. ChatGPT's Rezeptantwort kopieren\n4. X oben links drücken\n5. Kopierten Text hier einfügen\n6. Rezept erscheint in der Liste.",
   "We copied the prompt to your clipboard. We are using Gemini because YouTube extraction only works with Gemini. Paste the prompt and send it.": "Wir haben den Prompt in deine Zwischenablage kopiert. Wir verwenden Gemini, weil die Extraktion von YouTube-Inhalten nur mit Gemini funktioniert. Füge den Prompt ein und sende ihn.",
-  "Privacy Policy": "Datenschutzerklärung"
+  "Privacy Policy": "Datenschutzerklärung",
+  "Image": "Bild",
+  "Paste image here": "Bild hier einfügen",
+  "Error": "Fehler",
+  "Failed to process image file": "Bilddatei konnte nicht verarbeitet werden",
+  "Invalid file": "Ungültige Datei",
+  "Please select a valid image file (JPEG, PNG, GIF, WebP) under 5MB": "Bitte wähle eine gültige Bilddatei (JPEG, PNG, GIF, WebP) unter 5MB aus",
+  "No image found": "Kein Bild gefunden",
+  "No valid image found in clipboard": "Kein gültiges Bild in der Zwischenablage gefunden",
+  "Failed to paste image from clipboard": "Bild aus Zwischenablage konnte nicht eingefügt werden"
 }

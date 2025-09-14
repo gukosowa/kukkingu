@@ -241,3 +241,43 @@ export const saveRecipes = (recipes: Recipe[]) => idbService.saveRecipes(recipes
 export const getSetting = <T>(key: string, defaultValue?: T) => idbService.getSetting(key, defaultValue)
 export const setSetting = <T>(key: string, value: T) => idbService.setSetting(key, value)
 export const migrateFromLocalStorage = () => idbService.migrateFromLocalStorage()
+
+// Image utility functions
+export const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      resolve(result)
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+export const isValidImageFile = (file: File): boolean => {
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+  const maxSize = 5 * 1024 * 1024 // 5MB
+
+  return validTypes.includes(file.type) && file.size <= maxSize
+}
+
+export const pasteImageFromClipboard = async (): Promise<string | null> => {
+  try {
+    const clipboardItems = await navigator.clipboard.read()
+    for (const item of clipboardItems) {
+      for (const type of item.types) {
+        if (type.startsWith('image/')) {
+          const blob = await item.getType(type)
+          const file = new File([blob], 'pasted-image.png', { type })
+          if (isValidImageFile(file)) {
+            return await fileToBase64(file)
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Failed to read image from clipboard:', error)
+  }
+  return null
+}

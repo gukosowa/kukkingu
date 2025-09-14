@@ -212,6 +212,53 @@
           <p class="text-sm mt-3 px-2"><b>{{ t('Note') }}:</b></p>
           <div class="markdown text-sm px-2" v-html="markedRender"></div>
         </template>
+
+        <!-- Image Section -->
+        <div class="flex flex-col mt-4">
+          <label class="text-sm font-medium text-gray-700 mb-2">{{ t('Image') }}</label>
+          <template v-if="recipe.edit">
+            <div class="flex gap-2">
+              <input
+                ref="pasteInput"
+                type="text"
+                :placeholder="t('Paste image here')"
+                class="flex-1 border focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
+                @paste="handlePaste"
+              />
+              <input
+                ref="fileInput"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                @change="handleFileSelect"
+              />
+              <Button @click="triggerFileInput" color="gray">
+                <Icon icon="fal fa-plus" class="mr-1" size="0.8rem" />
+                {{ t('Add') }}
+              </Button>
+            </div>
+          </template>
+          <template v-if="recipe.image">
+            <div class="mt-2 relative">
+              <img
+                :src="recipe.image"
+                alt="Recipe image"
+                class="max-w-full h-auto rounded-lg shadow-md"
+                style="max-height: 300px;"
+              />
+              <template v-if="recipe.edit">
+                <Button
+                  @click="deleteImage"
+                  class="absolute top-2 right-2"
+                  color="red"
+                  :class="'bg-red-600 hover:bg-red-700'"
+                >
+                  <Icon icon="fal fa-trash" size="0.8rem" />
+                </Button>
+              </template>
+            </div>
+          </template>
+        </div>
       </div>
     </div>
       <Footer />
@@ -251,12 +298,15 @@ import ModalNotice from './ModalNotice.vue'
 import { t, currentLocale } from '~src/i18n'
 import { buildAskRecipePrompt } from '~src/services/prompt'
 import { normalizeAmountType } from '~src/services/units'
+import { fileToBase64, isValidImageFile, pasteImageFromClipboard } from '~src/services/indexeddb'
 // no auto-opening; we'll copy prompt and show CTA
 
 const route = useRoute()
 const router = useRouter()
 const showNotes = ref(false)
 const denseMode = ref(false)
+const pasteInput = ref<HTMLInputElement | null>(null)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 const recipeId = computed(() => {
   return +(route.params.id as any)
@@ -293,7 +343,7 @@ watch(
   { immediate: true }
 )
 
-const markedRender = computed(() => marked.parse(recipe.value?.note || ''))
+const markedRender = computed(() => (marked as any).parse(recipe.value?.note || ''))
 const ratio = computed(() => (recipe.value ? recipe.value.original / recipe.value.desired : 1))
 const showAskGpt = ref(false)
 const showNotice = ref(false)
@@ -512,8 +562,9 @@ function doOriginal(index: number) {
   copy[recipeId.value].desired = amount
   _recipes.value = copy
   setTimeout(() => {
-    document.getElementById('input-desired')?.focus()
-    document.getElementById('input-desired')?.select()
+    const input = document.getElementById('input-desired') as HTMLInputElement
+    input?.focus()
+    input?.select()
 
   }, 0)
 }
@@ -534,8 +585,9 @@ function setDesiredFromIngredient(index: number) {
   copy[recipeId.value].desired = amount
   _recipes.value = copy
   setTimeout(() => {
-    document.getElementById('input-desired')?.focus()
-    document.getElementById('input-desired')?.select()
+    const input = document.getElementById('input-desired') as HTMLInputElement
+    input?.focus()
+    input?.select()
   }, 0)
 }
 function array_move<T>(array: T[], sourceIndex: number, destinationIndex: number): T[] {
@@ -576,6 +628,56 @@ function showAppNotice(title: string, message: string, icon?: string, okText?: s
   noticeIcon.value = icon || 'fal fa-info-circle'
   noticeOkText.value = okText || t('Got it')
   showNotice.value = true
+}
+
+// Image handling functions
+function triggerFileInput() {
+  fileInput.value?.click()
+}
+
+async function handleFileSelect(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (file && isValidImageFile(file)) {
+    try {
+      const base64 = await fileToBase64(file)
+      updateRecipeImage(base64)
+    } catch (error) {
+      console.error('Failed to process image file:', error)
+      showAppNotice(t('Error'), t('Failed to process image file'), 'fal fa-exclamation-triangle')
+    }
+  } else if (file) {
+    showAppNotice(t('Invalid file'), t('Please select a valid image file (JPEG, PNG, GIF, WebP) under 5MB'), 'fal fa-exclamation-triangle')
+  }
+  // Clear the input
+  if (target) target.value = ''
+}
+
+async function handlePaste(event: ClipboardEvent) {
+  event.preventDefault()
+  try {
+    const base64 = await pasteImageFromClipboard()
+    if (base64) {
+      updateRecipeImage(base64)
+    } else {
+      showAppNotice(t('No image found'), t('No valid image found in clipboard'), 'fal fa-exclamation-triangle')
+    }
+  } catch (error) {
+    console.error('Failed to paste image:', error)
+    showAppNotice(t('Error'), t('Failed to paste image from clipboard'), 'fal fa-exclamation-triangle')
+  }
+}
+
+function updateRecipeImage(base64: string) {
+  const copy = [..._recipes.value]
+  copy[recipeId.value].image = base64
+  _recipes.value = copy
+}
+
+function deleteImage() {
+  const copy = [..._recipes.value]
+  copy[recipeId.value].image = undefined
+  _recipes.value = copy
 }
 
 function openChatGPTTab() {
