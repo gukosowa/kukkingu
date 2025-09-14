@@ -100,7 +100,7 @@
             <div class="grid grid-cols-12">
               <div class="col-span-10">
 
-                  <span class="text-gray-300 font-bold mr-2" @click.stop="() => clickName(index)">{{ item.name || '-' }}</span>
+                  <span class="text-gray-300 mr-2" :class="{'font-normal': denseMode, 'font-bold': !denseMode}" @click.stop="() => clickName(index)">{{ item.name || '-' }}</span>
                   <template v-if="unitBefore(item.amountType as any)">
                     <span
                       class="text-red-300"
