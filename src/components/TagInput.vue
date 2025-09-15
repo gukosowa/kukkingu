@@ -5,7 +5,7 @@
     <!-- Display existing tags -->
     <div v-if="modelValue && modelValue.length > 0" class="flex flex-wrap gap-2 mb-3">
       <span
-        v-for="(tag, index) in modelValue"
+        v-for="(tag, index) in [...modelValue].sort((a, b) => a.localeCompare(b))"
         :key="tag"
         class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 border-blue-200 border text-blue-800"
       >

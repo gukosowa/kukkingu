@@ -56,7 +56,7 @@
       <div
         v-for="(item, index) in recipes"
         :key="index"
-        v-show="filterMatch(item?.name)"
+        v-show="filterMatch(item)"
         :style="transitionName === 'ov' ? staggerStyle(index) : null"
         class="ov-item"
       >
@@ -78,7 +78,7 @@
               <!-- Tags Section (inside gray container below button) -->
               <div v-if="item.tags && item.tags.length > 0" class="mt-2 flex flex-wrap gap-1">
                 <span
-                  v-for="tag in item.tags"
+                  v-for="tag in [...item.tags].sort((a, b) => a.localeCompare(b))"
                   :key="tag"
                   class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-100 border-blue-200 border text-blue-800"
                 >
@@ -170,11 +170,30 @@ function cancelCreate() {
   showCreateModal.value = false
   createName.value = ''
 }
-function filterMatch(name: string | undefined) {
+function filterMatch(item: any) {
   const q = (filterQuery.value || '').toLowerCase().trim()
   if (!q) return true
-  const n = (name || '').toLowerCase()
-  return n.includes(q)
+
+  // Split search query into multiple terms by spaces
+  const searchTerms = q.split(/\s+/).filter(term => term.length > 0)
+
+  // For each search term, check if it matches either the recipe name or any tag
+  return searchTerms.every(term => {
+    const lowerTerm = term.toLowerCase()
+
+    // Check recipe name (fuzzy search)
+    const name = (item?.name || '').toLowerCase()
+    if (name.includes(lowerTerm)) return true
+
+    // Check tags (fuzzy search)
+    if (item?.tags && Array.isArray(item.tags)) {
+      return item.tags.some((tag: string) =>
+        tag.toLowerCase().includes(lowerTerm)
+      )
+    }
+
+    return false
+  })
 }
 function clearFilter() {
   filterQuery.value = ''

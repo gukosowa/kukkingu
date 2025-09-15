@@ -218,7 +218,7 @@
           <label class="text-sm font-medium text-gray-700 mb-3 block">{{ t('Tags') }}</label>
           <div class="flex flex-wrap gap-2">
             <span
-              v-for="tag in recipe.tags"
+              v-for="tag in [...recipe.tags].sort((a, b) => a.localeCompare(b))"
               :key="tag"
               class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 border-blue-200 border text-blue-800"
             >
