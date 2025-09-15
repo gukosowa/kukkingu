@@ -27,11 +27,11 @@ const props = withDefaults(
   { text: '', color: 'blue', tone: 500, class: '' }
 )
 const cls = props.class || ''
-const emit = defineEmits<{ (e: 'click'): void }>()
+const emit = defineEmits<{ (e: 'click', event?: Event): void }>()
 
-function handleClick() {
+function handleClick(event: Event) {
   vibrate()
-  emit('click')
+  emit('click', event)
 }
 </script>
 

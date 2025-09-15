@@ -232,13 +232,14 @@
           <label class="text-sm font-medium text-gray-700 mb-2">{{ t('Image') }}</label>
           <template v-if="recipe.edit">
             <div class="flex gap-2">
-              <input
-                ref="pasteInput"
-                type="text"
+              <div
+                ref="pasteArea"
+                contenteditable="true"
                 :placeholder="t('Paste image here')"
-                class="flex-1 border focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
+                class="flex-1 border focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md min-h-[40px] focus:outline-none bg-white"
                 @paste="handlePaste"
-              />
+                @input="handleContentEditableInput"
+              ></div>
               <input
                 ref="fileInput"
                 type="file"
@@ -325,7 +326,7 @@ const route = useRoute()
 const router = useRouter()
 const showNotes = ref(false)
 const denseMode = ref(false)
-const pasteInput = ref<HTMLInputElement | null>(null)
+const pasteArea = ref<HTMLDivElement | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 const recipeId = computed(() => {
@@ -677,12 +678,31 @@ async function handleFileSelect(event: Event) {
   if (target) target.value = ''
 }
 
+function handleContentEditableInput(event: Event) {
+  // Handle input changes in contenteditable div
+  const target = event.target as HTMLDivElement
+  // If there's an image in the content, extract it
+  const images = target.querySelectorAll('img')
+  if (images.length > 0) {
+    const img = images[0] as HTMLImageElement
+    if (img.src && img.src.startsWith('data:')) {
+      updateRecipeImage(img.src)
+      // Clear the contenteditable area after extracting the image
+      target.innerHTML = ''
+    }
+  }
+}
+
 async function handlePaste(event: ClipboardEvent) {
   event.preventDefault()
   try {
-    const base64 = await pasteImageFromClipboard()
+    const base64 = await pasteImageFromClipboard(event.clipboardData || undefined)
     if (base64) {
       updateRecipeImage(base64)
+      // Clear the contenteditable area after successful paste
+      if (pasteArea.value) {
+        pasteArea.value.innerHTML = ''
+      }
     } else {
       showAppNotice(t('No image found'), t('No valid image found in clipboard'), 'fal fa-exclamation-triangle')
     }
@@ -750,5 +770,24 @@ function legacyCopyToClipboard(text: string) {
 /* Enable move transitions when reordering */
 .ri-move {
   transition: transform 150ms ease-out;
+}
+
+/* Contenteditable styling */
+[contenteditable]:empty:before {
+  content: attr(placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+[contenteditable] {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+[contenteditable] img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 6px;
+  margin: 4px 0;
 }
 </style>

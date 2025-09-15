@@ -262,22 +262,44 @@ export const isValidImageFile = (file: File): boolean => {
   return validTypes.includes(file.type) && file.size <= maxSize
 }
 
-export const pasteImageFromClipboard = async (): Promise<string | null> => {
-  try {
-    const clipboardItems = await navigator.clipboard.read()
-    for (const item of clipboardItems) {
-      for (const type of item.types) {
-        if (type.startsWith('image/')) {
-          const blob = await item.getType(type)
-          const file = new File([blob], 'pasted-image.png', { type })
-          if (isValidImageFile(file)) {
+export const pasteImageFromClipboard = async (clipboardData?: DataTransfer): Promise<string | null> => {
+  // Try modern Clipboard API first
+  if (!clipboardData && navigator.clipboard && navigator.clipboard.read) {
+    try {
+      const clipboardItems = await navigator.clipboard.read()
+      for (const item of clipboardItems) {
+        for (const type of item.types) {
+          if (type.startsWith('image/')) {
+            const blob = await item.getType(type)
+            const file = new File([blob], 'pasted-image.png', { type })
+            if (isValidImageFile(file)) {
+              return await fileToBase64(file)
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Modern clipboard API failed, trying fallback:', error)
+    }
+  }
+
+  // Fallback to clipboardData (better mobile support)
+  if (clipboardData) {
+    try {
+      const items = clipboardData.items
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile()
+          if (file && isValidImageFile(file)) {
             return await fileToBase64(file)
           }
         }
       }
+    } catch (error) {
+      console.error('Failed to read image from clipboardData:', error)
     }
-  } catch (error) {
-    console.error('Failed to read image from clipboard:', error)
   }
+
   return null
 }
