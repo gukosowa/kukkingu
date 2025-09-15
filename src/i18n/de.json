@@ -73,6 +73,8 @@
   "Prompt copied. Opening ChatGPT...": "Prompt kopiert. ChatGPT wird geöffnet...",
   "Prompt copied. Opening Gemini...": "Prompt kopiert. Gemini wird geöffnet...",
   "Prompt ready": "Prompt bereit",
+  "Prompt Ready": "Prompt bereit",
+  "Failed to generate prompt. Please try again.": "Prompt konnte nicht generiert werden. Bitte versuchen Sie es erneut.",
   "The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.": "Der eingefügte Text konnte nicht verarbeitet werden. Füge ein einzelnes Rezept-JSON oder eine exportierte Datei ein und versuche es erneut.",
   "We copied the prompt to your clipboard. Paste the prompt and send it.": "1. Klicke 'Zu ChatGPT' Button\n2. In ChatGPT Prompt einfügen und senden\n3. ChatGPT's Rezeptantwort kopieren\n4. X oben links drücken\n5. Kopierten Text hier einfügen\n6. Rezept erscheint in der Liste.",
   "We copied the prompt to your clipboard. We are using Gemini because YouTube extraction only works with Gemini. Paste the prompt and send it.": "Wir haben den Prompt in deine Zwischenablage kopiert. Wir verwenden Gemini, weil die Extraktion von YouTube-Inhalten nur mit Gemini funktioniert. Füge den Prompt ein und sende ihn.",
@@ -136,6 +138,10 @@
   "No recipes": "Keine Rezepte",
   "Really delete this plan?": "Diesen Plan wirklich löschen?",
   "Unknown recipe": "Unbekanntes Rezept",
+  "Breakfast": "Frühstück",
+  "Lunch": "Mittagessen",
+  "Dinner": "Abendessen",
+  "Snack": "Snack",
   "Import Weekly Plan": "Wochenplan importieren",
   "Paste JSON here": "JSON hier einfügen"
 }

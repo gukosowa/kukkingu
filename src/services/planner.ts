@@ -103,48 +103,53 @@ function buildMealPlanPrompt(recipes: Recipe[], options: {
     ? `Excluded tags: ${options.exclusions.join(', ')}`
     : 'No exclusions'
 
-  return `Please create a balanced ${length}-day meal plan using the available recipes. Consider nutritional balance, variety, and practicality.
+  return `You are a meal planning assistant. Create a balanced ${length}-day meal plan using ONLY the recipes provided below as the source of truth.
 
-Available Recipes:
+SOURCE OF TRUTH - AVAILABLE RECIPES:
 ${JSON.stringify(recipeSummaries, null, 2)}
 
-User Preferences:
+USER PREFERENCES:
 - ${preferencesText}
 - ${exclusionsText}
 ${options.dietaryRestrictions ? `- Dietary restrictions: ${options.dietaryRestrictions.join(', ')}` : ''}
 ${options.cuisineTypes ? `- Preferred cuisines: ${options.cuisineTypes.join(', ')}` : ''}
 
-Requirements:
-1. Create exactly ${length} days of meals
-2. Each day should have breakfast, lunch, and dinner
+PLANNING REQUIREMENTS:
+1. Create exactly ${length} days of meals (Day 1 through Day ${length})
+2. Each day should include: breakfast, lunch, and dinner
 ${options.includeSnacks ? '3. Include snacks as requested' : '3. Focus on main meals (breakfast, lunch, dinner)'}
-4. Ensure variety - don't repeat the same recipe too frequently
-5. Consider nutritional balance across the plan
-6. Account for practical cooking times and meal variety
-7. Prioritize recipes with preferred tags when possible
-8. Avoid recipes with excluded tags
+4. Use ONLY recipe IDs from the available recipes list above
+5. Ensure variety - avoid repeating the same recipe within the same week
+6. Consider nutritional balance and meal variety across the plan
+7. Prioritize recipes with preferred tags when available
+8. Strictly avoid recipes with excluded tags
+9. Each recipe plan should specify appropriate serving sizes (typically 2-4 servings)
+10. Assign appropriate meal types: "breakfast", "lunch", "dinner", or "snack"
 
-Return the plan as a JSON object with this structure:
+OUTPUT FORMAT:
+Return ONLY a valid JSON object with this exact structure:
 {
   "name": "Auto-Generated Meal Plan",
-  "startDate": "${new Date().toISOString().split('T')[0]}",
   "days": [
     {
-      "date": "${new Date().toISOString().split('T')[0]}",
       "recipes": [
         {
-          "recipeId": "recipe-id-here",
+          "recipeId": "exact-recipe-id-from-list",
           "servings": 2,
-          "mealType": "breakfast|lunch|dinner|snack"
+          "mealType": "breakfast"
         }
       ],
-      "note": "Optional day note"
+      "note": "Optional note for the day"
     }
   ],
-  "notes": "Optional plan notes"
+  "notes": "Optional notes about the plan"
 }
 
-Ensure the recipe IDs match exactly from the available recipes list.`
+IMPORTANT:
+- Use recipe IDs exactly as they appear in the source list
+- Each day must have at least breakfast, lunch, and dinner
+- JSON must be valid and parseable
+- Do not include any text outside the JSON structure`
 }
 
 // Parse GPT response into WeeklyPlan
@@ -162,7 +167,6 @@ function parseMealPlanResponse(response: string, availableRecipes: Recipe[]): We
     const plan: WeeklyPlan = {
       id: `auto-${Date.now()}`,
       name: planData.name || 'Auto-Generated Meal Plan',
-      startDate: planData.startDate || new Date().toISOString().split('T')[0],
       days: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -172,7 +176,6 @@ function parseMealPlanResponse(response: string, availableRecipes: Recipe[]): We
     // Process days
     if (planData.days && Array.isArray(planData.days)) {
       plan.days = planData.days.map((day: any) => ({
-        date: day.date,
         recipes: (day.recipes || []).filter((recipePlan: any) => {
           // Validate recipe exists
           return availableRecipes.some(r => r.id === recipePlan.recipeId)
@@ -203,7 +206,7 @@ export function importPlanFromJson(jsonString: string): WeeklyPlan | null {
     const plan = JSON.parse(jsonString)
 
     // Validate structure
-    if (!plan.id || !plan.name || !plan.startDate || !Array.isArray(plan.days)) {
+    if (!plan.id || !plan.name || !Array.isArray(plan.days)) {
       throw new Error('Invalid plan structure')
     }
 
@@ -211,9 +214,7 @@ export function importPlanFromJson(jsonString: string): WeeklyPlan | null {
     return {
       id: plan.id,
       name: plan.name,
-      startDate: plan.startDate,
       days: plan.days.map((day: any) => ({
-        date: day.date,
         recipes: day.recipes || [],
         note: day.note
       })),

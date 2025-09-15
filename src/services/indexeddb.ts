@@ -34,16 +34,16 @@ function deepCloneSerializable(obj: any): any {
 }
 
 const DB_NAME = 'KukkinguDB'
-const DB_VERSION = 3 // Increment version for weekly plans
+const DB_VERSION = 4 // Rename weeklyPlans to dailyPlans
 const RECIPES_STORE = 'recipes'
 const SETTINGS_STORE = 'settings'
-const WEEKLY_PLANS_STORE = 'weeklyPlans'
+const DAILY_PLANS_STORE = 'dailyPlans'
 
 // Database schema
 const STORES = {
   [RECIPES_STORE]: { keyPath: 'id', autoIncrement: false },
   [SETTINGS_STORE]: { keyPath: 'key', autoIncrement: false },
-  [WEEKLY_PLANS_STORE]: { keyPath: 'id', autoIncrement: false }
+  [DAILY_PLANS_STORE]: { keyPath: 'id', autoIncrement: false }
 }
 
 class IndexedDBService {
@@ -76,6 +76,40 @@ class IndexedDBService {
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result
         console.log('IndexedDB upgrade needed, old version:', event.oldVersion, 'new version:', event.newVersion)
+
+        // Handle migrations
+        if (event.oldVersion < 4) {
+          // Migration: rename weeklyPlans to dailyPlans
+          if (db.objectStoreNames.contains('weeklyPlans')) {
+            console.log('Migrating weeklyPlans store to dailyPlans')
+
+            // Get all data from old store before deleting it
+            const transaction = (event.target as IDBOpenDBRequest).transaction!
+            const oldStore = transaction.objectStore('weeklyPlans')
+            const oldData: WeeklyPlan[] = []
+
+            const getAllRequest = oldStore.getAll()
+            getAllRequest.onsuccess = () => {
+              oldData.push(...getAllRequest.result)
+              console.log('Retrieved', oldData.length, 'plans from old store')
+            }
+
+            // Wait for the transaction to complete before creating new store
+            transaction.oncomplete = () => {
+              // Now create new store and migrate data
+              if (!db.objectStoreNames.contains(DAILY_PLANS_STORE)) {
+                console.log('Creating dailyPlans store')
+                const newStore = db.createObjectStore(DAILY_PLANS_STORE, { keyPath: 'id', autoIncrement: false })
+
+                // Add migrated data to new store
+                oldData.forEach(plan => {
+                  newStore.add(deepCloneSerializable(plan))
+                })
+                console.log('Migrated', oldData.length, 'plans to dailyPlans store')
+              }
+            }
+          }
+        }
 
         // Always ensure all stores exist (defensive programming)
         Object.entries(STORES).forEach(([storeName, options]) => {
@@ -200,12 +234,12 @@ class IndexedDBService {
     })
   }
 
-  // Weekly plans operations
-  async getWeeklyPlans(): Promise<WeeklyPlan[]> {
+  // Daily plans operations
+  async getDailyPlans(): Promise<WeeklyPlan[]> {
     const db = await this.getDB()
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([WEEKLY_PLANS_STORE], 'readonly')
-      const store = transaction.objectStore(WEEKLY_PLANS_STORE)
+      const transaction = db.transaction([DAILY_PLANS_STORE], 'readonly')
+      const store = transaction.objectStore(DAILY_PLANS_STORE)
       const request = store.getAll()
 
       request.onsuccess = () => {
@@ -218,11 +252,11 @@ class IndexedDBService {
     })
   }
 
-  async saveWeeklyPlan(plan: WeeklyPlan): Promise<void> {
+  async saveDailyPlan(plan: WeeklyPlan): Promise<void> {
     const db = await this.getDB()
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([WEEKLY_PLANS_STORE], 'readwrite')
-      const store = transaction.objectStore(WEEKLY_PLANS_STORE)
+      const transaction = db.transaction([DAILY_PLANS_STORE], 'readwrite')
+      const store = transaction.objectStore(DAILY_PLANS_STORE)
       const request = store.put(deepCloneSerializable(plan))
 
       request.onsuccess = () => {
@@ -235,11 +269,11 @@ class IndexedDBService {
     })
   }
 
-  async deleteWeeklyPlan(planId: string): Promise<void> {
+  async deleteDailyPlan(planId: string): Promise<void> {
     const db = await this.getDB()
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([WEEKLY_PLANS_STORE], 'readwrite')
-      const store = transaction.objectStore(WEEKLY_PLANS_STORE)
+      const transaction = db.transaction([DAILY_PLANS_STORE], 'readwrite')
+      const store = transaction.objectStore(DAILY_PLANS_STORE)
       const request = store.delete(planId)
 
       request.onsuccess = () => {
@@ -301,10 +335,10 @@ export const getSetting = <T>(key: string, defaultValue?: T) => idbService.getSe
 export const setSetting = <T>(key: string, value: T) => idbService.setSetting(key, value)
 export const migrateFromLocalStorage = () => idbService.migrateFromLocalStorage()
 
-// Weekly plans helper functions
-export const getWeeklyPlans = () => idbService.getWeeklyPlans()
-export const saveWeeklyPlan = (plan: WeeklyPlan) => idbService.saveWeeklyPlan(plan)
-export const deleteWeeklyPlan = (planId: string) => idbService.deleteWeeklyPlan(planId)
+// Daily plans helper functions
+export const getDailyPlans = () => idbService.getDailyPlans()
+export const saveDailyPlan = (plan: WeeklyPlan) => idbService.saveDailyPlan(plan)
+export const deleteDailyPlan = (planId: string) => idbService.deleteDailyPlan(planId)
 
 // Image utility functions
 export const fileToBase64 = (file: File): Promise<string> => {

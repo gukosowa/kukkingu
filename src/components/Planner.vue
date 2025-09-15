@@ -7,7 +7,7 @@
         <p class="text-gray-600 mt-1">{{ t('Plan your meals for any period') }}</p>
       </div>
       <div class="flex gap-2">
-        <Button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700">
+        <Button @click="openCreatePlan" class="bg-blue-600 hover:bg-blue-700">
           <Icon icon="fal fa-plus" size="0.9rem" class="mr-1" />
           {{ t('Create Plan') }}
         </Button>
@@ -23,11 +23,11 @@
     </div>
 
     <!-- Plans List -->
-    <div v-if="weeklyPlans.length === 0" class="bg-gray-50 rounded-lg p-8 text-center flex-grow">
+    <div v-if="dailyPlans.length === 0" class="bg-gray-50 rounded-lg p-8 text-center flex-grow">
       <Icon icon="fal fa-calendar-week" size="4rem" class="text-gray-300 mb-4" />
       <h3 class="text-lg font-semibold text-gray-700 mb-2">{{ t('No plans yet') }}</h3>
       <p class="text-gray-500 mb-4">{{ t('Create your first meal plan to get started') }}</p>
-      <Button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700">
+      <Button @click="openCreatePlan" class="bg-blue-600 hover:bg-blue-700">
         {{ t('Create Plan') }}
       </Button>
     </div>
@@ -57,11 +57,11 @@
 
         <div class="space-y-2 mb-4">
           <div
-            v-for="day in plan.days.slice(0, 3)"
-            :key="day.date"
+            v-for="(day, index) in plan.days.slice(0, 3)"
+            :key="index"
             class="flex items-center text-sm"
           >
-            <span class="w-12 text-gray-500">{{ formatDayShort(day.date, plan.startDate) }}</span>
+            <span class="w-12 text-gray-500">{{ t('Day') }} {{ index + 1 }}</span>
             <span class="text-gray-700">{{ day.recipes.length }} {{ t('recipes') }}</span>
           </div>
           <div v-if="plan.days.length > 3" class="text-sm text-gray-500">
@@ -71,7 +71,7 @@
 
         <div class="flex gap-2">
           <Button
-            @click="openPlan(plan)"
+            @click="openEditPlan(plan)"
             class="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Icon icon="fal fa-edit" size="0.8rem" class="mr-1" />
@@ -88,50 +88,114 @@
       </div>
     </div>
 
-    <!-- Create Plan Modal -->
+    <!-- Unified Plan Modal (Create/Edit) -->
     <div
-      v-if="showCreateModal"
+      v-if="showPlanModal"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white rounded-lg max-w-md w-full">
-        <div class="p-6">
-          <h2 class="text-xl font-semibold mb-4">{{ t('Create Plan') }}</h2>
+      <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col">
+        <!-- Header - Fixed at top -->
+        <div class="flex-shrink-0 px-6 py-4 border-b">
+          <h2 class="text-lg font-semibold mb-1">{{ isEditing ? currentPlan?.name : t('Create Plan') }}</h2>
+          <p class="text-sm text-gray-500">
+            {{ isEditing ? `${currentPlan!.days.length} ${t('days')}` : t('Set up your meal plan day by day') }}
+          </p>
+        </div>
 
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('Plan name') }}</label>
-              <SInput
-                v-model="newPlanName"
-                :placeholder="t('Enter plan name')"
-                class="w-full"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('Day length') }}</label>
-              <SInput
-                v-model.number="newPlanDayLength"
-                :placeholder="t('Number of days')"
-                class="w-full"
-                type="number"
-                :min="1"
-                :max="30"
-              />
-              <p class="text-xs text-gray-500 mt-1">{{ t('How many days should this plan cover?') }}</p>
-            </div>
+        <!-- Plan Name Input (only for create mode) -->
+        <div v-if="!isEditing" class="px-6 py-3 border-b bg-gray-50">
+          <div class="max-w-md">
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('Plan name') }}</label>
+            <SInput
+              v-model="newPlanName"
+              :placeholder="t('Enter plan name')"
+              class="w-full"
+            />
           </div>
         </div>
 
-        <div class="px-6 pb-6 flex gap-3">
+        <!-- Days Grid -->
+        <div class="flex-1 overflow-y-auto px-4 py-3 bg-gray-200">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div
+              v-for="(day, index) in modalDays"
+              :key="index"
+              class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <!-- Day Header -->
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="font-medium text-gray-900">{{ t('Day') }} {{ index + 1 }}</h4>
+                <Button
+                  v-if="modalDays.length > 1"
+                  @click="removeDay(index)"
+                  class="bg-red-600 hover:bg-red-700 text-white p-2"
+                  :title="t('Remove day')"
+                >
+                  <Icon icon="fal fa-trash" size="0.9rem" />
+                </Button>
+              </div>
+
+              <!-- Recipes List -->
+              <div class="space-y-2">
+                <div
+                  v-for="(recipePlan, recipeIndex) in day.recipes"
+                  :key="recipePlan.recipeId"
+                  class="bg-gray-100 rounded px-3 py-2 text-sm flex items-center justify-between shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                  @click="openRecipeDetailsModal(index, recipeIndex)"
+                >
+                  <div class="flex-1 min-w-0">
+                    <span class="truncate block">{{ getRecipeName(recipePlan.recipeId) }}</span>
+                    <span class="text-xs text-gray-500">{{ recipePlan.servings }}x • {{ t(recipePlan.mealType) }}</span>
+                  </div>
+                  <Button
+                    @click.stop="removeRecipeFromDay(index, recipePlan.recipeId)"
+                    class="bg-red-600 hover:bg-red-700 text-white p-1 ml-2"
+                    :title="t('Remove recipe')"
+                  >
+                    <Icon icon="fal fa-times" size="0.7rem" />
+                  </Button>
+                </div>
+                <div v-if="day.recipes.length === 0" class="text-xs text-gray-400 italic py-2">
+                  {{ t('No recipes') }}
+                </div>
+              </div>
+
+              <!-- Add Recipe Button -->
+              <div class="mt-3">
+                <Button
+                  @click="openRecipeSelector(index)"
+                  class="w-full bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Icon icon="fal fa-plus" size="0.8rem" class="mr-1" />
+                  {{ t('Add Recipe') }}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Entry Button -->
+          <div class="flex justify-center">
+            <Button
+              @click="addDay"
+              class="bg-green-600 hover:bg-green-700 text-white px-6"
+            >
+              <Icon icon="fal fa-plus" size="0.9rem" class="mr-2" />
+              {{ t('Add Day') }}
+            </Button>
+          </div>
+        </div>
+
+        <!-- Footer - Fixed at bottom -->
+        <div class="flex-shrink-0 px-6 py-4 border-t bg-gray-50 flex gap-3">
           <Button
-            @click="createPlan"
+            @click="savePlan"
             class="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-            :disabled="!newPlanName.trim() || !newPlanDayLength || newPlanDayLength < 1"
+            :disabled="!canSavePlan"
           >
-            {{ t('Create') }}
+            {{ isEditing ? t('Save Changes') : t('Create Plan') }}
           </Button>
           <Button
-            @click="closeCreateModal"
+            @click="closePlanModal"
             class="flex-1 bg-gray-500 hover:bg-gray-600 text-white"
           >
             {{ t('Cancel') }}
@@ -247,60 +311,14 @@
       @cancel="showImportModal = false"
     />
 
-    <!-- Plan Editor Modal (simplified for now) -->
-    <div
-      v-if="editingPlan"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-    >
-      <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        <div class="p-6 border-b">
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold">{{ editingPlan.name }}</h2>
-            <Button @click="closePlanEditor" class="text-gray-500 hover:text-gray-700">
-              <Icon icon="fal fa-times" size="1.2rem" />
-            </Button>
-          </div>
-          <p class="text-sm text-gray-500 mt-1">{{ formatWeekRange(editingPlan) }}</p>
-        </div>
-
-        <div class="p-6 max-h-96 overflow-y-auto">
-          <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
-            <div
-              v-for="day in editingPlan.days"
-              :key="day.date"
-              class="bg-gray-50 rounded-lg p-3"
-            >
-              <h4 class="font-medium text-gray-900 mb-2">{{ formatDay(day.date, editingPlan.startDate) }}</h4>
-              <div class="space-y-1">
-                <div
-                  v-for="recipePlan in day.recipes"
-                  :key="recipePlan.recipeId"
-                  class="bg-white rounded px-2 py-1 text-sm flex items-center justify-between"
-                >
-                  <span class="truncate">{{ getRecipeName(recipePlan.recipeId) }}</span>
-                  <span class="text-xs text-gray-500 ml-1">{{ recipePlan.servings }}x</span>
-                </div>
-                <div v-if="day.recipes.length === 0" class="text-xs text-gray-400 italic">
-                  {{ t('No recipes') }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="p-6 border-t bg-gray-50">
-          <div class="flex justify-end gap-2">
-            <Button @click="generateShoppingList(editingPlan)" class="bg-green-600 hover:bg-green-700">
-              <Icon icon="fal fa-shopping-cart" size="0.9rem" class="mr-1" />
-              {{ t('Shopping List') }}
-            </Button>
-            <Button @click="closePlanEditor" class="bg-gray-600 hover:bg-gray-700">
-              {{ t('Close') }}
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Prompt Ready Modal -->
+    <ModalNotice
+      v-model="showPromptReadyModal"
+      :title="t('Prompt Ready')"
+      :message="t('We copied the prompt to your clipboard. Paste the prompt and send it.')"
+      icon="fal fa-check-circle"
+      :ok-text="t('Got it')"
+    />
 
     <!-- Delete Confirmation Modal -->
     <ModalConfirm
@@ -318,6 +336,34 @@
       icon="fal fa-exclamation-triangle"
     />
 
+    <!-- Recipe Selector Modal -->
+    <div
+      v-if="showRecipeSelector"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    >
+      <div class="bg-white rounded-lg max-w-md w-full">
+        <RecipeSelector
+          :exclude-recipe-ids="getExistingRecipeIdsForDay(selectedDayIndex)"
+          @select="addRecipeToDay"
+          @cancel="closeRecipeSelector"
+        />
+      </div>
+    </div>
+
+    <!-- Recipe Details Modal -->
+    <div
+      v-if="showRecipeDetailsModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    >
+      <RecipeDetailsModal
+        :recipe-name="getRecipeDetailsForEditing().name"
+        :initial-servings="getRecipeDetailsForEditing().servings"
+        :initial-meal-type="getRecipeDetailsForEditing().mealType"
+        @save="saveRecipeDetails"
+        @cancel="closeRecipeDetailsModal"
+      />
+    </div>
+
     <Footer />
   </div>
 </template>
@@ -326,7 +372,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { t } from '~src/i18n'
-import { weeklyPlans, createWeeklyPlan, removeWeeklyPlan, WeeklyPlan, getAllTags } from '~src/store/index'
+import { dailyPlans, createWeeklyPlan, updateWeeklyPlan, removeWeeklyPlan, WeeklyPlan, DayPlan, Recipe, getAllTags } from '~src/store/index'
 import { generateShoppingList as generateList, generateAutoMealPlanPrompt, importPlanFromJson } from '~src/services/planner'
 import { openChatGPT } from '~src/services/chatgpt'
 import { recipes } from '~src/store/index'
@@ -336,71 +382,155 @@ import Button from './Button.vue'
 import ModalInput from './ModalInput.vue'
 import ModalConfirm from './ModalConfirm.vue'
 import ModalNotice from './ModalNotice.vue'
+import ModalAutoPlanPrompt from './ModalAutoPlanPrompt.vue'
+import RecipeSelector from './RecipeSelector.vue'
+import RecipeDetailsModal from './RecipeDetailsModal.vue'
 import SInput from './Input.vue'
 
 const router = useRouter()
 
 // State
-const showCreateModal = ref(false)
+const showPlanModal = ref(false)
 const showAutoPlanModal = ref(false)
+const showAutoPlanPromptModal = ref(false)
+const showPromptReadyModal = ref(false)
 const showImportModal = ref(false)
 const showDeleteModal = ref(false)
 const showNoticeModal = ref(false)
 const noticeMessage = ref('')
-const editingPlan = ref<WeeklyPlan | null>(null)
+const isEditing = ref(false)
+const currentPlan = ref<WeeklyPlan | null>(null)
 const planToDelete = ref<WeeklyPlan | null>(null)
 const newPlanName = ref('')
-const newPlanDayLength = ref(7)
+const modalDays = ref<DayPlan[]>([])
 const autoPlanLength = ref(7)
 const autoPlanPreferences = ref<string[]>([])
 const autoPlanExclusions = ref<string[]>([])
 
+// Recipe selector state
+const showRecipeSelector = ref(false)
+const selectedDayIndex = ref(-1)
+
+// Recipe details modal state
+const showRecipeDetailsModal = ref(false)
+const editingRecipeIndex = ref(-1)
+const editingDayIndex = ref(-1)
+
 // Computed
 const sortedWeeklyPlans = computed(() =>
-  [...weeklyPlans.value].sort((a, b) =>
+  [...dailyPlans.value].sort((a, b) =>
     new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
   )
 )
 
 const allTags = computed(() => getAllTags())
 
+const canSavePlan = computed(() => {
+  if (isEditing.value) return true
+  return newPlanName.value.trim() && modalDays.value.length > 0
+})
+
 // Functions
-async function createPlan() {
-  if (!newPlanName.value.trim() || !newPlanDayLength.value || newPlanDayLength.value < 1) return
+function openCreatePlan() {
+  isEditing.value = false
+  currentPlan.value = null
+  newPlanName.value = ''
 
-  try {
-    // Get today's date as start date
-    const today = new Date()
-    const startDate = today.toISOString().split('T')[0]
+  // Initialize with 1 day
+  modalDays.value = []
+  for (let i = 0; i < 1; i++) {
+    modalDays.value.push({
+      recipes: []
+    })
+  }
 
-    await createWeeklyPlan(newPlanName.value.trim(), startDate, newPlanDayLength.value)
-    closeCreateModal()
-  } catch (error) {
-    console.error('Failed to create plan:', error)
+  showPlanModal.value = true
+}
+
+function openEditPlan(plan: WeeklyPlan) {
+  isEditing.value = true
+  currentPlan.value = { ...plan }
+  newPlanName.value = plan.name
+  modalDays.value = [...plan.days]
+  showPlanModal.value = true
+}
+
+function addDay() {
+  modalDays.value.push({
+    recipes: []
+  })
+}
+
+function removeDay(index: number) {
+  if (modalDays.value.length > 1) {
+    modalDays.value.splice(index, 1)
   }
 }
 
-function closeCreateModal() {
-  showCreateModal.value = false
+async function savePlan() {
+  try {
+    if (isEditing.value && currentPlan.value) {
+      // Update existing plan
+      currentPlan.value.days = modalDays.value
+      currentPlan.value.name = newPlanName.value || currentPlan.value.name
+      await updateWeeklyPlan(currentPlan.value)
+    } else {
+      // Create new plan
+      const plan = await createWeeklyPlan(newPlanName.value.trim(), modalDays.value.length)
+      plan.days = modalDays.value
+      await updateWeeklyPlan(plan)
+    }
+    closePlanModal()
+  } catch (error) {
+    console.error('Failed to save plan:', error)
+  }
+}
+
+function closePlanModal() {
+  showPlanModal.value = false
+  isEditing.value = false
+  currentPlan.value = null
   newPlanName.value = ''
-  newPlanDayLength.value = 7
+  modalDays.value = []
 }
 
 async function generateAutoPlan() {
   if (!autoPlanLength.value || autoPlanLength.value < 1) return
 
+  // Close the current modal
+  closeAutoPlanModal()
+
   try {
-    const prompt = generateAutoMealPlanPrompt({
+    // Generate the prompt
+    const options = {
       length: autoPlanLength.value,
       preferences: autoPlanPreferences.value,
       exclusions: autoPlanExclusions.value
-    })
-    await openChatGPT(prompt)
-    // The user will need to copy the GPT response and import it manually
+    }
+    const prompt = generateAutoMealPlanPrompt(options)
+
+    // Copy prompt to clipboard in background
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(prompt)
+    } else {
+      // Fallback for older browsers
+      const textarea = document.createElement('textarea')
+      textarea.value = prompt
+      textarea.setAttribute('readonly', '')
+      textarea.style.position = 'absolute'
+      textarea.style.left = '-9999px'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+    }
+
+    // Show prompt ready dialog
+    showPromptReadyModal.value = true
   } catch (error) {
-    console.error('Failed to generate auto plan prompt:', error)
-  } finally {
-    closeAutoPlanModal()
+    console.error('Failed to generate and copy prompt:', error)
+    noticeMessage.value = t('Failed to generate prompt. Please try again.')
+    showNoticeModal.value = true
   }
 }
 
@@ -411,13 +541,13 @@ async function importPlan(jsonString: string) {
     const plan = importPlanFromJson(jsonString)
     if (plan) {
       // Check if plan with same ID already exists
-      const existingIndex = weeklyPlans.value.findIndex(p => p.id === plan.id)
+      const existingIndex = dailyPlans.value.findIndex(p => p.id === plan.id)
       if (existingIndex !== -1) {
         // Update existing plan
-        weeklyPlans.value[existingIndex] = plan
+        dailyPlans.value[existingIndex] = plan
       } else {
         // Add new plan
-        weeklyPlans.value.push(plan)
+        dailyPlans.value.push(plan)
       }
     }
   } catch (error) {
@@ -427,16 +557,9 @@ async function importPlan(jsonString: string) {
   }
 }
 
-function openPlan(plan: WeeklyPlan) {
-  editingPlan.value = plan
-}
-
-function closePlanEditor() {
-  editingPlan.value = null
-}
 
 async function deletePlan(planId: string) {
-  const plan = weeklyPlans.value.find(p => p.id === planId)
+  const plan = dailyPlans.value.find(p => p.id === planId)
   if (plan) {
     planToDelete.value = plan
     showDeleteModal.value = true
@@ -512,22 +635,86 @@ function formatWeekRange(plan: WeeklyPlan): string {
   return `Day 1 - Day ${plan.days.length}`
 }
 
-function formatDay(dateString: string, planStartDate: string): string {
-  const date = new Date(dateString)
-  const startDate = new Date(planStartDate)
-  const dayNumber = Math.floor((date.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
-  return `Day ${dayNumber}`
-}
-
-function formatDayShort(dateString: string, planStartDate: string): string {
-  const date = new Date(dateString)
-  const startDate = new Date(planStartDate)
-  const dayNumber = Math.floor((date.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
-  return `Day ${dayNumber}`
-}
-
 function getRecipeName(recipeId: string): string {
   const recipe = recipes.value.find(r => r.id === recipeId)
   return recipe?.name || t('Unknown recipe')
+}
+
+function openRecipeSelector(dayIndex: number) {
+  selectedDayIndex.value = dayIndex
+  showRecipeSelector.value = true
+}
+
+function closeRecipeSelector() {
+  showRecipeSelector.value = false
+  selectedDayIndex.value = -1
+}
+
+function addRecipeToDay(recipe: Recipe) {
+  if (selectedDayIndex.value === -1 || !recipe.id) return
+
+  // Default to lunch, but could be enhanced with a meal type selector
+  const defaultMealType: 'breakfast' | 'lunch' | 'dinner' | 'snack' = 'lunch'
+
+  modalDays.value[selectedDayIndex.value].recipes.push({
+    recipeId: recipe.id,
+    servings: 2, // Default servings
+    mealType: defaultMealType
+  })
+
+  closeRecipeSelector()
+}
+
+function removeRecipeFromDay(dayIndex: number, recipeId: string) {
+  const day = modalDays.value[dayIndex]
+  if (day) {
+    day.recipes = day.recipes.filter(recipe => recipe.recipeId !== recipeId)
+  }
+}
+
+function getExistingRecipeIdsForDay(dayIndex: number): string[] {
+  if (dayIndex === -1 || !modalDays.value[dayIndex]) return []
+  return modalDays.value[dayIndex].recipes.map(recipe => recipe.recipeId)
+}
+
+function openRecipeDetailsModal(dayIndex: number, recipeIndex: number) {
+  editingDayIndex.value = dayIndex
+  editingRecipeIndex.value = recipeIndex
+  showRecipeDetailsModal.value = true
+}
+
+function closeRecipeDetailsModal() {
+  showRecipeDetailsModal.value = false
+  editingDayIndex.value = -1
+  editingRecipeIndex.value = -1
+}
+
+function saveRecipeDetails(data: { servings: number; mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack' }) {
+  if (editingDayIndex.value === -1 || editingRecipeIndex.value === -1) return
+
+  const recipePlan = modalDays.value[editingDayIndex.value].recipes[editingRecipeIndex.value]
+  if (recipePlan) {
+    recipePlan.servings = data.servings
+    recipePlan.mealType = data.mealType
+  }
+
+  closeRecipeDetailsModal()
+}
+
+function getRecipeDetailsForEditing(): { name: string; servings: number; mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack' } {
+  if (editingDayIndex.value === -1 || editingRecipeIndex.value === -1) {
+    return { name: '', servings: 2, mealType: 'lunch' }
+  }
+
+  const recipePlan = modalDays.value[editingDayIndex.value].recipes[editingRecipeIndex.value]
+  if (!recipePlan) {
+    return { name: '', servings: 2, mealType: 'lunch' }
+  }
+
+  return {
+    name: getRecipeName(recipePlan.recipeId),
+    servings: recipePlan.servings,
+    mealType: recipePlan.mealType
+  }
 }
 </script>

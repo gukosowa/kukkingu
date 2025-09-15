@@ -73,6 +73,8 @@
   "Prompt copied. Opening ChatGPT...": "プロンプトをコピーしました。ChatGPTを開きます…",
   "Prompt copied. Opening Gemini...": "プロンプトをコピーしました。Geminiを開きます…",
   "Prompt ready": "プロンプト準備完了",
+  "Prompt Ready": "プロンプト準備完了",
+  "Failed to generate prompt. Please try again.": "プロンプトの生成に失敗しました。もう一度お試しください。",
   "The pasted text could not be parsed. Paste a single recipe JSON or an exported file, then try again.": "貼り付けたテキストを解析できませんでした。単一のレシピJSONまたはエクスポートされたファイルを貼り付けて再試行してください。",
   "We copied the prompt to your clipboard. Paste the prompt and send it.": "1. 「ChatGPTへ移動」ボタンをクリック\n2. ChatGPTでプロンプトを貼り付けて送信\n3. ChatGPTのレシピ応答をコピー\n4. 左上のXを押す\n5. コピーしたテキストをここに貼り付け\n6. レシピがリストに表示されます。",
   "We copied the prompt to your clipboard. We are using Gemini because YouTube extraction only works with Gemini. Paste the prompt and send it.": "プロンプトをクリップボードにコピーしました。YouTubeの抽出はGeminiでのみ可能なためGeminiを使用します。プロンプトを貼り付けて送信してください。",
@@ -136,6 +138,10 @@
   "No recipes": "レシピなし",
   "Really delete this plan?": "このプランを本当に削除しますか？",
   "Unknown recipe": "不明なレシピ",
+  "Breakfast": "朝食",
+  "Lunch": "昼食",
+  "Dinner": "夕食",
+  "Snack": "スナック",
   "Import Weekly Plan": "週間プランをインポート",
   "Paste JSON here": "ここにJSONを貼り付け"
 }
