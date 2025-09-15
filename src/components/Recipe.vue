@@ -213,6 +213,20 @@
           <div class="markdown text-sm px-2" v-html="markedRender"></div>
         </template>
 
+        <!-- Tags Section (View Mode - above image) -->
+        <div v-if="!recipe.edit && recipe.tags && recipe.tags.length > 0" class="mt-4">
+          <label class="text-sm font-medium text-gray-700 mb-3 block">{{ t('Tags') }}</label>
+          <div class="flex flex-wrap gap-2">
+            <span
+              v-for="tag in recipe.tags"
+              :key="tag"
+              class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 border-blue-200 border text-blue-800"
+            >
+              {{ tag }}
+            </span>
+          </div>
+        </div>
+
         <!-- Image Section -->
         <div class="flex flex-col mt-4">
           <label class="text-sm font-medium text-gray-700 mb-2">{{ t('Image') }}</label>
@@ -259,6 +273,11 @@
             </div>
           </template>
         </div>
+
+        <!-- Tags Section (Edit Mode - below image) -->
+        <div v-if="recipe.edit" class="mt-4">
+          <TagInput v-model="recipe.tags" @update:modelValue="saveChange" />
+        </div>
       </div>
     </div>
       <Footer />
@@ -295,6 +314,7 @@ import Checkbox from './Checkbox.vue'
 import AmountTypeModal from './AmountTypeModal.vue'
 import ModalInput from './ModalInput.vue'
 import ModalNotice from './ModalNotice.vue'
+import TagInput from './TagInput.vue'
 import { t, currentLocale } from '~src/i18n'
 import { buildAskRecipePrompt } from '~src/services/prompt'
 import { normalizeAmountType } from '~src/services/units'
@@ -534,6 +554,10 @@ function switchEdit() {
   const copy = [..._recipes.value]
   copy[recipeId.value].edit = !copy[recipeId.value].edit
   copy[recipeId.value].checklist = false
+  // Initialize tags array if it doesn't exist
+  if (!copy[recipeId.value].tags) {
+    copy[recipeId.value].tags = []
+  }
   _recipes.value = copy
 }
 function switchCheck() {

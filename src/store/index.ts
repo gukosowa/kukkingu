@@ -23,6 +23,7 @@ export type Recipe = {
   // Timestamp of last export (ISO string)
   exportedAt?: string
   image?: string // Base64 encoded image data
+  tags?: string[]
   ingredients: Ingredient[]
 }
 
@@ -99,6 +100,19 @@ export function uuidv4() {
       c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
     ).toString(16)
   )
+}
+
+// Get all unique tags from all recipes, sorted alphabetically with Japanese support
+export function getAllTags(): string[] {
+  const allTags = new Set<string>()
+
+  recipes.value.forEach(recipe => {
+    if (recipe.tags) {
+      recipe.tags.forEach(tag => allTags.add(tag))
+    }
+  })
+
+  return Array.from(allTags).sort((a, b) => a.localeCompare(b, 'ja'))
 }
 
 // no-op
