@@ -6,37 +6,22 @@
       <Button @click="denseMode = !denseMode" class="mr-2" color="gray">
         <Icon :icon="denseMode ? 'fal fa-expand' : 'fal fa-compress'" class="py-[3px]" size="0.8rem" />
       </Button>
-      <template v-if="!recipe.checklist">
-        <Button @click="switchEdit" class="mr-1" color="green">
-          <template v-if="recipe.edit">
-            <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
-            {{ t('View mode') }}
-          </template>
-          <template v-else>
-            <Icon icon="fal fa-pen" class="mr-1" size="0.8rem" />
-            {{ t('Edit mode') }}
-          </template>
-        </Button>
-      </template>
-      <template v-else>
-        <Button @click="clearCheck" class="mr-1" color="gray">
-          <Icon icon="fal fa-broom" class="mr-1" size="0.8rem" />
-          {{ t('Clear') }}
-        </Button>
-      </template>
-      <template v-if="!recipe.edit">
-        <Button @click="switchCheck" color="gray">
-          <template v-if="recipe.checklist">
-            <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
-            {{ t('View mode') }}
-          </template>
-          <template v-else>
-            <Icon icon="fal fa-shopping-cart" class="mr-1" size="0.8rem" />
-            {{ t('Checklist') }}
-          </template>
-        </Button>
-      </template>
+
+      <ModeButtonGroup
+        :mode="currentMode"
+        @mode-change="handleModeChange"
+        class="mr-2"
+      />
     </div>
+
+    <!-- Clear Checklist Button (below button group) -->
+    <div v-if="recipe.checklist" class="flex justify-end mb-2">
+      <Button @click="clearCheck" color="gray">
+        <Icon icon="fal fa-broom" class="mr-1" size="0.8rem" />
+        {{ t('Clear checklist') }}
+      </Button>
+    </div>
+
     <div class="flex flex-col flex-grow">
       <div class="mb-3 mt-2">
         <TransitionGroup name="ri" tag="div" appear>
@@ -318,6 +303,7 @@ import AmountTypeModal from './AmountTypeModal.vue'
 import ModalInput from './ModalInput.vue'
 import ModalNotice from './ModalNotice.vue'
 import TagInput from './TagInput.vue'
+import ModeButtonGroup from './ModeButtonGroup.vue'
 import { t, currentLocale } from '~src/i18n'
 import { buildAskRecipePrompt } from '~src/services/prompt'
 import { normalizeAmountType } from '~src/services/units'
@@ -368,6 +354,12 @@ watch(
 
 const markedRender = computed(() => (marked as any).parse(recipe.value?.note || ''))
 const ratio = computed(() => (recipe.value ? recipe.value.original / recipe.value.desired : 1))
+
+const currentMode = computed<'view' | 'edit' | 'checklist'>(() => {
+  if (recipe.value?.edit) return 'edit'
+  if (recipe.value?.checklist) return 'checklist'
+  return 'view'
+})
 const showAskGpt = ref(false)
 const showNotice = ref(false)
 const noticeTitle = ref('')
@@ -553,6 +545,25 @@ function addIngredient() {
     items[items.length - 2]?.focus()
   }, 0)
 }
+function handleModeChange(newMode: 'view' | 'edit' | 'checklist') {
+  const copy = [..._recipes.value]
+  if (newMode === 'edit') {
+    copy[recipeId.value].edit = true
+    copy[recipeId.value].checklist = false
+    // Initialize tags array if it doesn't exist
+    if (!copy[recipeId.value].tags) {
+      copy[recipeId.value].tags = []
+    }
+  } else if (newMode === 'checklist') {
+    copy[recipeId.value].checklist = true
+    copy[recipeId.value].edit = false
+  } else {
+    copy[recipeId.value].edit = false
+    copy[recipeId.value].checklist = false
+  }
+  _recipes.value = copy
+}
+
 function switchEdit() {
   const copy = [..._recipes.value]
   copy[recipeId.value].edit = !copy[recipeId.value].edit
