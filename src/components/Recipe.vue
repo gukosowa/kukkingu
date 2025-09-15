@@ -3,7 +3,7 @@
     <div class="flex items-center my-1">
       <div class="flex-1"></div>
 
-      <Button @click="denseMode = !denseMode" class="mr-2" color="gray">
+      <Button @click="denseMode = !denseMode" class="mr-2" color="text-only">
         <Icon :icon="denseMode ? 'fal fa-expand' : 'fal fa-compress'" class="py-[3px]" size="0.8rem" />
       </Button>
 
@@ -15,7 +15,7 @@
     </div>
 
     <!-- Clear Checklist Button (below button group) -->
-    <div v-if="recipe.checklist" class="flex justify-end mb-2">
+    <div v-if="recipe.checklist" class="flex justify-end mb-2 mt-3">
       <Button @click="clearCheck" color="gray">
         <Icon icon="fal fa-broom" class="mr-1" size="0.8rem" />
         {{ t('Clear checklist') }}
