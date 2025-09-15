@@ -117,5 +117,10 @@
   "gpt_add_procedure": "ONLY add/update the cooking procedure with detailed step-by-step instructions for this recipe. Do NOT modify any existing ingredients, amounts, notes, or tags. Keep all existing recipe content unchanged except for adding/updating the procedure.",
   "gpt_find_similar": "Search the web and find 10 specific recipe URLs that are similar to this recipe. List the exact URLs pointing directly to the recipes, not just cooking websites.",
   "Or ask your own question": "Or ask your own question",
-  "Type your question here...": "Type your question here..."
+  "Type your question here...": "Type your question here...",
+  "Planner": "Planner",
+  "Weekly Planner": "Weekly Planner",
+  "Plan your meals for the week": "Plan your meals for the week",
+  "Coming Soon": "Coming Soon",
+  "The weekly planner feature is under development.": "The weekly planner feature is under development."
 }

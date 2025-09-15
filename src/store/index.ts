@@ -1,6 +1,6 @@
 import { ref, Ref, watch } from 'vue'
 import { migrateRecipeUnits, normalizeAmountType } from '~src/services/units'
-import { getRecipes, saveRecipes, getSetting, setSetting } from '~src/services/indexeddb'
+import { getRecipes, saveRecipes, getSetting, setSetting, migrateFromLocalStorage } from '~src/services/indexeddb'
 
 export type Ingredient = {
   name: string
@@ -30,14 +30,22 @@ export type Recipe = {
 // Initialize recipes from IndexedDB
 export const recipes: Ref<Recipe[]> = ref([])
 
-// Load recipes from IndexedDB on initialization
-getRecipes().then(storedRecipes => {
-  recipes.value = storedRecipes.map((r: any) => migrateRecipeUnits(r))
-}).catch(error => {
-  console.error('Failed to load recipes from IndexedDB:', error)
-  // Fallback to empty array
-  recipes.value = []
-})
+// Load recipes from IndexedDB on initialization, but wait for migration first
+async function initializeRecipes() {
+  try {
+    // Wait for migration to complete before loading recipes
+    await migrateFromLocalStorage()
+    const storedRecipes = await getRecipes()
+    recipes.value = storedRecipes.map((r: any) => migrateRecipeUnits(r))
+  } catch (error) {
+    console.error('Failed to load recipes from IndexedDB:', error)
+    // Fallback to empty array
+    recipes.value = []
+  }
+}
+
+// Start initialization
+initializeRecipes()
 
 // persist changes to IndexedDB
 watch(recipes, async (val) => {

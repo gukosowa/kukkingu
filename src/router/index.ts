@@ -3,6 +3,7 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 const routes: RouteRecordRaw[] = [
   { path: '/', component: () => import('~components/Storage.vue') },
   { path: '/recipe/:recipeId', component: () => import('~components/Recipe.vue') },
+  { path: '/planner', component: () => import('~components/Planner.vue') },
 ]
 
 const router = createRouter({

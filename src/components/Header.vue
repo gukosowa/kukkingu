@@ -47,6 +47,10 @@
         />
       </template>
       <template v-else>
+        <Button @click="openPlanner" class="mr-2">
+          <Icon icon="fal fa-calendar-week mr-2" size="1rem" />
+          {{ t('Planner') }}
+        </Button>
         <Button @click="openImportUrl" class="mr-2">
           <Icon icon="fal fa-magic mr-2" size="1rem" />
           {{ t('GPT') }}
@@ -156,6 +160,10 @@ function home() {
 
 function goToOverview() {
   router.push('/')
+}
+
+function openPlanner() {
+  router.push('/planner')
 }
 
 // GPT functionality functions
