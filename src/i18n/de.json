@@ -113,8 +113,8 @@
   "Add tags to this recipe": "Tags zu diesem Rezept hinzufügen",
   "Add cooking procedure to this recipe": "Kochvorgang zu diesem Rezept hinzufügen",
   "List me 10 URLs of similar recipes or cooking sites": "Liste mir 10 URLs ähnlicher Rezepte oder Kochseiten auf",
-  "gpt_add_tags": "Füge diesem Rezept passende Tags basierend auf seinen Zutaten und Küchentyp hinzu.",
-  "gpt_add_procedure": "Füge diesem Rezept eine detaillierte Kochprozedur mit Schritt-für-Schritt-Anweisungen hinzu.",
+  "gpt_add_tags": "FÜGE NUR passende Tags zu diesem Rezept basierend auf seinen Zutaten und Küchentyp hinzu. ÄNDERE NICHT vorhandene Zutaten, Mengen, Notizen oder Anleitungen. SORTE oder ordne Zutaten NICHT neu. Behalte alle vorhandenen Rezeptinhalte unverändert.",
+  "gpt_add_procedure": "FÜGE NUR die Kochprozedur mit detaillierten Schritt-für-Schritt-Anweisungen zu diesem Rezept hinzu/aktualisiere sie. ÄNDERE NICHT vorhandene Zutaten, Mengen, Notizen oder Tags. Behalte alle vorhandenen Rezeptinhalte unverändert außer dem Hinzufügen/Aktualisieren der Prozedur.",
   "gpt_find_similar": "Durchsuche das Web und finde 10 spezifische Rezept-URLs, die diesem Rezept ähnlich sind. Liste die genauen URLs auf, die direkt zu den Rezepten führen, nicht nur Koch-Websites.",
   "Or ask your own question": "Oder stelle deine eigene Frage",
   "Type your question here...": "Gib hier deine Frage ein..."

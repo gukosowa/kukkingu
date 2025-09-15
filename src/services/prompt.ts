@@ -164,8 +164,12 @@ ${recipeJson}
 Your task is to carefully analyze the recipe and answer the following question:
 "${question}"
 
-Important guidelines:
+CRITICAL guidelines:
 - This question is about the recipe shown above.
+- ALWAYS follow the user's specific instructions precisely - do not add extra changes or modifications unless explicitly asked.
+- PRESERVE the ingredient array order exactly as shown - do NOT resort or reorder ingredients under any circumstances.
+- Do NOT change anything in the recipe unless specifically asked to do so - keep all existing content unchanged.
+- The JSON template shown below is for REFERENCE only - you should only modify the fields that are specifically requested.
 - If the question asks for changes to the recipe itself (such as adding tags, modifying ingredients, changing amounts, updating instructions, or any other format changes), reply ONLY with valid JSON using the exact structure shown below. Do not include any explanatory text - just the JSON.
 - For all other questions (general advice, cooking tips, clarifications, etc.), respond in normal text in ${locale}.
 - When making recipe changes, follow these strict rules: ${baseRules}

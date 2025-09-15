@@ -63,6 +63,42 @@ export type ImportDiff = {
   creates: Recipe[]
 }
 
+// Test function to demonstrate enhanced semantic ingredient diff
+export function createTestIngredientDiff(): ImportDiff {
+  const existingRecipe: Recipe = {
+    id: "test-recipe-1",
+    name: "Chocolate Chip Cookies",
+    note: "Classic recipe",
+    original: 12,
+    desired: 24,
+    ingredients: [
+      { name: "Flour", amount: 2, amountType: "cups", note: "all-purpose" },
+      { name: "Sugar", amount: 1, amountType: "cup", note: "" },
+      { name: "Butter", amount: 100, amountType: "g", note: "softened" },
+      { name: "Eggs", amount: 2, amountType: "p", note: "" }
+    ]
+  }
+
+  const incomingRecipe: Recipe = {
+    id: "test-recipe-1",
+    name: "Chocolate Chip Cookies",
+    note: "Updated classic recipe",
+    original: 12,
+    desired: 24,
+    ingredients: [
+      // Reordered ingredients - should not show as changes with semantic diff
+      { name: "Butter", amount: 100, amountType: "g", note: "room temperature" }, // note changed
+      { name: "Flour", amount: 2.5, amountType: "cups", note: "all-purpose" }, // amount changed
+      { name: "Sugar", amount: 1, amountType: "cup", note: "brown sugar" }, // note changed
+      { name: "Eggs", amount: 2, amountType: "p", note: "" }, // unchanged
+      { name: "Chocolate Chips", amount: 200, amountType: "g", note: "dark chocolate" } // new ingredient
+    ]
+  }
+
+  const changes = getRecipeChanges(existingRecipe, incomingRecipe)
+  return { updates: [{ existing: existingRecipe, incoming: incomingRecipe, changes }], creates: [] }
+}
+
 export function analyzeImportDiff(
   existing: Recipe[],
   incoming: Recipe[]
@@ -129,27 +165,74 @@ function getRecipeChanges(existing: Recipe, incoming: Recipe): string[] {
     changes.push(`Tags removed: ${tagsRemoved.join(', ')}`)
   }
 
-  // Compare ingredients
+  // Compare ingredients by name (semantic diff)
   const existingIngredients = existing.ingredients || []
   const incomingIngredients = incoming.ingredients || []
 
-  if (existingIngredients.length !== incomingIngredients.length) {
-    changes.push(`Ingredients: ${existingIngredients.length} → ${incomingIngredients.length}`)
-  } else {
-    // Check for changes in existing ingredients
-    const ingredientChanges = []
-    for (let i = 0; i < existingIngredients.length; i++) {
-      const existingIng = existingIngredients[i]
-      const incomingIng = incomingIngredients[i]
-      if (existingIng.name !== incomingIng.name ||
-          existingIng.amount !== incomingIng.amount ||
-          existingIng.amountType !== incomingIng.amountType ||
-          existingIng.note !== incomingIng.note) {
-        ingredientChanges.push(`Ingredient ${i + 1}`)
+  // Create maps keyed by ingredient name for semantic comparison
+  const existingMap = new Map<string, any>()
+  const incomingMap = new Map<string, any>()
+
+  // Helper function to normalize ingredient names for comparison
+  const normalizeName = (name: string) => name?.toLowerCase().trim() || ''
+
+  existingIngredients.forEach((ing, index) => {
+    const key = normalizeName(ing.name)
+    existingMap.set(key, { ...ing, originalIndex: index })
+  })
+
+  incomingIngredients.forEach((ing, index) => {
+    const key = normalizeName(ing.name)
+    incomingMap.set(key, { ...ing, originalIndex: index })
+  })
+
+  // Find ingredients that were added, removed, or changed
+  const allIngredientKeys = new Set([...existingMap.keys(), ...incomingMap.keys()])
+
+  allIngredientKeys.forEach(key => {
+    const existingIng = existingMap.get(key)
+    const incomingIng = incomingMap.get(key)
+
+    if (!existingIng && incomingIng) {
+      // New ingredient added
+      changes.push(`Added ingredient: "${incomingIng.name}" (${incomingIng.amount} ${incomingIng.amountType})`)
+    } else if (existingIng && !incomingIng) {
+      // Ingredient removed
+      changes.push(`Removed ingredient: "${existingIng.name}" (${existingIng.amount} ${existingIng.amountType})`)
+    } else if (existingIng && incomingIng) {
+      // Compare ingredient details for the same name
+      const ingredientChanges = []
+
+      // Only compare name if they're actually different (case-insensitive)
+      if (existingIng.name !== incomingIng.name) {
+        ingredientChanges.push(`name: "${existingIng.name}" → "${incomingIng.name}"`)
+      }
+      if (existingIng.amount !== incomingIng.amount) {
+        ingredientChanges.push(`amount: ${existingIng.amount} → ${incomingIng.amount}`)
+      }
+      if (existingIng.amountType !== incomingIng.amountType) {
+        ingredientChanges.push(`unit: "${existingIng.amountType}" → "${incomingIng.amountType}"`)
+      }
+      if ((existingIng.note || '') !== (incomingIng.note || '')) {
+        const existingNote = existingIng.note || '(none)'
+        const incomingNote = incomingIng.note || '(none)'
+        ingredientChanges.push(`note: "${existingNote}" → "${incomingNote}"`)
+      }
+
+      if (ingredientChanges.length > 0) {
+        changes.push(`Ingredient "${existingIng.name}": ${ingredientChanges.join(', ')}`)
       }
     }
-    if (ingredientChanges.length > 0) {
-      changes.push(`Modified ingredients: ${ingredientChanges.join(', ')}`)
+  })
+
+  // Note if ingredient count changed (but don't show it as a separate change since we handle individual additions/removals above)
+  if (existingIngredients.length !== incomingIngredients.length) {
+    // Only add this if there are actual structural changes beyond what we've already reported
+    const addedCount = incomingIngredients.length - existingIngredients.length
+    if (addedCount > 0) {
+      // We already report individual additions above, so no need for count summary
+    } else if (addedCount < 0) {
+      // We already report individual removals above, so no need for count summary
     }
   }
 
@@ -176,5 +259,40 @@ export function mergeChatGPTRecipe(
 
   // If no ID match or no ID, append as new recipe
   return [...existing, incoming]
+}
+
+// Helper function to test semantic ingredient diff
+export function testSemanticIngredientDiff() {
+  console.log("Testing semantic ingredient diff functionality...")
+
+  const testDiff = createTestIngredientDiff()
+  const changes = testDiff.updates[0].changes
+
+  console.log("Recipe changes detected:")
+  changes.forEach(change => console.log(`- ${change}`))
+
+  // Expected results with semantic diff:
+  // - Note changed
+  // - Butter: note changed (not treated as different ingredient)
+  // - Flour: amount changed (not treated as different ingredient)
+  // - Sugar: note changed (not treated as different ingredient)
+  // - Eggs: unchanged (should not appear in diff)
+  // - Chocolate Chips: added as new ingredient
+
+  const expectedChanges = [
+    'Note: "Classic recipe" → "Updated classic recipe"',
+    'Ingredient "Butter": note: "softened" → "room temperature"',
+    'Ingredient "Flour": amount: 2 → 2.5',
+    'Ingredient "Sugar": note: "(none)" → "brown sugar"',
+    'Added ingredient: "Chocolate Chips" (200 g)'
+  ]
+
+  console.log("\nExpected changes:")
+  expectedChanges.forEach(change => console.log(`- ${change}`))
+
+  console.log(`\nActual changes count: ${changes.length}`)
+  console.log(`Expected changes count: ${expectedChanges.length}`)
+
+  return changes
 }
 

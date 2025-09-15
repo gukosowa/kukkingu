@@ -113,8 +113,8 @@
   "Add tags to this recipe": "Add tags to this recipe",
   "Add cooking procedure to this recipe": "Add cooking procedure to this recipe",
   "List me 10 URLs of similar recipes or cooking sites": "List me 10 URLs of similar recipes or cooking sites",
-  "gpt_add_tags": "Add appropriate tags to this recipe based on its ingredients and cuisine type.",
-  "gpt_add_procedure": "Add a detailed cooking procedure with step-by-step instructions for this recipe.",
+  "gpt_add_tags": "ONLY add appropriate tags to this recipe based on its ingredients and cuisine type. Do NOT modify any existing ingredients, amounts, notes, or procedure. Do NOT resort or reorder ingredients. Keep all existing recipe content unchanged.",
+  "gpt_add_procedure": "ONLY add/update the cooking procedure with detailed step-by-step instructions for this recipe. Do NOT modify any existing ingredients, amounts, notes, or tags. Keep all existing recipe content unchanged except for adding/updating the procedure.",
   "gpt_find_similar": "Search the web and find 10 specific recipe URLs that are similar to this recipe. List the exact URLs pointing directly to the recipes, not just cooking websites.",
   "Or ask your own question": "Or ask your own question",
   "Type your question here...": "Type your question here..."
