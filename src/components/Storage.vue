@@ -41,9 +41,12 @@
           :key="tag"
           class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 border border-gray-300 text-gray-700 cursor-pointer hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors"
           @click="addTagToSearch(tag)"
-          :title="t('Click to add to search')"
+          :title="`${t('Click to add to search')} (${tagCounts[tag] || 0} ${t('recipes')})`"
         >
           {{ tag }}
+          <span class="ml-1 -mr-1 text-xs text-gray-500 px-1.5 py-0.5 rounded-full">
+            {{ tagCounts[tag] || 0 }}
+          </span>
         </span>
       </div>
     </details>
@@ -166,6 +169,21 @@ let filterQuery = ref(globalSearchFilter.value)
 
 // Get all available tags, sorted alphabetically
 const allAvailableTags = computed(() => getAllTags())
+
+// Get tag counts - how many recipes have each tag
+const tagCounts = computed(() => {
+  const counts: Record<string, number> = {}
+
+  recipes.value.forEach(recipe => {
+    if (recipe.tags) {
+      recipe.tags.forEach(tag => {
+        counts[tag] = (counts[tag] || 0) + 1
+      })
+    }
+  })
+
+  return counts
+})
 const filterInputRef = ref<InstanceType<typeof SInput> | null>(null)
 let showCreateModal = ref(false)
 let createName = ref('')

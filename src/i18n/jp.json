@@ -69,6 +69,7 @@
   "Could not save the file. Check your browser download permissions or try a different filename.": "ファイルを保存できませんでした。ブラウザのダウンロード権限を確認するか別のファイル名を試してください。",
   "Create Recipe": "レシピを作成",
   "Filter recipes": "レシピを絞り込む",
+  "recipes": "レシピ",
   "Prompt copied. Opening ChatGPT...": "プロンプトをコピーしました。ChatGPTを開きます…",
   "Prompt copied. Opening Gemini...": "プロンプトをコピーしました。Geminiを開きます…",
   "Prompt ready": "プロンプト準備完了",

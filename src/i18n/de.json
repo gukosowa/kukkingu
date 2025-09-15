@@ -69,6 +69,7 @@
   "Could not save the file. Check your browser download permissions or try a different filename.": "Datei konnte nicht gespeichert werden. Überprüfe die Download-Berechtigungen deines Browsers oder versuche einen anderen Dateinamen.",
   "Create Recipe": "Rezept erstellen",
   "Filter recipes": "Rezepte filtern",
+  "recipes": "Rezepte",
   "Prompt copied. Opening ChatGPT...": "Prompt kopiert. ChatGPT wird geöffnet...",
   "Prompt copied. Opening Gemini...": "Prompt kopiert. Gemini wird geöffnet...",
   "Prompt ready": "Prompt bereit",
