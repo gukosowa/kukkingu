@@ -72,6 +72,14 @@
       @confirm="confirmImportJson"
       @cancel="cancelImportJson"
     />
+    <ModalImportDiff
+      v-model="showImportDiffModal"
+      :diff="importDiff"
+      @update-existing="handleUpdateExisting"
+      @create-new="handleCreateNew"
+      @add-as-new="handleAddAsNew"
+      @cancel="handleCancelImport"
+    />
 
     <TransitionGroup :name="transitionName" tag="div" class="flex-grow" appear>
       <div
@@ -153,15 +161,15 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { t, currentLocale } from '~src/i18n'
 import Footer from '~components/Footer.vue'
-import { recipes as _recipes, modalStates, globalSearchFilter, getAllTags, sortJapaneseText } from '~src/store/index'
-import { mergeChatGPTRecipe } from '~src/services/importExport'
+import { recipes as _recipes, modalStates, globalSearchFilter, getAllTags, sortJapaneseText, uuidv4 } from '~src/store/index'
+import { mergeChatGPTRecipe, mergeRecipesByExportedAt, analyzeImportDiff, type ImportDiff } from '~src/services/importExport'
 import Button from './Button.vue'
 import SInput from './Input.vue'
 import { newRecipe } from '~plugins/helper'
 import Icon from './Icon.vue'
 import ModalConfirm from './ModalConfirm.vue'
 import ModalInput from './ModalInput.vue'
-import { mergeRecipesByExportedAt } from '~src/services/importExport'
+import ModalImportDiff from './ModalImportDiff.vue'
 import { chooseExportFile, saveExportFile, loadFromFile } from '~src/services/fileExport'
 
 const router = useRouter()
@@ -196,6 +204,9 @@ let deleteConfirmName = ref('')
 let deleteIndex = ref<number | null>(null)
 let showImportJsonModal = ref(false)
 let importJsonText = ref('')
+let showImportDiffModal = ref(false)
+let importDiff = ref<ImportDiff>({ updates: [], creates: [] })
+let parsedImportData: any = null
 let toastMessage = ref('')
 let toastTimer: number | null = null
 const transitionName = ref('ov')
@@ -329,23 +340,29 @@ function confirmImportJson(json: string) {
   try {
     const parsed = parsePastedJson(json)
     if (!parsed) throw new Error('No JSON found')
-    // If an exported file (array) is pasted, merge by id using exportedAt
+
+    parsedImportData = parsed
+
     if (Array.isArray(parsed)) {
-      recipes.value = mergeRecipesByExportedAt(recipes.value as any, parsed as any) as any
+      // Analyze diff for array of recipes
+      const normalizedRecipes = parsed.map((recipe: any) => normalizeRecipe(recipe))
+      importDiff.value = analyzeImportDiff(recipes.value as any, normalizedRecipes)
+      showImportDiffModal.value = true
       return
     }
+
     // Single recipe: ensure minimal shape expected by the app
-    const single: any = parsed
-    if (!single.edit) single.edit = true
-    if (!Array.isArray(single.ingredients)) single.ingredients = []
-    single.ingredients = single.ingredients.map((ing: any) => ({
-      name: ing?.name ?? '',
-      amount: typeof ing?.amount === 'number' ? ing.amount : 0,
-      amountType: ing?.amountType ?? 'g',
-      note: ing?.note ?? '',
-    }))
-    // If id present, merge; otherwise append
-    recipes.value = mergeChatGPTRecipe(recipes.value as any, single) as any
+    const single: any = normalizeRecipe(parsed)
+    // For single recipe, show simple diff or direct import
+    if (single.id && recipes.value.some((r: any) => r.id === single.id)) {
+      // This is an update - show diff
+      importDiff.value = analyzeImportDiff(recipes.value as any, [single])
+      showImportDiffModal.value = true
+    } else {
+      // This is a new recipe - import directly
+      recipes.value = mergeChatGPTRecipe(recipes.value as any, single) as any
+      showToast(t('Recipe imported'))
+    }
   } catch (e) {
     showToast(t('Invalid JSON'))
   }
@@ -355,6 +372,8 @@ function confirmImportJson(json: string) {
 function cancelImportJson() {
   importJsonText.value = ''
   showImportJsonModal.value = false
+  parsedImportData = null
+  importDiff.value = { updates: [], creates: [] }
 }
 
 function parsePastedJson(input: string): any | null {
@@ -367,6 +386,78 @@ function parsePastedJson(input: string): any | null {
   } catch (_) {
     return null
   }
+}
+
+function normalizeRecipe(recipe: any): any {
+  const normalized = { ...recipe }
+  if (!normalized.edit) normalized.edit = true
+  if (!Array.isArray(normalized.ingredients)) normalized.ingredients = []
+  normalized.ingredients = normalized.ingredients.map((ing: any) => ({
+    name: ing?.name ?? '',
+    amount: typeof ing?.amount === 'number' ? ing.amount : 0,
+    amountType: ing?.amountType ?? 'g',
+    note: ing?.note ?? '',
+  }))
+  return normalized
+}
+
+function handleUpdateExisting() {
+  if (!parsedImportData) return
+
+  if (Array.isArray(parsedImportData)) {
+    const normalizedRecipes = parsedImportData.map((recipe: any) => normalizeRecipe(recipe))
+    recipes.value = mergeRecipesByExportedAt(recipes.value as any, normalizedRecipes) as any
+    showToast(t('Recipes updated'))
+  } else {
+    const single = normalizeRecipe(parsedImportData)
+    recipes.value = mergeChatGPTRecipe(recipes.value as any, single) as any
+    showToast(t('Recipe updated'))
+  }
+}
+
+function handleCreateNew() {
+  if (!parsedImportData) return
+
+  if (Array.isArray(parsedImportData)) {
+    const normalizedRecipes = parsedImportData.map((recipe: any) => normalizeRecipe(recipe))
+    // Only add new recipes, ignore updates
+    const newRecipes = normalizedRecipes.filter((incoming: any) =>
+      !incoming.id || !recipes.value.some((existing: any) => existing.id === incoming.id)
+    )
+    recipes.value = [...recipes.value, ...newRecipes] as any
+    showToast(`${newRecipes.length} ${t('recipes')} ${t('created')}`)
+  } else {
+    const single = normalizeRecipe(parsedImportData)
+    if (!single.id || !recipes.value.some((r: any) => r.id === single.id)) {
+      recipes.value = [...recipes.value, single] as any
+      showToast(t('Recipe created'))
+    }
+  }
+}
+
+function handleAddAsNew() {
+  if (!parsedImportData) return
+
+  if (Array.isArray(parsedImportData)) {
+    const newRecipes = parsedImportData.map((recipe: any) => ({
+      ...normalizeRecipe(recipe),
+      id: uuidv4() // Generate new unique ID
+    }))
+    recipes.value = [...recipes.value, ...newRecipes] as any
+    showToast(`${newRecipes.length} ${t('recipes')} ${t('added as new')}`)
+  } else {
+    const newRecipe = {
+      ...normalizeRecipe(parsedImportData),
+      id: uuidv4() // Generate new unique ID
+    }
+    recipes.value = [...recipes.value, newRecipe] as any
+    showToast(t('Recipe added as new'))
+  }
+}
+
+function handleCancelImport() {
+  parsedImportData = null
+  importDiff.value = { updates: [], creates: [] }
 }
 
 async function chooseFile() {
