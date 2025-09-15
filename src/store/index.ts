@@ -201,7 +201,7 @@ watch(weeklyPlans, async (plans) => {
 }, { deep: true })
 
 // Weekly plans management functions
-export async function createWeeklyPlan(name: string, startDate: string): Promise<WeeklyPlan> {
+export async function createWeeklyPlan(name: string, startDate: string, dayLength: number = 7): Promise<WeeklyPlan> {
   const plan: WeeklyPlan = {
     id: uuidv4(),
     name,
@@ -211,8 +211,8 @@ export async function createWeeklyPlan(name: string, startDate: string): Promise
     updatedAt: new Date().toISOString()
   }
 
-  // Initialize 7 days
-  for (let i = 0; i < 7; i++) {
+  // Initialize days based on dayLength
+  for (let i = 0; i < dayLength; i++) {
     const date = new Date(startDate)
     date.setDate(date.getDate() + i)
 

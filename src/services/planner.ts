@@ -56,14 +56,15 @@ function getPopulatedPlan(plan: WeeklyPlan): WeeklyPlan {
 }
 
 // Generate auto meal plan prompt for GPT
-export function generateAutoMealPlanPrompt(
-  preferences: {
-    dietaryRestrictions?: string[]
-    cuisineTypes?: string[]
-    maxRecipesPerDay?: number
-    includeSnacks?: boolean
-  } = {}
-): string {
+export function generateAutoMealPlanPrompt(options: {
+  length?: number
+  preferences?: string[]
+  exclusions?: string[]
+  dietaryRestrictions?: string[]
+  cuisineTypes?: string[]
+  maxRecipesPerDay?: number
+  includeSnacks?: boolean
+} = {}): string {
   // Get all available recipes
   const availableRecipes = recipes.value.filter(recipe =>
     recipe.id && recipe.ingredients.length > 0
@@ -74,11 +75,19 @@ export function generateAutoMealPlanPrompt(
   }
 
   // Build prompt for GPT
-  return buildMealPlanPrompt(availableRecipes, preferences)
+  return buildMealPlanPrompt(availableRecipes, options)
 }
 
 // Build prompt for meal planning
-function buildMealPlanPrompt(recipes: Recipe[], preferences: any): string {
+function buildMealPlanPrompt(recipes: Recipe[], options: {
+  length?: number
+  preferences?: string[]
+  exclusions?: string[]
+  dietaryRestrictions?: string[]
+  cuisineTypes?: string[]
+  maxRecipesPerDay?: number
+  includeSnacks?: boolean
+}): string {
   const recipeSummaries = recipes.map(recipe => ({
     id: recipe.id,
     name: recipe.name,
@@ -86,29 +95,42 @@ function buildMealPlanPrompt(recipes: Recipe[], preferences: any): string {
     tags: recipe.tags || []
   }))
 
-  return `Please create a balanced 7-day meal plan using the available recipes. Consider nutritional balance, variety, and practicality.
+  const length = options.length || 7
+  const preferencesText = options.preferences && options.preferences.length > 0
+    ? `Preferred tags: ${options.preferences.join(', ')}`
+    : 'No specific preferences'
+  const exclusionsText = options.exclusions && options.exclusions.length > 0
+    ? `Excluded tags: ${options.exclusions.join(', ')}`
+    : 'No exclusions'
+
+  return `Please create a balanced ${length}-day meal plan using the available recipes. Consider nutritional balance, variety, and practicality.
 
 Available Recipes:
 ${JSON.stringify(recipeSummaries, null, 2)}
 
-Preferences:
-${JSON.stringify(preferences, null, 2)}
+User Preferences:
+- ${preferencesText}
+- ${exclusionsText}
+${options.dietaryRestrictions ? `- Dietary restrictions: ${options.dietaryRestrictions.join(', ')}` : ''}
+${options.cuisineTypes ? `- Preferred cuisines: ${options.cuisineTypes.join(', ')}` : ''}
 
 Requirements:
-1. Create exactly 7 days of meals (Monday-Sunday)
+1. Create exactly ${length} days of meals
 2. Each day should have breakfast, lunch, and dinner
-3. Optionally include snacks if requested
+${options.includeSnacks ? '3. Include snacks as requested' : '3. Focus on main meals (breakfast, lunch, dinner)'}
 4. Ensure variety - don't repeat the same recipe too frequently
-5. Consider nutritional balance across the week
+5. Consider nutritional balance across the plan
 6. Account for practical cooking times and meal variety
+7. Prioritize recipes with preferred tags when possible
+8. Avoid recipes with excluded tags
 
 Return the plan as a JSON object with this structure:
 {
   "name": "Auto-Generated Meal Plan",
-  "startDate": "2024-01-01", // Use current Monday date
+  "startDate": "${new Date().toISOString().split('T')[0]}",
   "days": [
     {
-      "date": "2024-01-01",
+      "date": "${new Date().toISOString().split('T')[0]}",
       "recipes": [
         {
           "recipeId": "recipe-id-here",
