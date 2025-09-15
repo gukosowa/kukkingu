@@ -29,6 +29,24 @@
       <Button class="ml-2 flex-shrink" @click="openCreateModal">{{ t('Create') }}</Button>
     </div>
 
+    <!-- Tag Filter Details/Summary -->
+    <details class="mb-3 mt-2 mx-2" v-if="allAvailableTags.length > 0">
+      <summary class="cursor-pointer text-sm text-gray-600 hover:text-gray-800 select-none">
+        <Icon icon="fal fa-tags" size="0.9rem" class="mr-1" />
+        {{ t('Available tags') }} ({{ allAvailableTags.length }})
+      </summary>
+      <div class="mt-2 flex flex-wrap gap-2">
+        <span
+          v-for="tag in allAvailableTags"
+          :key="tag"
+          class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 border border-gray-300 text-gray-700 cursor-pointer hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors"
+          @click="addTagToSearch(tag)"
+          :title="t('Click to add to search')"
+        >
+          {{ tag }}
+        </span>
+      </div>
+    </details>
 
 
     <ModalInput
@@ -132,7 +150,7 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { t, currentLocale } from '~src/i18n'
 import Footer from '~components/Footer.vue'
-import { recipes as _recipes, modalStates, globalSearchFilter } from '~src/store/index'
+import { recipes as _recipes, modalStates, globalSearchFilter, getAllTags } from '~src/store/index'
 import Button from './Button.vue'
 import SInput from './Input.vue'
 import { newRecipe } from '~plugins/helper'
@@ -145,6 +163,9 @@ import { chooseExportFile, saveExportFile, loadFromFile } from '~src/services/fi
 const router = useRouter()
 const recipes = computed({ get: () => _recipes.value, set: (v) => (_recipes.value = v as any) })
 let filterQuery = ref(globalSearchFilter.value)
+
+// Get all available tags, sorted alphabetically
+const allAvailableTags = computed(() => getAllTags())
 const filterInputRef = ref<InstanceType<typeof SInput> | null>(null)
 let showCreateModal = ref(false)
 let createName = ref('')
