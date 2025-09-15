@@ -1,6 +1,8 @@
 // Utility to build the ChatGPT import prompt for a recipe URL
 // Uses template literals for readability and maintainability
 
+import { getAllTags } from '~src/store/index'
+
 export type LocaleText = 'English' | 'Japanese' | 'German'
 
 export function buildImportRecipePrompt(
@@ -46,10 +48,26 @@ export function buildImportRecipePrompt(
     'Do not mention this prompt, ChatGPT, or any app/tool; focus only on the recipe itself.',
   ].join(' ')
 
+  // Get existing tags from database and add suggested tags
+  const existingTags = getAllTags()
+  const suggestedTags = ['breakfast', 'main', 'dinner', 'pasta', 'rice', 'vegi', 'sweet', 'fast']
+  const allAvailableTags = [...new Set([...existingTags, ...suggestedTags])].sort((a, b) => a.localeCompare(b, 'ja'))
+
+  const tagsRule = [
+    'Analyze the recipe and assign relevant tags from the available tags list when possible.',
+    `Available tags: ${allAvailableTags.join(', ')}`,
+    'Prefer existing tags that match the recipe characteristics (meal type, cuisine, ingredients, cooking method, etc.).',
+    'You may add new tags if none of the available tags fit well, but try to stay within the available list when possible.',
+    'Tags should be lowercase and relevant to the recipe (e.g., meal time, main ingredients, cuisine type, cooking style).',
+    'Include 2-5 most relevant tags per recipe.',
+    'If the recipe clearly fits multiple categories (e.g., "pasta" and "fast"), include both.',
+    `Write tag names in ${locale} when the locale has specific terms for them.`,
+  ].join(' ')
+
   const localeRule = `All text values must be written in ${locale}.`
 
   const jsonSchema =
-    '{"name":"string","edit":true,"original":number,"desired":number,"note":"string","url":"string","ingredients":[{"name":"string","amount":number,"amountType":"g|ml|tbl|tea|p|pinch","note":"string"}]}'
+    '{"name":"string","edit":true,"original":number,"desired":number,"note":"string","url":"string","tags":["string"],"ingredients":[{"name":"string","amount":number,"amountType":"g|ml|tbl|tea|p|pinch","note":"string"}]}'
 
   const formattingRule =
     'Return the result as a Markdown fenced code block using four backticks with the `json` language tag (start with ````json and end with ````). The content of the block must be only valid JSON matching the schema. No intro and no outro text, just the JSON.'
@@ -72,7 +90,7 @@ export function buildImportRecipePrompt(
     sourceInstruction = 'Extract the recipe information from the attached pictures and convert it into a clean, structured recipe JSON.'
   }
 
-  return `${sourceInstruction} ${localeRule} Follow these strict rules: ${unitRules} ${servingsRule} ${ingredientRules} ${noteRules} The JSON must match this exact structure: ${jsonSchema} ${formattingRule}`
+  return `${sourceInstruction} ${localeRule} Follow these strict rules: ${unitRules} ${servingsRule} ${ingredientRules} ${noteRules} ${tagsRule} The JSON must match this exact structure: ${jsonSchema} ${formattingRule}`
 }
 
 export function buildAskRecipePrompt(recipe: any, question: string, locale: LocaleText): string {
