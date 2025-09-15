@@ -4,7 +4,7 @@
     :class="[
       'inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium',
       color === 'text-only'
-        ? 'text-gray-700 bg-transparent border-transparent shadow-none hover:bg-gray-100 focus:ring-gray-500'
+        ? 'text-gray-500 bg-transparent border-transparent shadow-none hover:bg-gray-100 focus:ring-gray-500'
         : [
             'shadow-sm text-white',
             `bg-${color}-${tone + 100}`,

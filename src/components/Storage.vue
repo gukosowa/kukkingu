@@ -112,8 +112,8 @@
           </div>
           <div class="flex-grow whitespace-nowrap text-right">
             <template v-if="item.rename">
-              <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-600" />
-              <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-600 mr-2" />
+              <i @click="moveDown(index)" class="text-sm cursor-pointer fal fa-arrow-down p-2 text-gray-700 hover:text-gray-900" />
+              <i @click="moveUp(index)" class="text-sm cursor-pointer fal fa-arrow-up p-2 text-gray-700 hover:text-gray-900 mr-2" />
               <Button color="red" class="mr-1" :tone="300" @click="() => initRemove(index, item.name)">
                 <Icon icon="fal fa-trash-alt" size="1.2rem" />
               </Button>
@@ -122,8 +122,8 @@
               </Button>
             </template>
             <template v-else>
-              <Button color="gray" :tone="400" @click="() => initRename(index)">
-                <Icon icon="fal fa-pen" size="1.2rem" />
+              <Button color="text-only" @click="() => initRename(index)">
+                <Icon icon="fal fa-pen" size="1rem" />
               </Button>
             </template>
           </div>
