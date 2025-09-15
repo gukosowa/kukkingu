@@ -220,7 +220,9 @@
             <span
               v-for="tag in [...recipe.tags].sort((a, b) => a.localeCompare(b))"
               :key="tag"
-              class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 border-blue-200 border text-blue-800"
+              class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 border-blue-200 border text-blue-800 cursor-pointer hover:bg-blue-200 transition-colors"
+              @click="searchByTag(tag)"
+              :title="t('Click to search for this tag')"
             >
               {{ tag }}
             </span>
@@ -307,7 +309,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as marked from 'marked'
 import Footer from '~components/Footer.vue'
-import { recipes as _recipes } from '~src/store/index'
+import { recipes as _recipes, globalSearchFilter } from '~src/store/index'
 import Button from './Button.vue'
 import SInput from './Input.vue'
 import Icon from './Icon.vue'
@@ -726,6 +728,13 @@ function deleteImage() {
 
 function openChatGPTTab() {
   window.open('https://chatgpt.com/', '_blank')
+}
+
+function searchByTag(tag: string) {
+  // Set the global search filter to the clicked tag
+  globalSearchFilter.value = tag
+  // Navigate back to overview where the filter will be applied
+  router.push('/')
 }
 
 // Small stagger for enter transitions, clamped to 200ms total

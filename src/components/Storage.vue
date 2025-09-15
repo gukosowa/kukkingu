@@ -80,7 +80,9 @@
                 <span
                   v-for="tag in [...item.tags].sort((a, b) => a.localeCompare(b))"
                   :key="tag"
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-100 border-blue-200 border text-blue-800"
+                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-100 border-blue-200 border text-blue-800 cursor-pointer hover:bg-blue-200 transition-colors"
+                  @click="addTagToSearch(tag)"
+                  :title="t('Click to search for this tag')"
                 >
                   {{ tag }}
                 </span>
@@ -130,7 +132,7 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { t, currentLocale } from '~src/i18n'
 import Footer from '~components/Footer.vue'
-import { recipes as _recipes, modalStates } from '~src/store/index'
+import { recipes as _recipes, modalStates, globalSearchFilter } from '~src/store/index'
 import Button from './Button.vue'
 import SInput from './Input.vue'
 import { newRecipe } from '~plugins/helper'
@@ -142,7 +144,7 @@ import { chooseExportFile, saveExportFile, loadFromFile } from '~src/services/fi
 
 const router = useRouter()
 const recipes = computed({ get: () => _recipes.value, set: (v) => (_recipes.value = v as any) })
-let filterQuery = ref('')
+let filterQuery = ref(globalSearchFilter.value)
 const filterInputRef = ref<InstanceType<typeof SInput> | null>(null)
 let showCreateModal = ref(false)
 let createName = ref('')
@@ -197,6 +199,15 @@ function filterMatch(item: any) {
 }
 function clearFilter() {
   filterQuery.value = ''
+  nextTick(() => filterInputRef.value?.focus?.())
+}
+function addTagToSearch(tag: string) {
+  const currentQuery = (filterQuery.value || '').trim()
+  if (currentQuery) {
+    filterQuery.value = currentQuery + ' ' + tag
+  } else {
+    filterQuery.value = tag
+  }
   nextTick(() => filterInputRef.value?.focus?.())
 }
 function open(index: number) {
@@ -366,6 +377,17 @@ watch(
     }
   }
 )
+
+// Sync local filter with global search filter
+watch(filterQuery, (newValue) => {
+  globalSearchFilter.value = newValue
+})
+
+watch(globalSearchFilter, (newValue) => {
+  if (filterQuery.value !== newValue) {
+    filterQuery.value = newValue
+  }
+})
 
 
 
