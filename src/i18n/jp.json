@@ -105,5 +105,17 @@
   "Tags added": "タグ追加",
   "Tags removed": "タグ削除",
   "Ingredients": "材料",
-  "Modified ingredients": "変更された材料"
+  "Modified ingredients": "変更された材料",
+  "Quick questions": "クイック質問",
+  "Add Tags": "タグを追加",
+  "Add Cooking Procedure": "調理手順を追加",
+  "Find Similar Recipes": "似たレシピを探す",
+  "Add tags to this recipe": "このレシピにタグを追加してください",
+  "Add cooking procedure to this recipe": "このレシピに調理手順を追加してください",
+  "List me 10 URLs of similar recipes or cooking sites": "似たレシピや料理サイトのURLを10個リストアップしてください",
+  "gpt_add_tags": "このレシピの材料と料理の種類に基づいて、適切なタグを追加してください。",
+  "gpt_add_procedure": "このレシピにステップバイステップの指示を含む詳細な調理手順を追加してください。",
+  "gpt_find_similar": "ウェブを検索して、このレシピに似た10個の具体的なレシピURLを見つけてください。このレシピに直接リンクする正確なURLをリストアップし、料理サイト全体ではなく個別のレシピを指定してください。",
+  "Or ask your own question": "または自分の質問をする",
+  "Type your question here...": "ここに質問を入力..."
 }

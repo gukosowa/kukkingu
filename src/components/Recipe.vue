@@ -270,13 +270,10 @@
     </div>
       <Footer />
     </div>
-    <ModalInput
+    <ModalAskGpt
       v-model="showAskGpt"
-      :title="t('Ask GPT')"
       :confirmText="t('Ask GPT')"
-      :placeholder="t('Question')"
       :cancelText="t('Cancel')"
-      :multiline="true"
       @confirm="confirmAskGpt"
     />
     <ModalNotice
@@ -300,7 +297,7 @@ import SInput from './Input.vue'
 import Icon from './Icon.vue'
 import Checkbox from './Checkbox.vue'
 import AmountTypeModal from './AmountTypeModal.vue'
-import ModalInput from './ModalInput.vue'
+import ModalAskGpt from './ModalAskGpt.vue'
 import ModalNotice from './ModalNotice.vue'
 import TagInput from './TagInput.vue'
 import ModeButtonGroup from './ModeButtonGroup.vue'

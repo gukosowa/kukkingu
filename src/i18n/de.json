@@ -105,5 +105,17 @@
   "Tags added": "Tags hinzugefügt",
   "Tags removed": "Tags entfernt",
   "Ingredients": "Zutaten",
-  "Modified ingredients": "Geänderte Zutaten"
+  "Modified ingredients": "Geänderte Zutaten",
+  "Quick questions": "Schnellfragen",
+  "Add Tags": "Tags hinzufügen",
+  "Add Cooking Procedure": "Kochvorgang hinzufügen",
+  "Find Similar Recipes": "Ähnliche Rezepte finden",
+  "Add tags to this recipe": "Tags zu diesem Rezept hinzufügen",
+  "Add cooking procedure to this recipe": "Kochvorgang zu diesem Rezept hinzufügen",
+  "List me 10 URLs of similar recipes or cooking sites": "Liste mir 10 URLs ähnlicher Rezepte oder Kochseiten auf",
+  "gpt_add_tags": "Füge diesem Rezept passende Tags basierend auf seinen Zutaten und Küchentyp hinzu.",
+  "gpt_add_procedure": "Füge diesem Rezept eine detaillierte Kochprozedur mit Schritt-für-Schritt-Anweisungen hinzu.",
+  "gpt_find_similar": "Durchsuche das Web und finde 10 spezifische Rezept-URLs, die diesem Rezept ähnlich sind. Liste die genauen URLs auf, die direkt zu den Rezepten führen, nicht nur Koch-Websites.",
+  "Or ask your own question": "Oder stelle deine eigene Frage",
+  "Type your question here...": "Gib hier deine Frage ein..."
 }

@@ -105,5 +105,17 @@
   "Tags added": "Tags added",
   "Tags removed": "Tags removed",
   "Ingredients": "Ingredients",
-  "Modified ingredients": "Modified ingredients"
+  "Modified ingredients": "Modified ingredients",
+  "Quick questions": "Quick questions",
+  "Add Tags": "Add Tags",
+  "Add Cooking Procedure": "Add Cooking Procedure",
+  "Find Similar Recipes": "Find Similar Recipes",
+  "Add tags to this recipe": "Add tags to this recipe",
+  "Add cooking procedure to this recipe": "Add cooking procedure to this recipe",
+  "List me 10 URLs of similar recipes or cooking sites": "List me 10 URLs of similar recipes or cooking sites",
+  "gpt_add_tags": "Add appropriate tags to this recipe based on its ingredients and cuisine type.",
+  "gpt_add_procedure": "Add a detailed cooking procedure with step-by-step instructions for this recipe.",
+  "gpt_find_similar": "Search the web and find 10 specific recipe URLs that are similar to this recipe. List the exact URLs pointing directly to the recipes, not just cooking websites.",
+  "Or ask your own question": "Or ask your own question",
+  "Type your question here...": "Type your question here..."
 }
