@@ -318,16 +318,20 @@ const pasteArea = ref<HTMLDivElement | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 const recipeId = computed(() => {
-  return +(route.params.id as any)
+  return route.params.recipeId as string
+})
+
+const recipeIndex = computed(() => {
+  return _recipes.value.findIndex(recipe => recipe.id === recipeId.value)
 })
 
 const recipe = computed<any>({
   get() {
-    return _recipes.value?.[recipeId.value]
+    return _recipes.value?.[recipeIndex.value]
   },
   set(v) {
     const copy = [..._recipes.value]
-    copy[recipeId.value] = v
+    copy[recipeIndex.value] = v
     _recipes.value = copy
   },
 })
@@ -338,14 +342,14 @@ if (!_recipes.value || _recipes.value.length === 0) {
 
 // Ensure view mode when opening a recipe: if currently in edit mode, switch to view
 watch(
-  () => recipeId.value,
-  (id) => {
+  () => recipeIndex.value,
+  (index) => {
     const list = _recipes.value
-    if (!Array.isArray(list) || id == null) return
-    const current = list[id]
+    if (!Array.isArray(list) || index < 0) return
+    const current = list[index]
     if (current && current.edit) {
       const copy = [...list]
-      copy[id] = { ...copy[id], edit: false }
+      copy[index] = { ...copy[index], edit: false }
       _recipes.value = copy
     }
   },
@@ -538,7 +542,7 @@ function focusNext(index: number) {
 }
 function addIngredient() {
   const copy = [..._recipes.value]
-  copy[recipeId.value].ingredients.push({ name: '', amount: '', amountType: 'g', note: '' })
+  copy[recipeIndex.value].ingredients.push({ name: '', amount: '', amountType: 'g', note: '' })
   _recipes.value = copy
   setTimeout(() => {
     const items = [...document.getElementsByClassName('input-field')] as HTMLElement[]
@@ -548,46 +552,46 @@ function addIngredient() {
 function handleModeChange(newMode: 'view' | 'edit' | 'checklist') {
   const copy = [..._recipes.value]
   if (newMode === 'edit') {
-    copy[recipeId.value].edit = true
-    copy[recipeId.value].checklist = false
+    copy[recipeIndex.value].edit = true
+    copy[recipeIndex.value].checklist = false
     // Initialize tags array if it doesn't exist
-    if (!copy[recipeId.value].tags) {
-      copy[recipeId.value].tags = []
+    if (!copy[recipeIndex.value].tags) {
+      copy[recipeIndex.value].tags = []
     }
   } else if (newMode === 'checklist') {
-    copy[recipeId.value].checklist = true
-    copy[recipeId.value].edit = false
+    copy[recipeIndex.value].checklist = true
+    copy[recipeIndex.value].edit = false
   } else {
-    copy[recipeId.value].edit = false
-    copy[recipeId.value].checklist = false
+    copy[recipeIndex.value].edit = false
+    copy[recipeIndex.value].checklist = false
   }
   _recipes.value = copy
 }
 
 function switchEdit() {
   const copy = [..._recipes.value]
-  copy[recipeId.value].edit = !copy[recipeId.value].edit
-  copy[recipeId.value].checklist = false
+  copy[recipeIndex.value].edit = !copy[recipeIndex.value].edit
+  copy[recipeIndex.value].checklist = false
   // Initialize tags array if it doesn't exist
-  if (!copy[recipeId.value].tags) {
-    copy[recipeId.value].tags = []
+  if (!copy[recipeIndex.value].tags) {
+    copy[recipeIndex.value].tags = []
   }
   _recipes.value = copy
 }
 function switchCheck() {
   const copy = [..._recipes.value]
-  copy[recipeId.value].checklist = !copy[recipeId.value].checklist
-  copy[recipeId.value].edit = false
+  copy[recipeIndex.value].checklist = !copy[recipeIndex.value].checklist
+  copy[recipeIndex.value].edit = false
   _recipes.value = copy
 }
 function clearCheck() {
   const copy = [..._recipes.value]
-  copy[recipeId.value].ingredients.forEach((i: any) => (i.checked = false))
+  copy[recipeIndex.value].ingredients.forEach((i: any) => (i.checked = false))
   _recipes.value = copy
 }
 function clearNote(index: number) {
   const copy = [..._recipes.value]
-  copy[recipeId.value].ingredients[index].note = ''
+  copy[recipeIndex.value].ingredients[index].note = ''
   _recipes.value = copy
 }
 function doOriginal(index: number) {
@@ -596,8 +600,8 @@ function doOriginal(index: number) {
   const amount = parseFloat(item.amount || '0')
   if (!amount) return
   const copy = [..._recipes.value]
-  copy[recipeId.value].original = amount
-  copy[recipeId.value].desired = amount
+  copy[recipeIndex.value].original = amount
+  copy[recipeIndex.value].desired = amount
   _recipes.value = copy
   setTimeout(() => {
     const input = document.getElementById('input-desired') as HTMLInputElement
@@ -620,7 +624,7 @@ function setDesiredFromIngredient(index: number) {
   const amount = parseFloat(item.amount || '0')
   if (!amount) return
   const copy = [..._recipes.value]
-  copy[recipeId.value].desired = amount
+  copy[recipeIndex.value].desired = amount
   _recipes.value = copy
   setTimeout(() => {
     const input = document.getElementById('input-desired') as HTMLInputElement
@@ -642,18 +646,18 @@ function array_move<T>(array: T[], sourceIndex: number, destinationIndex: number
 function moveUp(index: number) {
   const copy = [..._recipes.value]
   const clamp = Math.max(0, index - 1)
-  copy[recipeId.value].ingredients = array_move(copy[recipeId.value].ingredients, index, clamp)
+  copy[recipeIndex.value].ingredients = array_move(copy[recipeIndex.value].ingredients, index, clamp)
   _recipes.value = copy
 }
 function moveDown(index: number) {
   const copy = [..._recipes.value]
-  const clamp = Math.min(copy[recipeId.value].ingredients.length - 1, index + 1)
-  copy[recipeId.value].ingredients = array_move(copy[recipeId.value].ingredients, index, clamp)
+  const clamp = Math.min(copy[recipeIndex.value].ingredients.length - 1, index + 1)
+  copy[recipeIndex.value].ingredients = array_move(copy[recipeIndex.value].ingredients, index, clamp)
   _recipes.value = copy
 }
 function deleteIngredient(index: number) {
   const copy = [..._recipes.value]
-  copy[recipeId.value].ingredients = copy[recipeId.value].ingredients.filter((_: any, i: number) => i !== index)
+  copy[recipeIndex.value].ingredients = copy[recipeIndex.value].ingredients.filter((_: any, i: number) => i !== index)
   _recipes.value = copy
 }
 function saveChange() {
@@ -727,13 +731,13 @@ async function handlePaste(event: ClipboardEvent) {
 
 function updateRecipeImage(base64: string) {
   const copy = [..._recipes.value]
-  copy[recipeId.value].image = base64
+  copy[recipeIndex.value].image = base64
   _recipes.value = copy
 }
 
 function deleteImage() {
   const copy = [..._recipes.value]
-  copy[recipeId.value].image = undefined
+  copy[recipeIndex.value].image = undefined
   _recipes.value = copy
 }
 

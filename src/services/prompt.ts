@@ -147,7 +147,7 @@ export function buildAskRecipePrompt(recipe: any, question: string, locale: Loca
   ].join(' ')
 
   const jsonSchema =
-    '{"name":"string","edit":true,"original":number,"desired":number,"note":"string","url":"string","tags":["string"],"ingredients":[{"name":"string","amount":number,"amountType":"g|ml|tbl|tea|p|pinch","note":"string"}]}'
+    '{"id":"string","name":"string","edit":true,"original":number,"desired":number,"note":"string","url":"string","tags":["string"],"ingredients":[{"name":"string","amount":number,"amountType":"g|ml|tbl|tea|p|pinch","note":"string"}]}'
 
   const formattingRule =
     'Return the result as a Markdown fenced code block using four backticks with the `json` language tag (start with ````json and end with ````). The content of the block must be only valid JSON matching the schema. No intro and no outro text, just the JSON.'
@@ -169,6 +169,7 @@ Important guidelines:
 - If the question asks for changes to the recipe itself (such as adding tags, modifying ingredients, changing amounts, updating instructions, or any other format changes), reply ONLY with valid JSON using the exact structure shown below. Do not include any explanatory text - just the JSON.
 - For all other questions (general advice, cooking tips, clarifications, etc.), respond in normal text in ${locale}.
 - When making recipe changes, follow these strict rules: ${baseRules}
+- IMPORTANT: Always include the existing recipe's "id" field in the JSON response to ensure the recipe gets updated instead of creating a new one.
 
 JSON structure for recipe changes: ${jsonSchema}
 

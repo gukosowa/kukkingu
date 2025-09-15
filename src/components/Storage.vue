@@ -154,6 +154,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { t, currentLocale } from '~src/i18n'
 import Footer from '~components/Footer.vue'
 import { recipes as _recipes, modalStates, globalSearchFilter, getAllTags, sortJapaneseText } from '~src/store/index'
+import { mergeChatGPTRecipe } from '~src/services/importExport'
 import Button from './Button.vue'
 import SInput from './Input.vue'
 import { newRecipe } from '~plugins/helper'
@@ -253,7 +254,13 @@ function addTagToSearch(tag: string) {
   nextTick(() => filterInputRef.value?.focus?.())
 }
 function open(index: number) {
-  router.push('/recipe/' + index)
+  const recipe = recipes.value[index]
+  if (recipe && recipe.id) {
+    router.push('/recipe/' + recipe.id)
+  } else {
+    // Fallback for recipes without ID (shouldn't happen in new code)
+    router.push('/recipe/' + index)
+  }
 }
 function initRename(index: number) {
   const copy = [...recipes.value]
@@ -338,11 +345,7 @@ function confirmImportJson(json: string) {
       note: ing?.note ?? '',
     }))
     // If id present, merge; otherwise append
-    if (single.id) {
-      recipes.value = mergeRecipesByExportedAt(recipes.value as any, [single] as any) as any
-    } else {
-      recipes.value = [...recipes.value, single]
-    }
+    recipes.value = mergeChatGPTRecipe(recipes.value as any, single) as any
   } catch (e) {
     showToast(t('Invalid JSON'))
   }

@@ -1,4 +1,5 @@
 import { getRecipes } from '~src/services/indexeddb'
+import { uuidv4 } from '~src/store/index'
 
 export const newRecipe = async (name) => {
   let localRecipes = await getRecipes()
@@ -15,6 +16,7 @@ export const newRecipe = async (name) => {
   }
 
   const recipeObj = {
+    id: uuidv4(),
     name,
     edit: true,
     original: 100,

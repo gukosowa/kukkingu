@@ -6,8 +6,9 @@
           <img
             src="/android-chrome-192x192.png"
             alt="Kukkingu"
-            class="h-12 w-12 select-none"
+            class="h-12 w-12 select-none cursor-pointer"
             draggable="false"
+            @click="goToOverview"
           />
         </div>
       </template>
@@ -106,29 +107,32 @@ let noticeOkUrl = ref<string | null>(null)
 
 const recipeId = computed(() => {
   if (route.path.startsWith('/recipe/')) {
-    const id = route.params.id
-    return typeof id === 'string' ? +id : -1
+    return route.params.recipeId as string
   }
-  return -1
+  return null
+})
+
+const recipeIndex = computed(() => {
+  return recipeId.value ? recipes.value.findIndex(recipe => recipe.id === recipeId.value) : -1
 })
 
 const recipe = computed<any>({
   get() {
-    return recipeId.value !== -1 ? recipes.value[recipeId.value] : null
+    return recipeIndex.value !== -1 ? recipes.value[recipeIndex.value] : null
   },
   set(v) {
-    if (recipeId.value !== -1) {
+    if (recipeIndex.value !== -1) {
       const copy = [...recipes.value]
-      copy[recipeId.value] = v
+      copy[recipeIndex.value] = v
       recipes.value = copy
     }
   },
 })
 
 function onchange() {
-  if (recipeId.value !== -1) {
+  if (recipeIndex.value !== -1) {
     const copy = [...recipes.value]
-    copy[recipeId.value] = recipe.value
+    copy[recipeIndex.value] = recipe.value
     recipes.value = copy
   }
 }
@@ -148,6 +152,10 @@ function home() {
   } else {
     router.push('/')
   }
+}
+
+function goToOverview() {
+  router.push('/')
 }
 
 // GPT functionality functions

@@ -54,3 +54,25 @@ export function mergeRecipesByExportedAt(
   return result
 }
 
+export function mergeChatGPTRecipe(
+  existing: Recipe[],
+  incoming: Recipe
+): Recipe[] {
+  const map = new Map<string, Recipe>()
+
+  // Create map of existing recipes by ID
+  existing.forEach((r) => {
+    if (r.id) {
+      map.set(r.id, r)
+    }
+  })
+
+  // If incoming recipe has an ID and exists in current recipes, replace it
+  if (incoming.id && map.has(incoming.id)) {
+    return existing.map(r => r.id === incoming.id ? incoming : r)
+  }
+
+  // If no ID match or no ID, append as new recipe
+  return [...existing, incoming]
+}
+
