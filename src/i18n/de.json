@@ -122,5 +122,20 @@
   "Weekly Planner": "Wochenplaner",
   "Plan your meals for the week": "Plane deine Mahlzeiten für die Woche",
   "Coming Soon": "Demnächst",
-  "The weekly planner feature is under development.": "Die Wochenplaner-Funktion ist in Entwicklung."
+  "The weekly planner feature is under development.": "Die Wochenplaner-Funktion ist in Entwicklung.",
+  "Create Plan": "Plan erstellen",
+  "Auto Plan": "Auto-Plan",
+  "No plans yet": "Noch keine Pläne",
+  "Create your first weekly meal plan to get started": "Erstelle deinen ersten wöchentlichen Essensplan um zu beginnen",
+  "Edit": "Bearbeiten",
+  "Shopping List": "Einkaufsliste",
+  "Create Weekly Plan": "Wochenplan erstellen",
+  "Generate Auto Meal Plan": "Auto-Essensplan generieren",
+  "Let GPT create a balanced meal plan for the week using your recipes.": "Lass GPT einen ausgewogenen Essensplan für die Woche mit deinen Rezepten erstellen.",
+  "Generate": "Generieren",
+  "No recipes": "Keine Rezepte",
+  "Really delete this plan?": "Diesen Plan wirklich löschen?",
+  "Unknown recipe": "Unbekanntes Rezept",
+  "Import Weekly Plan": "Wochenplan importieren",
+  "Paste JSON here": "JSON hier einfügen"
 }

@@ -1,6 +1,6 @@
 import { ref, Ref, watch } from 'vue'
 import { migrateRecipeUnits, normalizeAmountType } from '~src/services/units'
-import { getRecipes, saveRecipes, getSetting, setSetting, migrateFromLocalStorage } from '~src/services/indexeddb'
+import { getRecipes, saveRecipes, getSetting, setSetting, migrateFromLocalStorage, getWeeklyPlans, saveWeeklyPlan, deleteWeeklyPlan } from '~src/services/indexeddb'
 
 export type Ingredient = {
   name: string
@@ -25,6 +25,37 @@ export type Recipe = {
   image?: string // Base64 encoded image data
   tags?: string[]
   ingredients: Ingredient[]
+}
+
+export type DayPlan = {
+  date: string // ISO date string (YYYY-MM-DD)
+  recipes: RecipePlan[]
+  note?: string
+}
+
+export type RecipePlan = {
+  recipeId: string
+  recipe?: Recipe // populated when loaded
+  servings: number
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack'
+}
+
+export type WeeklyPlan = {
+  id: string
+  name: string
+  startDate: string // ISO date string (YYYY-MM-DD)
+  days: DayPlan[]
+  createdAt: string
+  updatedAt: string
+  notes?: string
+}
+
+export type ShoppingListItem = {
+  name: string
+  amount: number
+  amountType: string
+  checked?: boolean
+  recipes: string[] // recipe IDs that use this ingredient
 }
 
 // Initialize recipes from IndexedDB
@@ -150,4 +181,76 @@ export function getAllTags(): string[] {
   })
 
   return Array.from(allTags).sort(sortJapaneseText)
+}
+
+// Weekly plans store
+export const weeklyPlans: Ref<WeeklyPlan[]> = ref([])
+
+// Load weekly plans from IndexedDB on initialization
+getWeeklyPlans().then(storedPlans => {
+  weeklyPlans.value = storedPlans
+}).catch(error => {
+  console.error('Failed to load weekly plans from IndexedDB:', error)
+  weeklyPlans.value = []
+})
+
+// Persist weekly plans changes to IndexedDB
+watch(weeklyPlans, async (plans) => {
+  // The individual save operations will handle persistence
+  // This watch is mainly for external changes
+}, { deep: true })
+
+// Weekly plans management functions
+export async function createWeeklyPlan(name: string, startDate: string): Promise<WeeklyPlan> {
+  const plan: WeeklyPlan = {
+    id: uuidv4(),
+    name,
+    startDate,
+    days: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+
+  // Initialize 7 days
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(startDate)
+    date.setDate(date.getDate() + i)
+
+    plan.days.push({
+      date: date.toISOString().split('T')[0],
+      recipes: []
+    })
+  }
+
+  await saveWeeklyPlan(plan)
+  weeklyPlans.value.push(plan)
+  return plan
+}
+
+export async function updateWeeklyPlan(plan: WeeklyPlan): Promise<void> {
+  plan.updatedAt = new Date().toISOString()
+  await saveWeeklyPlan(plan)
+
+  const index = weeklyPlans.value.findIndex(p => p.id === plan.id)
+  if (index !== -1) {
+    weeklyPlans.value[index] = plan
+  }
+}
+
+export async function removeWeeklyPlan(planId: string): Promise<void> {
+  await deleteWeeklyPlan(planId)
+  weeklyPlans.value = weeklyPlans.value.filter(p => p.id !== planId)
+}
+
+// Helper function to get populated recipes for a plan
+export function getPopulatedPlan(plan: WeeklyPlan): WeeklyPlan {
+  const populatedPlan = { ...plan }
+  populatedPlan.days = populatedPlan.days.map(day => ({
+    ...day,
+    recipes: day.recipes.map(recipePlan => ({
+      ...recipePlan,
+      recipe: recipes.value.find(r => r.id === recipePlan.recipeId)
+    }))
+  }))
+  return populatedPlan
 }

@@ -122,5 +122,20 @@
   "Weekly Planner": "Weekly Planner",
   "Plan your meals for the week": "Plan your meals for the week",
   "Coming Soon": "Coming Soon",
-  "The weekly planner feature is under development.": "The weekly planner feature is under development."
+  "The weekly planner feature is under development.": "The weekly planner feature is under development.",
+  "Create Plan": "Create Plan",
+  "Auto Plan": "Auto Plan",
+  "No plans yet": "No plans yet",
+  "Create your first weekly meal plan to get started": "Create your first weekly meal plan to get started",
+  "Edit": "Edit",
+  "Shopping List": "Shopping List",
+  "Create Weekly Plan": "Create Weekly Plan",
+  "Generate Auto Meal Plan": "Generate Auto Meal Plan",
+  "Let GPT create a balanced meal plan for the week using your recipes.": "Let GPT create a balanced meal plan for the week using your recipes.",
+  "Generate": "Generate",
+  "No recipes": "No recipes",
+  "Really delete this plan?": "Really delete this plan?",
+  "Unknown recipe": "Unknown recipe",
+  "Import Weekly Plan": "Import Weekly Plan",
+  "Paste JSON here": "Paste JSON here"
 }

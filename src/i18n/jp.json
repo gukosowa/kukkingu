@@ -122,5 +122,20 @@
   "Weekly Planner": "週間プランナー",
   "Plan your meals for the week": "今週の食事を計画しましょう",
   "Coming Soon": "近日公開",
-  "The weekly planner feature is under development.": "週間プランナー機能は開発中です。"
+  "The weekly planner feature is under development.": "週間プランナー機能は開発中です。",
+  "Create Plan": "プランを作成",
+  "Auto Plan": "自動プラン",
+  "No plans yet": "プランがありません",
+  "Create your first weekly meal plan to get started": "最初の週間食事プランを作成して始めましょう",
+  "Edit": "編集",
+  "Shopping List": "買い物リスト",
+  "Create Weekly Plan": "週間プランを作成",
+  "Generate Auto Meal Plan": "自動食事プランを生成",
+  "Let GPT create a balanced meal plan for the week using your recipes.": "レシピを使ってGPTに今週のバランスの取れた食事プランを作成してもらいましょう。",
+  "Generate": "生成",
+  "No recipes": "レシピなし",
+  "Really delete this plan?": "このプランを本当に削除しますか？",
+  "Unknown recipe": "不明なレシピ",
+  "Import Weekly Plan": "週間プランをインポート",
+  "Paste JSON here": "ここにJSONを貼り付け"
 }

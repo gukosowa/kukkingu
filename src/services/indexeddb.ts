@@ -1,4 +1,4 @@
-import { Recipe } from '~src/store/index'
+import { Recipe, WeeklyPlan } from '~src/store/index'
 
 // Utility function to create a deep clone without Vue reactivity
 function deepCloneSerializable(obj: any): any {
@@ -34,14 +34,16 @@ function deepCloneSerializable(obj: any): any {
 }
 
 const DB_NAME = 'KukkinguDB'
-const DB_VERSION = 1
+const DB_VERSION = 3 // Increment version for weekly plans
 const RECIPES_STORE = 'recipes'
 const SETTINGS_STORE = 'settings'
+const WEEKLY_PLANS_STORE = 'weeklyPlans'
 
 // Database schema
 const STORES = {
   [RECIPES_STORE]: { keyPath: 'id', autoIncrement: false },
-  [SETTINGS_STORE]: { keyPath: 'key', autoIncrement: false }
+  [SETTINGS_STORE]: { keyPath: 'key', autoIncrement: false },
+  [WEEKLY_PLANS_STORE]: { keyPath: 'id', autoIncrement: false }
 }
 
 class IndexedDBService {
@@ -67,20 +69,25 @@ class IndexedDBService {
 
       request.onsuccess = () => {
         this.db = request.result
+        console.log('IndexedDB opened successfully, stores:', Array.from(this.db.objectStoreNames))
         resolve(request.result)
       }
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result
+        console.log('IndexedDB upgrade needed, old version:', event.oldVersion, 'new version:', event.newVersion)
 
-        // Create object stores if they don't exist
+        // Always ensure all stores exist (defensive programming)
         Object.entries(STORES).forEach(([storeName, options]) => {
           if (!db.objectStoreNames.contains(storeName)) {
+            console.log('Creating object store:', storeName)
             const store = db.createObjectStore(storeName, options)
             // Create indexes if needed
             if (storeName === RECIPES_STORE) {
               store.createIndex('name', 'name', { unique: false })
             }
+          } else {
+            console.log('Object store already exists:', storeName)
           }
         })
       }
@@ -193,6 +200,58 @@ class IndexedDBService {
     })
   }
 
+  // Weekly plans operations
+  async getWeeklyPlans(): Promise<WeeklyPlan[]> {
+    const db = await this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([WEEKLY_PLANS_STORE], 'readonly')
+      const store = transaction.objectStore(WEEKLY_PLANS_STORE)
+      const request = store.getAll()
+
+      request.onsuccess = () => {
+        resolve(request.result || [])
+      }
+
+      request.onerror = () => {
+        reject(request.error)
+      }
+    })
+  }
+
+  async saveWeeklyPlan(plan: WeeklyPlan): Promise<void> {
+    const db = await this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([WEEKLY_PLANS_STORE], 'readwrite')
+      const store = transaction.objectStore(WEEKLY_PLANS_STORE)
+      const request = store.put(deepCloneSerializable(plan))
+
+      request.onsuccess = () => {
+        resolve()
+      }
+
+      request.onerror = () => {
+        reject(request.error)
+      }
+    })
+  }
+
+  async deleteWeeklyPlan(planId: string): Promise<void> {
+    const db = await this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([WEEKLY_PLANS_STORE], 'readwrite')
+      const store = transaction.objectStore(WEEKLY_PLANS_STORE)
+      const request = store.delete(planId)
+
+      request.onsuccess = () => {
+        resolve()
+      }
+
+      request.onerror = () => {
+        reject(request.error)
+      }
+    })
+  }
+
   // Migration from localStorage
   async migrateFromLocalStorage(): Promise<void> {
     // Check if migration already happened
@@ -241,6 +300,11 @@ export const saveRecipes = (recipes: Recipe[]) => idbService.saveRecipes(recipes
 export const getSetting = <T>(key: string, defaultValue?: T) => idbService.getSetting(key, defaultValue)
 export const setSetting = <T>(key: string, value: T) => idbService.setSetting(key, value)
 export const migrateFromLocalStorage = () => idbService.migrateFromLocalStorage()
+
+// Weekly plans helper functions
+export const getWeeklyPlans = () => idbService.getWeeklyPlans()
+export const saveWeeklyPlan = (plan: WeeklyPlan) => idbService.saveWeeklyPlan(plan)
+export const deleteWeeklyPlan = (planId: string) => idbService.deleteWeeklyPlan(planId)
 
 // Image utility functions
 export const fileToBase64 = (file: File): Promise<string> => {
