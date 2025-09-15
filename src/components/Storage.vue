@@ -153,7 +153,7 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { t, currentLocale } from '~src/i18n'
 import Footer from '~components/Footer.vue'
-import { recipes as _recipes, modalStates, globalSearchFilter, getAllTags } from '~src/store/index'
+import { recipes as _recipes, modalStates, globalSearchFilter, getAllTags, sortJapaneseText } from '~src/store/index'
 import Button from './Button.vue'
 import SInput from './Input.vue'
 import { newRecipe } from '~plugins/helper'
@@ -164,7 +164,10 @@ import { mergeRecipesByExportedAt } from '~src/services/importExport'
 import { chooseExportFile, saveExportFile, loadFromFile } from '~src/services/fileExport'
 
 const router = useRouter()
-const recipes = computed({ get: () => _recipes.value, set: (v) => (_recipes.value = v as any) })
+const recipes = computed({
+  get: () => [..._recipes.value].sort((a, b) => sortJapaneseText(a.name, b.name)),
+  set: (v) => (_recipes.value = v as any)
+})
 let filterQuery = ref(globalSearchFilter.value)
 
 // Get all available tags, sorted alphabetically

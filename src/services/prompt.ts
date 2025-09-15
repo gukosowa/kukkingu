@@ -51,7 +51,7 @@ export function buildImportRecipePrompt(
   // Get existing tags from database and add suggested tags
   const existingTags = getAllTags()
   const suggestedTags = ['breakfast', 'main', 'dinner', 'pasta', 'rice', 'vegi', 'sweet', 'fast']
-  const allAvailableTags = [...new Set([...existingTags, ...suggestedTags])].sort((a, b) => a.localeCompare(b, 'ja'))
+  const allAvailableTags = Array.from(new Set([...existingTags, ...suggestedTags])).sort((a, b) => a.localeCompare(b, 'ja'))
 
   const tagsRule = [
     'Analyze the recipe and assign relevant tags from the available tags list when possible.',

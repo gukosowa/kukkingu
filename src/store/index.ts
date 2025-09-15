@@ -105,6 +105,32 @@ export function uuidv4() {
   )
 }
 
+// Japanese text sorting function that handles mixed kanji/kana/romaji
+export function sortJapaneseText(a: string, b: string): number {
+  if (!a && !b) return 0
+  if (!a) return 1
+  if (!b) return -1
+
+  // Normalize the strings for better comparison
+  const normalize = (str: string) => str
+    .toLowerCase()
+    .trim()
+    // Convert full-width characters to half-width
+    .replace(/[\uff01-\uff5e]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
+    // Normalize spaces
+    .replace(/\s+/g, ' ')
+
+  const normalizedA = normalize(a)
+  const normalizedB = normalize(b)
+
+  // First try Japanese locale comparison
+  const jaCompare = normalizedA.localeCompare(normalizedB, 'ja')
+  if (jaCompare !== 0) return jaCompare
+
+  // If Japanese comparison returns equal, try general unicode comparison
+  return normalizedA.localeCompare(normalizedB, 'en', { numeric: true, sensitivity: 'base' })
+}
+
 // Get all unique tags from all recipes, sorted alphabetically with Japanese support
 export function getAllTags(): string[] {
   const allTags = new Set<string>()
@@ -115,7 +141,5 @@ export function getAllTags(): string[] {
     }
   })
 
-  return Array.from(allTags).sort((a, b) => a.localeCompare(b, 'ja'))
+  return Array.from(allTags).sort(sortJapaneseText)
 }
-
-// no-op
