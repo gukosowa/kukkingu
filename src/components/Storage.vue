@@ -74,6 +74,17 @@
               <Button color="pink" @click="open(index)" class="text-[1.1rem] leading-5 tracking-wider !px-2 !text-left">
                 {{ item.name }}
               </Button>
+
+              <!-- Tags Section (inside gray container below button) -->
+              <div v-if="item.tags && item.tags.length > 0" class="mt-2 flex flex-wrap gap-1">
+                <span
+                  v-for="tag in item.tags"
+                  :key="tag"
+                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-100 border-blue-200 border text-blue-800"
+                >
+                  {{ tag }}
+                </span>
+              </div>
             </template>
           </div>
           <div class="flex-grow whitespace-nowrap text-right">
