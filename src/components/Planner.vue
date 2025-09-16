@@ -241,7 +241,7 @@
     <!-- Prompt Ready Modal -->
     <ModalPromptReady
       v-model="showPromptReadyModal"
-      @goToAI="openChatGPT"
+      @goToAI="openImportModal"
     />
 
     <!-- Delete Confirmation Modal -->
@@ -307,7 +307,6 @@ import { useRouter } from 'vue-router'
 import { t } from '~src/i18n'
 import { dailyPlans, createWeeklyPlan, updateWeeklyPlan, removeWeeklyPlan, WeeklyPlan, DayPlan, Recipe, getAllTags, getShoppingListForPlan, saveShoppingListForPlan, ShoppingListItem } from '~src/store/index'
 import { generateShoppingList as generateList, generateAutoMealPlanPrompt, importPlanFromJson } from '~src/services/planner'
-import { openChatGPT } from '~src/services/chatgpt'
 import { recipes } from '~src/store/index'
 import Icon from './Icon.vue'
 import Footer from './Footer.vue'
@@ -541,6 +540,17 @@ async function openChatGPT() {
   } catch (error) {
     console.error('Failed to open ChatGPT:', error)
   }
+}
+
+async function openImportModal() {
+  try {
+    // Open ChatGPT in new tab
+    window.open('https://chat.openai.com/', '_blank')
+  } catch (error) {
+    console.error('Failed to open ChatGPT:', error)
+  }
+  // Also open the import modal
+  showImportModal.value = true
 }
 
 async function generateShoppingList(plan: WeeklyPlan) {
