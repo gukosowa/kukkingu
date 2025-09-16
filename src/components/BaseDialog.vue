@@ -21,9 +21,9 @@
         style="backdrop-filter: blur(1px)"
         @click="handleBackdropClick"
       >
-        <div class="w-full min-h-full px-6 sm:px-12 py-8 flex flex-col transform">
+        <div class="w-full min-h-full px-6 sm:px-12 md:px-8 py-8 flex flex-col justify-start items-center transform">
           <div
-            class="bg-white rounded-xl drop-shadow flex flex-col overflow-hidden max-h-[90vh]"
+            class="bg-white rounded-xl drop-shadow w-full  md:w-[600px] flex flex-col overflow-hidden max-h-[90vh]"
             :class="size"
             @click.stop
           >
