@@ -52,12 +52,10 @@
       <!-- Footer - Fixed at bottom -->
       <div class="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-gray-50 flex gap-3">
         <Button
-          @click="sendToChatGPT"
-          class="flex-1 bg-green-600 hover:bg-green-700 text-white"
-          :disabled="!editablePrompt.trim()"
+          @click="close"
+          class="flex-1 bg-gray-500 hover:bg-gray-600 text-white"
         >
-          <Icon icon="fal fa-paper-plane" size="0.9rem" class="mr-2" />
-          {{ t('Send to ChatGPT') }}
+          {{ t('Cancel') }}
         </Button>
         <Button
           @click="copyPrompt"
@@ -68,10 +66,12 @@
           {{ t('Copy Prompt') }}
         </Button>
         <Button
-          @click="close"
-          class="flex-1 bg-gray-500 hover:bg-gray-600 text-white"
+          @click="sendToChatGPT"
+          class="flex-1 bg-green-600 hover:bg-green-700 text-white"
+          :disabled="!editablePrompt.trim()"
         >
-          {{ t('Cancel') }}
+          <Icon icon="fal fa-paper-plane" size="0.9rem" class="mr-2" />
+          {{ t('Send to ChatGPT') }}
         </Button>
       </div>
     </div>

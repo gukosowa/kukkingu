@@ -40,6 +40,6 @@ describe('units normalization', () => {
     expect(migrated.ingredients[1].amountType).to.equal('tbl')
     expect(migrated.ingredients[2].amountType).to.equal('tea')
     expect(migrated.ingredients[3].amountType).to.equal('p')
+
   })
 })
-

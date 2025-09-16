@@ -44,16 +44,16 @@
 
             <div class="flex gap-3 mt-6">
               <button
-                class="flex-1 py-3 bg-green-500 text-white rounded-xl shadow-md font-semibold hover:bg-green-600 transition-colors"
-                @click="confirm"
-              >
-                {{ t('OK') }}
-              </button>
-              <button
                 class="flex-1 py-3 bg-gray-500 text-white rounded-xl shadow-md font-semibold hover:bg-gray-600 transition-colors"
                 @click="close"
               >
                 {{ t('Cancel') }}
+              </button>
+              <button
+                class="flex-1 py-3 bg-green-500 text-white rounded-xl shadow-md font-semibold hover:bg-green-600 transition-colors"
+                @click="confirm"
+              >
+                {{ t('OK') }}
               </button>
             </div>
           </div>

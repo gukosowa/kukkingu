@@ -159,7 +159,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { t, currentLocale } from '~src/i18n'
+import { t } from '~src/i18n'
 import Footer from '~components/Footer.vue'
 import { recipes as _recipes, modalStates, globalSearchFilter, getAllTags, sortJapaneseText, uuidv4 } from '~src/store/index'
 import { mergeChatGPTRecipe, mergeRecipesByExportedAt, analyzeImportDiff, type ImportDiff } from '~src/services/importExport'
@@ -262,7 +262,6 @@ function addTagToSearch(tag: string) {
   } else {
     filterQuery.value = tag
   }
-  nextTick(() => filterInputRef.value?.focus?.())
 }
 function open(index: number) {
   const recipe = recipes.value[index]
@@ -406,7 +405,12 @@ function handleUpdateExisting() {
 
   if (Array.isArray(parsedImportData)) {
     const normalizedRecipes = parsedImportData.map((recipe: any) => normalizeRecipe(recipe))
-    recipes.value = mergeRecipesByExportedAt(recipes.value as any, normalizedRecipes) as any
+    // Ensure servings field exists with default value
+    const recipesWithServings = normalizedRecipes.map((recipe: any) => ({
+      ...recipe,
+      servings: recipe.servings !== undefined ? recipe.servings : 2
+    }))
+    recipes.value = mergeRecipesByExportedAt(recipes.value as any, recipesWithServings) as any
     showToast(t('Recipes updated'))
   } else {
     const single = normalizeRecipe(parsedImportData)
@@ -420,16 +424,26 @@ function handleCreateNew() {
 
   if (Array.isArray(parsedImportData)) {
     const normalizedRecipes = parsedImportData.map((recipe: any) => normalizeRecipe(recipe))
+    // Ensure servings field exists with default value
+    const recipesWithServings = normalizedRecipes.map((recipe: any) => ({
+      ...recipe,
+      servings: recipe.servings !== undefined ? recipe.servings : 2
+    }))
     // Only add new recipes, ignore updates
-    const newRecipes = normalizedRecipes.filter((incoming: any) =>
+    const newRecipes = recipesWithServings.filter((incoming: any) =>
       !incoming.id || !recipes.value.some((existing: any) => existing.id === incoming.id)
     )
     recipes.value = [...recipes.value, ...newRecipes] as any
     showToast(`${newRecipes.length} ${t('recipes')} ${t('created')}`)
   } else {
     const single = normalizeRecipe(parsedImportData)
-    if (!single.id || !recipes.value.some((r: any) => r.id === single.id)) {
-      recipes.value = [...recipes.value, single] as any
+    // Ensure servings field exists with default value
+    const recipeWithServing = {
+      ...single,
+      servings: single.servings !== undefined ? single.servings : 2
+    }
+    if (!recipeWithServing.id || !recipes.value.some((r: any) => r.id === recipeWithServing.id)) {
+      recipes.value = [...recipes.value, recipeWithServing] as any
       showToast(t('Recipe created'))
     }
   }
@@ -439,18 +453,28 @@ function handleAddAsNew() {
   if (!parsedImportData) return
 
   if (Array.isArray(parsedImportData)) {
-    const newRecipes = parsedImportData.map((recipe: any) => ({
+    const normalizedRecipes = parsedImportData.map((recipe: any) => ({
       ...normalizeRecipe(recipe),
       id: uuidv4() // Generate new unique ID
     }))
-    recipes.value = [...recipes.value, ...newRecipes] as any
-    showToast(`${newRecipes.length} ${t('recipes')} ${t('added as new')}`)
+    // Ensure servings field exists with default value
+    const recipesWithServings = normalizedRecipes.map((recipe: any) => ({
+      ...recipe,
+      servings: recipe.servings !== undefined ? recipe.servings : 2
+    }))
+    recipes.value = [...recipes.value, ...recipesWithServings] as any
+    showToast(`${recipesWithServings.length} ${t('recipes')} ${t('added as new')}`)
   } else {
     const newRecipe = {
       ...normalizeRecipe(parsedImportData),
       id: uuidv4() // Generate new unique ID
     }
-    recipes.value = [...recipes.value, newRecipe] as any
+    // Ensure servings field exists with default value
+    const recipeWithServing = {
+      ...newRecipe,
+      servings: newRecipe.servings !== undefined ? newRecipe.servings : 2
+    }
+    recipes.value = [...recipes.value, recipeWithServing] as any
     showToast(t('Recipe added as new'))
   }
 }

@@ -55,17 +55,32 @@
           </Button>
         </div>
 
-        <div class="space-y-2 mb-4">
+        <div class="space-y-3 mb-4">
           <div
-            v-for="(day, index) in plan.days.slice(0, 3)"
-            :key="index"
-            class="flex items-center text-sm"
+            v-for="(day, dayIndex) in plan.days"
+            :key="dayIndex"
+            class="text-sm"
           >
-            <span class="w-12 text-gray-500">{{ t('Day') }} {{ index + 1 }}</span>
-            <span class="text-gray-700">{{ day.recipes.length }} {{ t('recipes') }}</span>
-          </div>
-          <div v-if="plan.days.length > 3" class="text-sm text-gray-500">
-            +{{ plan.days.length - 3 }} more days
+            <div class="flex items-start mb-2">
+              <span class="text-gray-600 font-medium mr-2 mt-0.5">{{ t('Day') }} {{ dayIndex + 1 }}:</span>
+              <div class="flex flex-wrap gap-1 flex-1">
+                <template v-for="(recipePlan, recipeIndex) in day.recipes" :key="recipeIndex">
+                  <button
+                    @click="navigateToRecipe(recipePlan.recipeId)"
+                    class="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer text-sm truncate"
+                    :title="getRecipeName(recipePlan.recipeId)"
+                  >
+                    {{ getRecipeName(recipePlan.recipeId) }}
+                  </button>
+                  <span
+                    v-if="recipeIndex < day.recipes.length - 1"
+                    class="text-gray-400 text-sm mx-1"
+                  >
+                    •
+                  </span>
+                </template>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -188,17 +203,17 @@
         <!-- Footer - Fixed at bottom -->
         <div class="flex-shrink-0 px-6 py-4 border-t bg-gray-50 flex gap-3">
           <Button
+            @click="closePlanModal"
+            class="flex-1 bg-gray-500 hover:bg-gray-600 text-white"
+          >
+            {{ t('Cancel') }}
+          </Button>
+          <Button
             @click="savePlan"
             class="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
             :disabled="!canSavePlan"
           >
             {{ isEditing ? t('Save Changes') : t('Create Plan') }}
-          </Button>
-          <Button
-            @click="closePlanModal"
-            class="flex-1 bg-gray-500 hover:bg-gray-600 text-white"
-          >
-            {{ t('Cancel') }}
           </Button>
         </div>
       </div>
@@ -283,17 +298,17 @@
         <!-- Footer - Fixed at bottom -->
         <div class="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-gray-50 flex gap-3">
           <Button
+            @click="closeAutoPlanModal"
+            class="flex-1 bg-gray-500 hover:bg-gray-600 text-white"
+          >
+            {{ t('Cancel') }}
+          </Button>
+          <Button
             @click="generateAutoPlan"
             class="flex-1 bg-green-600 hover:bg-green-700 text-white"
             :disabled="!autoPlanLength || autoPlanLength < 1"
           >
             {{ t('Generate') }}
-          </Button>
-          <Button
-            @click="closeAutoPlanModal"
-            class="flex-1 bg-gray-500 hover:bg-gray-600 text-white"
-          >
-            {{ t('Cancel') }}
           </Button>
         </div>
       </div>
@@ -364,6 +379,14 @@
       />
     </div>
 
+    <!-- Shopping List Modal -->
+    <ShoppingListModal
+      v-model="showShoppingListModal"
+      :shopping-list="currentShoppingList"
+      :plan-name="currentShoppingListPlan?.name || ''"
+      :plan-id="currentShoppingListPlan?.id || ''"
+    />
+
     <Footer />
   </div>
 </template>
@@ -372,7 +395,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { t } from '~src/i18n'
-import { dailyPlans, createWeeklyPlan, updateWeeklyPlan, removeWeeklyPlan, WeeklyPlan, DayPlan, Recipe, getAllTags } from '~src/store/index'
+import { dailyPlans, createWeeklyPlan, updateWeeklyPlan, removeWeeklyPlan, WeeklyPlan, DayPlan, Recipe, getAllTags, getShoppingListForPlan, saveShoppingListForPlan, ShoppingListItem } from '~src/store/index'
 import { generateShoppingList as generateList, generateAutoMealPlanPrompt, importPlanFromJson } from '~src/services/planner'
 import { openChatGPT } from '~src/services/chatgpt'
 import { recipes } from '~src/store/index'
@@ -385,6 +408,7 @@ import ModalNotice from './ModalNotice.vue'
 import ModalAutoPlanPrompt from './ModalAutoPlanPrompt.vue'
 import RecipeSelector from './RecipeSelector.vue'
 import RecipeDetailsModal from './RecipeDetailsModal.vue'
+import ShoppingListModal from './ShoppingListModal.vue'
 import SInput from './Input.vue'
 
 const router = useRouter()
@@ -397,6 +421,7 @@ const showPromptReadyModal = ref(false)
 const showImportModal = ref(false)
 const showDeleteModal = ref(false)
 const showNoticeModal = ref(false)
+const showShoppingListModal = ref(false)
 const noticeMessage = ref('')
 const isEditing = ref(false)
 const currentPlan = ref<WeeklyPlan | null>(null)
@@ -406,6 +431,10 @@ const modalDays = ref<DayPlan[]>([])
 const autoPlanLength = ref(7)
 const autoPlanPreferences = ref<string[]>([])
 const autoPlanExclusions = ref<string[]>([])
+
+// Shopping list state
+const currentShoppingList = ref<ShoppingListItem[]>([])
+const currentShoppingListPlan = ref<WeeklyPlan | null>(null)
 
 // Recipe selector state
 const showRecipeSelector = ref(false)
@@ -618,16 +647,37 @@ function closeAutoPlanModal() {
   autoPlanExclusions.value = []
 }
 
-function generateShoppingList(plan: WeeklyPlan) {
-  const shoppingList = generateList(plan)
+async function generateShoppingList(plan: WeeklyPlan) {
+  try {
+    // Generate the shopping list
+    const generatedList = generateList(plan)
 
-  // For now, just log the shopping list
-  // TODO: Create a shopping list modal/component
-  console.log('Shopping list for', plan.name, ':', shoppingList)
+    // Load existing shopping list data for this plan
+    const existingList = await getShoppingListForPlan(plan.id)
 
-  // You could open a shopping list modal here
-  // showShoppingListModal.value = true
-  // shoppingListData.value = shoppingList
+    // Merge generated list with existing checklist state
+    const mergedList = generatedList.map(generatedItem => {
+      const existingItem = existingList.find(existing =>
+        existing.name.toLowerCase() === generatedItem.name.toLowerCase() &&
+        existing.amountType === generatedItem.amountType
+      )
+      return existingItem ? { ...generatedItem, checked: existingItem.checked } : generatedItem
+    })
+
+    // Update state
+    currentShoppingList.value = mergedList
+    currentShoppingListPlan.value = plan
+
+    // Save the merged list
+    await saveShoppingListForPlan(plan.id, mergedList)
+
+    // Show the modal
+    showShoppingListModal.value = true
+  } catch (error) {
+    console.error('Failed to generate shopping list:', error)
+    noticeMessage.value = t('Failed to generate shopping list')
+    showNoticeModal.value = true
+  }
 }
 
 // Helper functions
@@ -716,5 +766,9 @@ function getRecipeDetailsForEditing(): { name: string; servings: number; mealTyp
     servings: recipePlan.servings,
     mealType: recipePlan.mealType
   }
+}
+
+function navigateToRecipe(recipeId: string): void {
+  router.push(`/recipe/${recipeId}`)
 }
 </script>

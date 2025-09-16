@@ -1,4 +1,4 @@
-import { Recipe, WeeklyPlan } from '~src/store/index'
+import { Recipe, WeeklyPlan, ShoppingListItem } from '~src/store/index'
 
 // Utility function to create a deep clone without Vue reactivity
 function deepCloneSerializable(obj: any): any {
@@ -34,16 +34,18 @@ function deepCloneSerializable(obj: any): any {
 }
 
 const DB_NAME = 'KukkinguDB'
-const DB_VERSION = 4 // Rename weeklyPlans to dailyPlans
+const DB_VERSION = 5 // Add shopping lists store
 const RECIPES_STORE = 'recipes'
 const SETTINGS_STORE = 'settings'
 const DAILY_PLANS_STORE = 'dailyPlans'
+const SHOPPING_LISTS_STORE = 'shoppingLists'
 
 // Database schema
 const STORES = {
   [RECIPES_STORE]: { keyPath: 'id', autoIncrement: false },
   [SETTINGS_STORE]: { keyPath: 'key', autoIncrement: false },
-  [DAILY_PLANS_STORE]: { keyPath: 'id', autoIncrement: false }
+  [DAILY_PLANS_STORE]: { keyPath: 'id', autoIncrement: false },
+  [SHOPPING_LISTS_STORE]: { keyPath: 'planId', autoIncrement: false }
 }
 
 class IndexedDBService {
@@ -286,6 +288,49 @@ class IndexedDBService {
     })
   }
 
+  // Shopping lists operations
+  async getShoppingList(planId: string): Promise<ShoppingListItem[]> {
+    const db = await this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([SHOPPING_LISTS_STORE], 'readonly')
+      const store = transaction.objectStore(SHOPPING_LISTS_STORE)
+      const request = store.get(planId)
+
+      request.onsuccess = () => {
+        if (request.result) {
+          resolve(request.result.items || [])
+        } else {
+          resolve([])
+        }
+      }
+
+      request.onerror = () => {
+        reject(request.error)
+      }
+    })
+  }
+
+  async saveShoppingList(planId: string, items: ShoppingListItem[]): Promise<void> {
+    const db = await this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([SHOPPING_LISTS_STORE], 'readwrite')
+      const store = transaction.objectStore(SHOPPING_LISTS_STORE)
+      const request = store.put({
+        planId,
+        items: deepCloneSerializable(items),
+        updatedAt: new Date().toISOString()
+      })
+
+      request.onsuccess = () => {
+        resolve()
+      }
+
+      request.onerror = () => {
+        reject(request.error)
+      }
+    })
+  }
+
   // Migration from localStorage
   async migrateFromLocalStorage(): Promise<void> {
     // Check if migration already happened
@@ -339,6 +384,10 @@ export const migrateFromLocalStorage = () => idbService.migrateFromLocalStorage(
 export const getDailyPlans = () => idbService.getDailyPlans()
 export const saveDailyPlan = (plan: WeeklyPlan) => idbService.saveDailyPlan(plan)
 export const deleteDailyPlan = (planId: string) => idbService.deleteDailyPlan(planId)
+
+// Shopping lists helper functions
+export const getShoppingList = (planId: string) => idbService.getShoppingList(planId)
+export const saveShoppingList = (planId: string, items: ShoppingListItem[]) => idbService.saveShoppingList(planId, items)
 
 // Image utility functions
 export const fileToBase64 = (file: File): Promise<string> => {

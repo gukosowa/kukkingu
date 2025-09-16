@@ -3,6 +3,11 @@
     <div class="flex items-center my-1">
       <div class="flex-1"></div>
 
+      <Button v-if="hasNotes" @click="showNotes = !showNotes" class="mr-2" color="text-only">
+        <Icon :icon="showNotes ? 'fal fa-eye-slash' : 'fal fa-eye'" class="mr-1 py-[3px]" size="0.8rem" />
+        {{ t('Notes') }}
+      </Button>
+
       <Button @click="denseMode = !denseMode" class="mr-2" color="text-only">
         <Icon :icon="denseMode ? 'fal fa-expand' : 'fal fa-compress'" class="py-[3px]" size="0.8rem" />
       </Button>
@@ -24,6 +29,40 @@
 
     <div class="flex flex-col flex-grow">
       <div class="mb-3 mt-2">
+        <!-- Servings Row -->
+        <div v-if="!recipe.edit" class="mb-4">
+          <div class="rounded-lg bg-gray-900 text-white cursor-pointer" :class="denseMode ? 'px-2 py-2 text-lg' : 'px-3 py-3 text-2xl'" @click="setDesiredFromServings">
+            <div class="grid grid-cols-12">
+              <div class="col-span-12">
+                <span
+                  class="text-gray-300 mr-2"
+                  :class="{'font-normal': denseMode, 'font-bold': !denseMode}"
+                  >{{ recipe.servings || 2 }}</span>
+                <span
+                  class="text-red-300"
+                  :style="{ fontSize: denseMode ? '1rem' : '1.2rem' }"
+                  >{{ t('Servings') }}</span>
+            </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit Servings Row -->
+        <div v-if="recipe.edit" class="mb-4">
+          <div class="grid grid-cols-12 gap-1">
+            <div class="col-span-12 relative">
+              <input
+                type="number"
+                :min="1"
+                :value="recipe.servings"
+                @input="recipe.servings = parseInt(($event.target as HTMLInputElement).value) || 1; saveChange()"
+                class="w-full border focus:ring-indigo-500 text-black pt-6 pb-2 pl-3 pr-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md input-field"
+              />
+              <label class="absolute top-2 left-1.5 text-[10px] font-medium text-gray-500 pointer-events-none z-10 bg-white px-1">{{ t('Servings') }}</label>
+            </div>
+          </div>
+        </div>
+
         <TransitionGroup name="ri" tag="div" appear>
           <div
             v-for="(item, index) in recipe.ingredients"
@@ -57,7 +96,9 @@
             <AmountTypeModal
               :ref="(el:any) => (amountRefs[index] = el)"
               class="col-span-3"
+              :ingredient-index="index"
               @update="() => { saveChange(); clickNote(index) }"
+              @update:modelValueWithIndex="handleAmountTypeChange"
               v-model="item.amountType"
             />
             <div class="col-span-12 flex">
@@ -84,7 +125,6 @@
           >
             <div class="grid grid-cols-12">
               <div class="col-span-10">
-
                   <span class="text-gray-300 mr-2" :class="{'font-normal': denseMode, 'font-bold': !denseMode}" @click.stop="() => clickName(index)">{{ item.name || '-' }}</span>
                   <template v-if="unitBefore(item.amountType as any)">
                     <span
@@ -144,26 +184,12 @@
           </div>
         </TransitionGroup>
 
-        <div class="w-full flex justify-end">
-          <Button @click="showNotes = !showNotes" class="" color="gray">
-            <template v-if="showNotes">
-              <Icon icon="fal fa-eye-slash" class="mr-1" size="0.8rem" />
-              {{ t('Notes') }}
-            </template>
-            <template v-else>
-              <Icon icon="fal fa-eye" class="mr-1" size="0.8rem" />
-              {{ t('Notes') }}
-            </template>
-          </Button>
-        </div>
-      </div>
-      <div class="mb-4 mt-2 text-right"  v-if="recipe.edit">
-        <template>
+        <div class="w-full flex justify-end" v-if="recipe.edit">
           <Button @click="addIngredient" color="green">
             <Icon icon="fal fa-plus" class="mr-1" size="1.2rem" />
             {{ t('Add') }}
           </Button>
-        </template>
+        </div>
       </div>
         <div class="flex flex-col mt-4">
           <template v-if="recipe.edit">
@@ -172,14 +198,16 @@
           <template v-if="recipe.url">
             <a :href="recipe.url" class="mt-1" target="_blank" rel="noreferrer">
               <Button class="whitespace-nowrap">
+                <i class="fal fa-globe mr-2" />
                 {{ t('Open recipe web page') }}
-                <i class="fal fa-external-link ml-2" />
+                <i class="fal fa-xmark ml-2" />
               </Button>
             </a>
           </template>
         </div>
         <div class="mt-2">
           <Button class="whitespace-nowrap" @click="openAskGpt">
+            <i class="fal fa-magic mr-2" />
             {{ t('Ask GPT') }}
           </Button>
         </div>
@@ -355,6 +383,10 @@ watch(
 
 const markedRender = computed(() => (marked as any).parse(recipe.value?.note || ''))
 const ratio = computed(() => (recipe.value ? recipe.value.original / recipe.value.desired : 1))
+
+const hasNotes = computed(() => {
+  return recipe.value?.ingredients?.some((item: any) => item.note && item.note.trim()) || false
+})
 
 const currentMode = computed<'view' | 'edit' | 'checklist'>(() => {
   if (recipe.value?.edit) return 'edit'
@@ -543,8 +575,17 @@ function addIngredient() {
   _recipes.value = copy
   setTimeout(() => {
     const items = [...document.getElementsByClassName('input-field')] as HTMLElement[]
-    items[items.length - 2]?.focus()
+    items[items.length - 3]?.focus()
   }, 0)
+}
+
+function handleAmountTypeChange(newType: string, index: number) {
+  const copy = [..._recipes.value]
+  const ingredients = copy[recipeIndex.value].ingredients
+
+  // Update the current ingredient
+  ingredients[index].amountType = newType
+  _recipes.value = copy
 }
 function handleModeChange(newMode: 'view' | 'edit' | 'checklist') {
   const copy = [..._recipes.value]
@@ -613,6 +654,20 @@ function handleIngredientClick(index: number) {
     // In both dense and normal mode: set both original and desired (same as ruler button)
     doOriginal(index)
   }
+}
+
+
+function setDesiredFromServings() {
+  const servings = recipe.value?.servings || 2
+  const copy = [..._recipes.value]
+  copy[recipeIndex.value].original = servings
+  copy[recipeIndex.value].desired = servings
+  _recipes.value = copy
+  setTimeout(() => {
+    const input = document.getElementById('input-desired') as HTMLInputElement
+    input?.focus()
+    input?.select()
+  }, 0)
 }
 
 function setDesiredFromIngredient(index: number) {

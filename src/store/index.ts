@@ -1,6 +1,7 @@
 import { ref, Ref, watch } from 'vue'
 import { migrateRecipeUnits, normalizeAmountType } from '~src/services/units'
-import { getRecipes, saveRecipes, getSetting, setSetting, migrateFromLocalStorage, getDailyPlans, saveDailyPlan, deleteDailyPlan } from '~src/services/indexeddb'
+import { currentLocale } from '~src/i18n'
+import { getRecipes, saveRecipes, getSetting, setSetting, migrateFromLocalStorage, getDailyPlans, saveDailyPlan, deleteDailyPlan, getShoppingList, saveShoppingList } from '~src/services/indexeddb'
 
 export type Ingredient = {
   name: string
@@ -16,6 +17,7 @@ export type Recipe = {
   edit?: boolean
   original: number
   desired: number
+  servings?: number // Number of servings for the recipe
   note: string
   url?: string
   checklist?: boolean
@@ -65,7 +67,16 @@ async function initializeRecipes() {
     // Wait for migration to complete before loading recipes
     await migrateFromLocalStorage()
     const storedRecipes = await getRecipes()
-    recipes.value = storedRecipes.map((r: any) => migrateRecipeUnits(r))
+    // Apply unit migration and ensure servings field exists
+    const migratedRecipes = storedRecipes.map((r: any) => {
+      const migrated = migrateRecipeUnits(r)
+      // Ensure servings field exists and has a default value
+      if (migrated.servings === undefined) {
+        migrated.servings = 2 // Default to 2 servings
+      }
+      return migrated
+    })
+    recipes.value = migratedRecipes
   } catch (error) {
     console.error('Failed to load recipes from IndexedDB:', error)
     // Fallback to empty array
@@ -93,6 +104,10 @@ export async function updateRecipesToStore(value: Recipe[]) {
       if (!r.id) {
         r.id = uuidv4()
       }
+    }
+    // Ensure servings field exists with default value
+    if (r.servings === undefined) {
+      r.servings = 2
     }
     return r
   })
@@ -246,4 +261,47 @@ export function getPopulatedPlan(plan: WeeklyPlan): WeeklyPlan {
     }))
   }))
   return populatedPlan
+}
+
+// Shopping list management functions
+export async function getShoppingListForPlan(planId: string): Promise<ShoppingListItem[]> {
+  try {
+    const shoppingListData = await getShoppingList(planId)
+    return shoppingListData || []
+  } catch (error) {
+    console.error('Failed to load shopping list for plan:', planId, error)
+    return []
+  }
+}
+
+export async function updateShoppingListItem(planId: string, item: ShoppingListItem): Promise<void> {
+  try {
+    // Get current shopping list for the plan
+    const currentList = await getShoppingListForPlan(planId)
+
+    // Find and update the item
+    const itemIndex = currentList.findIndex(existingItem =>
+      existingItem.name.toLowerCase() === item.name.toLowerCase() &&
+      existingItem.amountType === item.amountType
+    )
+
+    if (itemIndex !== -1) {
+      currentList[itemIndex] = { ...item }
+    } else {
+      currentList.push({ ...item })
+    }
+
+    // Save updated list
+    await saveShoppingList(planId, currentList)
+  } catch (error) {
+    console.error('Failed to update shopping list item:', error)
+  }
+}
+
+export async function saveShoppingListForPlan(planId: string, shoppingList: ShoppingListItem[]): Promise<void> {
+  try {
+    await saveShoppingList(planId, shoppingList)
+  } catch (error) {
+    console.error('Failed to save shopping list for plan:', planId, error)
+  }
 }

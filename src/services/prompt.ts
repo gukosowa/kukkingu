@@ -19,17 +19,9 @@ export function buildImportRecipePrompt(
     'Allowed units (choose only from these and use these exact keys in ingredient.amountType): g, ml, tbl (tablespoon), tea (teaspoon), p (piece), pinch.',
   ].join(' ')
 
-  const servingsNameMap = {
-    English: 'Servings',
-    German: 'Portionen',
-    Japanese: '人前',
-  } as const
-
-  const servingsName = servingsNameMap[locale]
-
   const servingsRule = [
     'Determine the number of servings/persons from the source.',
-    `Insert it as the first ingredient named "${servingsName}" with amount equal to that number and amountType "p".`,
+    'Include this as a top-level "servings" field with the number.',
     'Set both top-level original and desired to this value.',
   ].join(' ')
 
@@ -67,7 +59,7 @@ export function buildImportRecipePrompt(
   const localeRule = `All text values must be written in ${locale}.`
 
   const jsonSchema =
-    '{"name":"string","edit":true,"original":number,"desired":number,"note":"string","url":"string","tags":["string"],"ingredients":[{"name":"string","amount":number,"amountType":"g|ml|tbl|tea|p|pinch","note":"string"}]}'
+    '{"name":"string","edit":true,"original":number,"desired":number,"servings":number,"note":"string","url":"string","tags":["string"],"ingredients":[{"name":"string","amount":number,"amountType":"g|ml|tbl|tea|p|pinch","note":"string"}]}'
 
   const formattingRule =
     'Return the result as a Markdown fenced code block using four backticks with the `json` language tag (start with ````json and end with ````). The content of the block must be only valid JSON matching the schema. No intro and no outro text, just the JSON.'
@@ -106,17 +98,9 @@ export function buildAskRecipePrompt(recipe: any, question: string, locale: Loca
     'Allowed units (choose only from these and use these exact keys in ingredient.amountType): g, ml, tbl (tablespoon), tea (teaspoon), p (piece), pinch.',
   ].join(' ')
 
-  const servingsNameMap = {
-    English: 'Servings',
-    German: 'Portionen',
-    Japanese: '人前',
-  } as const
-
-  const servingsName = servingsNameMap[locale]
-
   const servingsRule = [
     'Determine the number of servings/persons from the source.',
-    `Insert it as the first ingredient named "${servingsName}" with amount equal to that number and amountType "p".`,
+    'Include this as a top-level "servings" field with the number.',
     'Set both top-level original and desired to this value.',
   ].join(' ')
 
@@ -147,12 +131,14 @@ export function buildAskRecipePrompt(recipe: any, question: string, locale: Loca
   ].join(' ')
 
   const jsonSchema =
-    '{"id":"string","name":"string","edit":true,"original":number,"desired":number,"note":"string","url":"string","tags":["string"],"ingredients":[{"name":"string","amount":number,"amountType":"g|ml|tbl|tea|p|pinch","note":"string"}]}'
+    '{"id":"string","name":"string","edit":true,"original":number,"desired":number,"servings":number,"note":"string","url":"string","tags":["string"],"ingredients":[{"name":"string","amount":number,"amountType":"g|ml|tbl|tea|p|pinch","note":"string"}]}'
 
   const formattingRule =
     'Return the result as a Markdown fenced code block using four backticks with the `json` language tag (start with ````json and end with ````). The content of the block must be only valid JSON matching the schema. No intro and no outro text, just the JSON.'
 
-  const baseRules = `${unitRules} ${servingsRule} ${ingredientRules} ${noteRules} ${tagsRule} The JSON must match this exact structure: ${jsonSchema} ${formattingRule}`
+  // Only include noteRules when the question is asking for procedure/notes
+  const isProcedureQuestion = question.toLowerCase().includes('procedure') || question.toLowerCase().includes('step') || question.toLowerCase().includes('instruction') || question.toLowerCase().includes('cook') || question.toLowerCase().includes('note')
+  const rulesForChanges = `${unitRules} ${servingsRule} ${ingredientRules} ${isProcedureQuestion ? noteRules : ''} ${tagsRule} The JSON must match this exact structure: ${jsonSchema} ${formattingRule}`
 
   return `You are a world-class culinary expert and recipe master.
 You are given the following recipe in JSON format:
@@ -172,7 +158,7 @@ CRITICAL guidelines:
 - The JSON template shown below is for REFERENCE only - you should only modify the fields that are specifically requested.
 - If the question asks for changes to the recipe itself (such as adding tags, modifying ingredients, changing amounts, updating instructions, or any other format changes), reply ONLY with valid JSON using the exact structure shown below. Do not include any explanatory text - just the JSON.
 - For all other questions (general advice, cooking tips, clarifications, etc.), respond in normal text in ${locale}.
-- When making recipe changes, follow these strict rules: ${baseRules}
+- When making recipe changes, follow these strict rules: ${rulesForChanges}
 - IMPORTANT: Always include the existing recipe's "id" field in the JSON response to ensure the recipe gets updated instead of creating a new one.
 
 JSON structure for recipe changes: ${jsonSchema}

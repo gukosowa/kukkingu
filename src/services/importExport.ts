@@ -71,6 +71,7 @@ export function createTestIngredientDiff(): ImportDiff {
     note: "Classic recipe",
     original: 12,
     desired: 24,
+    servings: 24,
     ingredients: [
       { name: "Flour", amount: 2, amountType: "cups", note: "all-purpose" },
       { name: "Sugar", amount: 1, amountType: "cup", note: "" },
@@ -85,6 +86,7 @@ export function createTestIngredientDiff(): ImportDiff {
     note: "Updated classic recipe",
     original: 12,
     desired: 24,
+    servings: 24,
     ingredients: [
       // Reordered ingredients - should not show as changes with semantic diff
       { name: "Butter", amount: 100, amountType: "g", note: "room temperature" }, // note changed
@@ -252,13 +254,19 @@ export function mergeChatGPTRecipe(
     }
   })
 
+  // Ensure incoming recipe has servings field
+  const processedIncoming = { ...incoming }
+  if (processedIncoming.servings === undefined) {
+    processedIncoming.servings = 2 // Default to 2 servings
+  }
+
   // If incoming recipe has an ID and exists in current recipes, replace it
-  if (incoming.id && map.has(incoming.id)) {
-    return existing.map(r => r.id === incoming.id ? incoming : r)
+  if (processedIncoming.id && map.has(processedIncoming.id)) {
+    return existing.map(r => r.id === processedIncoming.id ? processedIncoming : r)
   }
 
   // If no ID match or no ID, append as new recipe
-  return [...existing, incoming]
+  return [...existing, processedIncoming]
 }
 
 // Helper function to test semantic ingredient diff

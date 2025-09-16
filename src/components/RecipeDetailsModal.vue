@@ -44,16 +44,16 @@
     <!-- Footer -->
     <div class="mt-6 flex gap-3">
       <Button
-        @click="$emit('save', { servings: selectedServings, mealType: selectedMealType })"
-        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-      >
-        {{ t('Save') }}
-      </Button>
-      <Button
         @click="$emit('cancel')"
         class="flex-1 bg-gray-500 hover:bg-gray-600 text-white"
       >
         {{ t('Cancel') }}
+      </Button>
+      <Button
+        @click="$emit('save', { servings: selectedServings, mealType: selectedMealType })"
+        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+      >
+        {{ t('Save') }}
       </Button>
     </div>
   </div>

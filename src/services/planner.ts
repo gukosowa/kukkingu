@@ -14,21 +14,25 @@ export function generateShoppingList(plan: WeeklyPlan): ShoppingListItem[] {
     day.recipes.forEach(recipePlan => {
       if (recipePlan.recipe) {
         const recipe = recipePlan.recipe
-        const multiplier = recipePlan.servings / recipe.original
+
+        // Calculate multiplier: plan servings / recipe servings (default to 2 if not specified)
+        const recipeServings = recipe.servings || 2
+        const multiplier = recipePlan.servings / recipeServings
 
         recipe.ingredients.forEach(ingredient => {
+
           const key = `${ingredient.name.toLowerCase()}-${ingredient.amountType}`
 
           if (ingredientMap.has(key)) {
             const existing = ingredientMap.get(key)!
-            existing.amount += (typeof ingredient.amount === 'number' ? ingredient.amount : 0) * multiplier
+            existing.amount += (typeof ingredient.amount === 'number' ? ingredient.amount : parseFloat(ingredient.amount as string) || 0) * multiplier
             if (!existing.recipes.includes(recipe.id!)) {
               existing.recipes.push(recipe.id!)
             }
           } else {
             ingredientMap.set(key, {
               name: ingredient.name,
-              amount: (typeof ingredient.amount === 'number' ? ingredient.amount : 0) * multiplier,
+              amount: (typeof ingredient.amount === 'number' ? ingredient.amount : parseFloat(ingredient.amount as string) || 0) * multiplier,
               amountType: ingredient.amountType,
               checked: false,
               recipes: [recipe.id!]
