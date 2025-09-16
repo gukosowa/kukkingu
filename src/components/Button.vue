@@ -2,7 +2,7 @@
   <button
     type="button"
     :class="[
-      'inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium',
+      'inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium whitespace-nowrap',
       color === 'text-only'
         ? 'text-gray-500 bg-transparent border-transparent shadow-none hover:bg-gray-100 focus:ring-gray-500'
         : [

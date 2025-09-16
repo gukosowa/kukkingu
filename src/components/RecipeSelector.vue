@@ -26,7 +26,7 @@
           v-for="recipe in filteredRecipes"
           :key="recipe.id"
           @click="selectRecipe(recipe)"
-          class="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+          class="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors whitespace-nowrap"
         >
           <div class="font-medium text-gray-900">{{ recipe.name }}</div>
           <div class="text-sm text-gray-500 mt-1">

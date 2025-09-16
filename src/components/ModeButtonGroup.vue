@@ -9,7 +9,7 @@
     <!-- View Button -->
     <button
       @click="setMode('view')"
-      class="relative z-10 flex items-center justify-center px-3 py-2 rounded-md transition-colors duration-200"
+      class="relative z-10 flex items-center justify-center px-3 py-2 rounded-md transition-colors duration-200 whitespace-nowrap"
       :class="mode === 'view' ? 'text-white' : 'text-gray-600 hover:text-gray-900'"
       :title="t('View')"
     >
@@ -19,7 +19,7 @@
     <!-- Edit Button -->
     <button
       @click="setMode('edit')"
-      class="relative z-10 flex items-center justify-center px-3 py-2 rounded-md transition-colors duration-200"
+      class="relative z-10 flex items-center justify-center px-3 py-2 rounded-md transition-colors duration-200 whitespace-nowrap"
       :class="mode === 'edit' ? 'text-white' : 'text-gray-600 hover:text-gray-900'"
       :title="t('Edit')"
     >
@@ -29,7 +29,7 @@
     <!-- Checklist Button -->
     <button
       @click="setMode('checklist')"
-      class="relative z-10 flex items-center justify-center px-3 py-2 rounded-md transition-colors duration-200"
+      class="relative z-10 flex items-center justify-center px-3 py-2 rounded-md transition-colors duration-200 whitespace-nowrap"
       :class="mode === 'checklist' ? 'text-white' : 'text-gray-600 hover:text-gray-900'"
       :title="t('Checklist')"
     >

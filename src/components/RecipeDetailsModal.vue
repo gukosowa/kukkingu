@@ -17,7 +17,7 @@
             :key="mealType.value"
             @click="selectedMealType = mealType.value"
             :class="[
-              'px-3 py-2 text-sm font-medium rounded-lg border transition-colors',
+              'px-3 py-2 text-sm font-medium rounded-lg border transition-colors whitespace-nowrap',
               selectedMealType === mealType.value
                 ? 'bg-blue-100 border-blue-300 text-blue-700'
                 : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'

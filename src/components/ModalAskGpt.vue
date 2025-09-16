@@ -26,7 +26,7 @@
               <div class="space-y-2">
                 <button
                   @click="addQuestion(t('gpt_add_tags'))"
-                  class="w-full text-left p-3 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors"
+                  class="w-full text-left p-3 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors whitespace-nowrap"
                 >
                   <div class="font-medium text-blue-800">{{ t('Add Tags') }}</div>
                   <div class="text-sm text-blue-600">{{ t('Add tags to this recipe') }}</div>
@@ -34,7 +34,7 @@
 
                 <button
                   @click="addQuestion(t('gpt_add_procedure'))"
-                  class="w-full text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors"
+                  class="w-full text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors whitespace-nowrap"
                 >
                   <div class="font-medium text-green-800">{{ t('Add Cooking Procedure') }}</div>
                   <div class="text-sm text-green-600">{{ t('Add cooking procedure to this recipe') }}</div>
@@ -42,7 +42,7 @@
 
                 <button
                   @click="addQuestion(t('gpt_find_similar'))"
-                  class="w-full text-left p-3 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 transition-colors"
+                  class="w-full text-left p-3 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 transition-colors whitespace-nowrap"
                 >
                   <div class="font-medium text-purple-800">{{ t('Find Similar Recipes') }}</div>
                   <div class="text-sm text-purple-600">{{ t('List me 10 URLs of similar recipes or cooking sites') }}</div>

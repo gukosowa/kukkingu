@@ -4,9 +4,8 @@
     <div class="mb-6">
       <div class="mb-4">
         <h1 class="text-2xl font-bold">{{ t('Planner') }}</h1>
-        <p class="text-gray-600 mt-1">{{ t('Plan your meals for any period') }}</p>
       </div>
-      <div class="flex gap-2">
+      <div class="flex flex-wrap gap-2">
         <Button @click="openCreatePlan" class="bg-blue-600 hover:bg-blue-700">
           <Icon icon="fal fa-plus" size="0.9rem" class="mr-1" />
           {{ t('Create Plan') }}
@@ -67,7 +66,7 @@
                 <template v-for="(recipePlan, recipeIndex) in day.recipes" :key="recipeIndex">
                   <button
                     @click="navigateToRecipe(recipePlan.recipeId)"
-                    class="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer text-sm truncate"
+                    class="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer text-sm truncate whitespace-nowrap"
                     :title="getRecipeName(recipePlan.recipeId)"
                   >
                     {{ getRecipeName(recipePlan.recipeId) }}
@@ -84,7 +83,7 @@
           </div>
         </div>
 
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
           <Button
             @click="openEditPlan(plan)"
             class="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
@@ -213,7 +212,7 @@
 
               <!-- Footer - Fixed at bottom -->
               <div class="py-3 px-3 border-t border-gray-200 bg-gray-50">
-                <div class="flex gap-4">
+                <div class="flex flex-wrap gap-4">
                   <div
                     class="cursor-pointer py-2 px-4 bg-gray-500 text-white rounded-lg drop-shadow flex-1"
                     @click.stop="closePlanModal"
@@ -287,7 +286,7 @@
                           :key="tag"
                           @click="togglePreference(tag)"
                           :class="[
-                            'px-3 py-1 text-sm rounded-full border transition-colors',
+                            'px-3 py-1 text-sm rounded-full border transition-colors whitespace-nowrap',
                             autoPlanPreferences.includes(tag)
                               ? 'bg-blue-100 border-blue-300 text-blue-700'
                               : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
@@ -310,7 +309,7 @@
                           :key="tag"
                           @click="toggleExclusion(tag)"
                           :class="[
-                            'px-3 py-1 text-sm rounded-full border transition-colors',
+                            'px-3 py-1 text-sm rounded-full border transition-colors whitespace-nowrap',
                             autoPlanExclusions.includes(tag)
                               ? 'bg-red-100 border-red-300 text-red-700'
                               : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
@@ -326,7 +325,7 @@
 
               <!-- Footer - Fixed at bottom -->
               <div class="py-3 px-3 border-t border-gray-200 bg-gray-50">
-                <div class="flex gap-4">
+                <div class="flex flex-wrap gap-4">
                   <div
                     class="cursor-pointer py-2 px-4 bg-gray-500 text-white rounded-lg drop-shadow flex-1"
                     @click.stop="closeAutoPlanModal"
