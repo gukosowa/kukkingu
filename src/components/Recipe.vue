@@ -396,7 +396,30 @@ const ratio = computed(() => (recipe.value ? recipe.value.original / recipe.valu
 const scaledServings = computed(() => {
   const servings = recipe.value?.servings || 2
   const rat = ratio.value || 1
-  return Math.round(servings / rat)
+  let amt = Math.round((servings / rat) * 4) / 4
+  let display = amt.toFixed(2)
+
+  if (display.includes('.')) {
+    let [num, dec] = display.split('.')
+    if (dec) {
+      num = +num === 0 ? '' : num
+    }
+    switch (dec) {
+      case '25':
+        display = (num ? num + ' ' : '') + '¼'
+        break
+      case '50':
+        display = (num ? num + ' ' : '') + '½'
+        break
+      case '75':
+        display = (num ? num + ' ' : '') + '¾'
+        break
+      default:
+        display = num || '0'
+    }
+  }
+
+  return display || '0'
 })
 
 const hasNotes = computed(() => {
