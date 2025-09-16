@@ -46,7 +46,7 @@
     </template>
 
     <template #footer>
-      <div class="px-4 py-3 flex gap-3">
+      <div class="px-3 py-2 flex gap-3">
         <Button
           @click="close"
           class="flex-1 bg-gray-500 hover:bg-gray-600 text-white"

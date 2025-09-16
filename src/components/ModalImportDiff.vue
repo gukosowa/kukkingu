@@ -65,7 +65,7 @@
     </template>
 
     <template #footer>
-      <div class="px-4 py-3 flex gap-2">
+      <div class="px-3 py-2 flex gap-2">
         <Button
           @click="handleCancel"
           color="gray"

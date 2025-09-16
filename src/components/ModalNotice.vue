@@ -19,7 +19,7 @@
     </template>
 
     <template #footer>
-      <div class="px-4 py-3">
+      <div class="px-3 py-2">
         <button
           class="cursor-pointer py-3 w-full bg-blue-600 text-white rounded-lg drop-shadow hover:bg-blue-700 transition-colors"
           @click="acknowledge"

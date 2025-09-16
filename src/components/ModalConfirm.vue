@@ -17,7 +17,7 @@
     </template>
 
     <template #footer>
-      <div class="px-4 py-3 flex gap-4">
+      <div class="px-3 py-2 flex gap-4">
         <button
           class="cursor-pointer py-2 px-4 bg-gray-500 text-white rounded-lg drop-shadow flex-1 hover:bg-gray-600 transition-colors"
           @click.stop="clickNo"
