@@ -69,13 +69,13 @@
       @confirm="confirmImportUrl"
       @cancel="cancelImportUrl"
     />
-    <ModalNotice
-      v-model="showNotice"
-      :title="noticeTitle"
-      :message="noticeMessage"
-      :icon="noticeIcon"
-      :okText="noticeOkText"
-      @ok="handleNoticeOk"
+    <ModalPromptReady
+      v-model="showPromptReadyModal"
+      :message="promptReadyMessage"
+      :aiService="promptReadyAIService"
+      :gotoText="promptReadyGotoText"
+      :gotoUrl="promptReadyGotoUrl"
+      @goToAI="handleGoToAI"
     />
   </header>
 </template>
@@ -89,7 +89,7 @@ import SInput from '~components/Input.vue'
 import Icon from './Icon.vue'
 import Button from './Button.vue'
 import ModalUrlText from './ModalUrlText.vue'
-import ModalNotice from './ModalNotice.vue'
+import ModalPromptReady from './ModalPromptReady.vue'
 import { buildImportRecipePrompt } from '~src/services/prompt'
 import { openChatGPT } from '~src/services/chatgpt'
 import { handlePromptNoticeOk } from '~src/services/notice'
@@ -102,12 +102,11 @@ let showImportUrlModal = ref(false)
 let importUrl = ref('')
 let importText = ref('')
 let importFromPicture = ref(false)
-let showNotice = ref(false)
-let noticeTitle = ref('')
-let noticeMessage = ref('')
-let noticeIcon = ref('fal fa-info-circle')
-let noticeOkText = ref(t('Got it'))
-let noticeOkUrl = ref<string | null>(null)
+let showPromptReadyModal = ref(false)
+let promptReadyMessage = ref('')
+let promptReadyAIService = ref<'chatgpt' | 'gemini'>('chatgpt')
+let promptReadyGotoText = ref('')
+let promptReadyGotoUrl = ref('')
 
 const recipeId = computed(() => {
   if (route.path.startsWith('/recipe/')) {
@@ -201,10 +200,9 @@ async function confirmImportUrl(payload: { url: string; text: string; fromPictur
     } catch (_) {
       legacyCopyToClipboard(prompt)
     }
-    showAppNotice(
-      t('Prompt ready'),
+    showPromptReady(
       t('We copied the prompt to your clipboard. We are using Gemini because YouTube extraction only works with Gemini. Paste the prompt and send it.'),
-      'fal fa-magic',
+      'gemini',
       t('Goto Gemini'),
       'https://gemini.google.com/'
     )
@@ -212,10 +210,9 @@ async function confirmImportUrl(payload: { url: string; text: string; fromPictur
     // Non-YouTube: if prompt fits ?q=, open ChatGPT directly; otherwise fall back to copy + notice
     const copied = await openChatGPT(prompt)
     if (copied) {
-      showAppNotice(
-        t('Prompt ready'),
+      showPromptReady(
         t('We copied the prompt to your clipboard. Paste the prompt and send it.'),
-        'fal fa-comments',
+        'chatgpt',
         t('Goto ChatGPT'),
         'https://chatgpt.com/'
       )
@@ -235,18 +232,17 @@ function cancelImportUrl() {
   showImportUrlModal.value = false
 }
 
-function showAppNotice(title: string, message: string, icon?: string, okText?: string, okUrl?: string | null) {
-  noticeTitle.value = title
-  noticeMessage.value = message
-  noticeIcon.value = icon || 'fal fa-info-circle'
-  noticeOkText.value = okText || t('Got it')
-  noticeOkUrl.value = okUrl || null
-  showNotice.value = true
+function showPromptReady(message: string, aiService: 'chatgpt' | 'gemini' = 'chatgpt', gotoText?: string, gotoUrl?: string) {
+  promptReadyMessage.value = message
+  promptReadyAIService.value = aiService
+  promptReadyGotoText.value = gotoText || ''
+  promptReadyGotoUrl.value = gotoUrl || ''
+  showPromptReadyModal.value = true
 }
 
-function handleNoticeOk() {
-  handlePromptNoticeOk(noticeOkUrl.value, () => {
-    // Open import JSON modal after going to ChatGPT
+function handleGoToAI() {
+  handlePromptNoticeOk(promptReadyGotoUrl.value, () => {
+    // Open import JSON modal after going to AI service
     modalStates.value.showImportJson = true
   })
 }

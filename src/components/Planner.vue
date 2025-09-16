@@ -112,7 +112,7 @@
         <div v-if="!isEditing" class="mb-4 p-4 bg-gray-50 rounded-lg">
           <div class="max-w-md">
             <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('Plan name') }}</label>
-            <SInput
+            <Input
               v-model="newPlanName"
               :placeholder="t('Enter plan name')"
               class="w-full"
@@ -212,96 +212,19 @@
     </BaseDialog>
 
     <!-- Auto Plan Modal -->
-    <BaseDialog v-model="showAutoPlanModal" size="lg" @close="closeAutoPlanModal">
-      <template #header>
-        <div class="px-4 py-3">
-          <div class="text-lg text-gray-600 font-bold">{{ t('Generate Auto Meal Plan') }}</div>
-        </div>
-      </template>
-
-      <template #content>
-        <div class="space-y-6">
-          <!-- Length Input -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Plan Length (Days)') }}</label>
-            <SInput
-              v-model.number="autoPlanLength"
-              :placeholder="t('Number of days')"
-              class="w-full"
-              type="number"
-              :min="1"
-              :max="30"
-            />
-            <p class="text-xs text-gray-500 mt-1">{{ t('How many days should this plan cover?') }}</p>
-          </div>
-
-          <!-- Preferences -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Preferred Tags') }}</label>
-            <p class="text-xs text-gray-500 mb-2">{{ t('Select tags for recipes you prefer to include') }}</p>
-            <div class="min-h-[120px] max-h-48 overflow-y-auto border rounded-lg p-2">
-              <div class="flex flex-wrap gap-2">
-                <button
-                  v-for="tag in allTags"
-                  :key="tag"
-                  @click="togglePreference(tag)"
-                  :class="[
-                    'px-3 py-1 text-sm rounded-full border transition-colors whitespace-nowrap',
-                    autoPlanPreferences.includes(tag)
-                      ? 'bg-blue-100 border-blue-300 text-blue-700'
-                      : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
-                  ]"
-                >
-                  {{ tag }}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Exclusions -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Excluded Tags') }}</label>
-            <p class="text-xs text-gray-500 mb-2">{{ t('Select tags for recipes you want to exclude') }}</p>
-            <div class="min-h-[120px] max-h-48 overflow-y-auto border rounded-lg p-2">
-              <div class="flex flex-wrap gap-2">
-                <button
-                  v-for="tag in allTags"
-                  :key="tag"
-                  @click="toggleExclusion(tag)"
-                  :class="[
-                    'px-3 py-1 text-sm rounded-full border transition-colors whitespace-nowrap',
-                    autoPlanExclusions.includes(tag)
-                      ? 'bg-red-100 border-red-300 text-red-700'
-                      : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
-                  ]"
-                >
-                  {{ tag }}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </template>
-
-      <template #footer>
-        <div class="px-3 py-2 flex gap-3">
-          <button
-            class="cursor-pointer py-3 flex-1 bg-gray-500 text-white rounded-lg drop-shadow hover:bg-gray-600 transition-colors"
-            @click="closeAutoPlanModal"
-          >
-            {{ t('Cancel') }}
-          </button>
-          <button
-            class="cursor-pointer py-3 flex-1 bg-green-500 text-white rounded-lg drop-shadow hover:bg-green-600 transition-colors"
-            :class="{ 'opacity-50 cursor-not-allowed': !autoPlanLength || autoPlanLength < 1 }"
-            :disabled="!autoPlanLength || autoPlanLength < 1"
-            @click="generateAutoPlan()"
-          >
-            {{ t('Generate') }}
-          </button>
-        </div>
-      </template>
-    </BaseDialog>
+    <ModalAutoPlan
+      v-model="showAutoPlanModal"
+      :length="autoPlanLength"
+      :preferences="autoPlanPreferences"
+      :exclusions="autoPlanExclusions"
+      :meal-types="autoPlanMealTypes"
+      :all-tags="allTags"
+      @update:length="autoPlanLength = $event"
+      @update:preferences="autoPlanPreferences = $event"
+      @update:exclusions="autoPlanExclusions = $event"
+      @update:mealTypes="autoPlanMealTypes = $event"
+      @generate="generateAutoPlan"
+    />
 
     <!-- Import Modal -->
     <ModalInput
@@ -316,12 +239,9 @@
     />
 
     <!-- Prompt Ready Modal -->
-    <ModalNotice
+    <ModalPromptReady
       v-model="showPromptReadyModal"
-      :title="t('Prompt Ready')"
-      :message="t('We copied the prompt to your clipboard. Paste the prompt and send it.')"
-      icon="fal fa-check-circle"
-      :ok-text="t('Got it')"
+      @goToAI="openChatGPT"
     />
 
     <!-- Delete Confirmation Modal -->
@@ -376,6 +296,7 @@
       :plan-id="currentShoppingListPlan?.id || ''"
     />
 
+
     <Footer />
   </div>
 </template>
@@ -391,22 +312,22 @@ import { recipes } from '~src/store/index'
 import Icon from './Icon.vue'
 import Footer from './Footer.vue'
 import Button from './Button.vue'
+import Input from './Input.vue'
+import BaseDialog from './BaseDialog.vue'
 import ModalInput from './ModalInput.vue'
+import ModalPromptReady from './ModalPromptReady.vue'
 import ModalConfirm from './ModalConfirm.vue'
 import ModalNotice from './ModalNotice.vue'
-import ModalAutoPlanPrompt from './ModalAutoPlanPrompt.vue'
+import ModalAutoPlan from './ModalAutoPlan.vue'
 import RecipeSelector from './RecipeSelector.vue'
 import RecipeDetailsModal from './RecipeDetailsModal.vue'
 import ShoppingListModal from './ShoppingListModal.vue'
-import BaseDialog from './BaseDialog.vue'
-import SInput from './Input.vue'
 
 const router = useRouter()
 
 // State
 const showPlanModal = ref(false)
 const showAutoPlanModal = ref(false)
-const showAutoPlanPromptModal = ref(false)
 const showPromptReadyModal = ref(false)
 const showImportModal = ref(false)
 const showDeleteModal = ref(false)
@@ -421,6 +342,8 @@ const modalDays = ref<DayPlan[]>([])
 const autoPlanLength = ref(7)
 const autoPlanPreferences = ref<string[]>([])
 const autoPlanExclusions = ref<string[]>([])
+const autoPlanMealTypes = ref<string[]>(['lunch']) // Default to lunch only
+
 
 // Shopping list state
 const currentShoppingList = ref<ShoppingListItem[]>([])
@@ -524,11 +447,12 @@ async function generateAutoPlan() {
     const options = {
       length: autoPlanLength.value,
       preferences: autoPlanPreferences.value,
-      exclusions: autoPlanExclusions.value
+      exclusions: autoPlanExclusions.value,
+      mealTypes: autoPlanMealTypes.value
     }
     const prompt = generateAutoMealPlanPrompt(options)
 
-    // Copy prompt to clipboard in background
+    // Copy prompt to clipboard
     if (navigator.clipboard && navigator.clipboard.writeText) {
       await navigator.clipboard.writeText(prompt)
     } else {
@@ -602,39 +526,21 @@ function cancelDelete() {
   planToDelete.value = null
 }
 
-function togglePreference(tag: string) {
-  const index = autoPlanPreferences.value.indexOf(tag)
-  if (index > -1) {
-    autoPlanPreferences.value.splice(index, 1)
-  } else {
-    autoPlanPreferences.value.push(tag)
-    // Remove from exclusions if it was there
-    const exclusionIndex = autoPlanExclusions.value.indexOf(tag)
-    if (exclusionIndex > -1) {
-      autoPlanExclusions.value.splice(exclusionIndex, 1)
-    }
-  }
-}
-
-function toggleExclusion(tag: string) {
-  const index = autoPlanExclusions.value.indexOf(tag)
-  if (index > -1) {
-    autoPlanExclusions.value.splice(index, 1)
-  } else {
-    autoPlanExclusions.value.push(tag)
-    // Remove from preferences if it was there
-    const preferenceIndex = autoPlanPreferences.value.indexOf(tag)
-    if (preferenceIndex > -1) {
-      autoPlanPreferences.value.splice(preferenceIndex, 1)
-    }
-  }
-}
-
 function closeAutoPlanModal() {
   showAutoPlanModal.value = false
   autoPlanLength.value = 7
   autoPlanPreferences.value = []
   autoPlanExclusions.value = []
+  autoPlanMealTypes.value = ['lunch'] // Reset to default
+}
+
+async function openChatGPT() {
+  try {
+    // Open ChatGPT in new tab
+    window.open('https://chat.openai.com/', '_blank')
+  } catch (error) {
+    console.error('Failed to open ChatGPT:', error)
+  }
 }
 
 async function generateShoppingList(plan: WeeklyPlan) {

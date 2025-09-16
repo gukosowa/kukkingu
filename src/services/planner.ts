@@ -68,6 +68,7 @@ export function generateAutoMealPlanPrompt(options: {
   cuisineTypes?: string[]
   maxRecipesPerDay?: number
   includeSnacks?: boolean
+  mealTypes?: string[]
 } = {}): string {
   // Get all available recipes
   const availableRecipes = recipes.value.filter(recipe =>
@@ -91,6 +92,7 @@ function buildMealPlanPrompt(recipes: Recipe[], options: {
   cuisineTypes?: string[]
   maxRecipesPerDay?: number
   includeSnacks?: boolean
+  mealTypes?: string[]
 }): string {
   const recipeSummaries = recipes.map(recipe => ({
     id: recipe.id,
@@ -106,6 +108,10 @@ function buildMealPlanPrompt(recipes: Recipe[], options: {
   const exclusionsText = options.exclusions && options.exclusions.length > 0
     ? `Excluded tags: ${options.exclusions.join(', ')}`
     : 'No exclusions'
+  const mealTypes = options.mealTypes && options.mealTypes.length > 0
+    ? options.mealTypes
+    : ['breakfast', 'lunch', 'dinner']
+  const mealTypesText = mealTypes.join(', ')
 
   return `You are a meal planning assistant. Create a balanced ${length}-day meal plan using ONLY the recipes provided below as the source of truth.
 
@@ -120,15 +126,15 @@ ${options.cuisineTypes ? `- Preferred cuisines: ${options.cuisineTypes.join(', '
 
 PLANNING REQUIREMENTS:
 1. Create exactly ${length} days of meals (Day 1 through Day ${length})
-2. Each day should include: breakfast, lunch, and dinner
-${options.includeSnacks ? '3. Include snacks as requested' : '3. Focus on main meals (breakfast, lunch, dinner)'}
+2. Each day should include: ${mealTypesText}
+${options.includeSnacks ? '3. Include snacks as requested' : '3. Focus on main meals'}
 4. Use ONLY recipe IDs from the available recipes list above
 5. Ensure variety - avoid repeating the same recipe within the same week
 6. Consider nutritional balance and meal variety across the plan
 7. Prioritize recipes with preferred tags when available
 8. Strictly avoid recipes with excluded tags
 9. Each recipe plan should specify appropriate serving sizes (typically 2-4 servings)
-10. Assign appropriate meal types: "breakfast", "lunch", "dinner", or "snack"
+10. Assign appropriate meal types from the selected options: ${mealTypesText}
 
 OUTPUT FORMAT:
 Return ONLY a valid JSON object with this exact structure:
@@ -151,7 +157,7 @@ Return ONLY a valid JSON object with this exact structure:
 
 IMPORTANT:
 - Use recipe IDs exactly as they appear in the source list
-- Each day must have at least breakfast, lunch, and dinner
+- Each day must have at least ${mealTypes.length} meal(s): ${mealTypesText}
 - JSON must be valid and parseable
 - Do not include any text outside the JSON structure`
 }

@@ -312,6 +312,14 @@
       :okText="noticeOkText"
       @ok="openChatGPTTab"
     />
+    <ModalPromptReady
+      v-model="showPromptReadyModal"
+      :message="promptReadyMessage"
+      :aiService="promptReadyAIService"
+      :gotoText="promptReadyGotoText"
+      :gotoUrl="promptReadyGotoUrl"
+      @goToAI="handleGoToAI"
+    />
   </template>
 
 <script lang="ts" setup>
@@ -327,6 +335,7 @@ import Checkbox from './Checkbox.vue'
 import AmountTypeModal from './AmountTypeModal.vue'
 import ModalAskGpt from './ModalAskGpt.vue'
 import ModalNotice from './ModalNotice.vue'
+import ModalPromptReady from './ModalPromptReady.vue'
 import TagInput from './TagInput.vue'
 import ModeButtonGroup from './ModeButtonGroup.vue'
 import { t, currentLocale } from '~src/i18n'
@@ -400,6 +409,13 @@ const noticeMessage = ref('')
 const noticeIcon = ref('fal fa-info-circle')
 const noticeOkText = ref(t('Got it'))
 
+// ModalPromptReady state
+const showPromptReadyModal = ref(false)
+const promptReadyMessage = ref('')
+const promptReadyAIService = ref<'chatgpt' | 'gemini'>('chatgpt')
+const promptReadyGotoText = ref('')
+const promptReadyGotoUrl = ref('')
+
 function openAskGpt() {
   showAskGpt.value = true
 }
@@ -422,11 +438,11 @@ async function confirmAskGpt(question: string) {
   } catch (_) {
     legacyCopyToClipboard(prompt)
   }
-  showAppNotice(
-    t('Prompt ready'),
+  showPromptReady(
     t('We copied the prompt to your clipboard. Paste the prompt and send it.'),
-    'fal fa-comment-alt',
-    t('Goto ChatGPT')
+    'chatgpt',
+    t('Goto ChatGPT'),
+    'https://chatgpt.com/'
   )
 }
 
@@ -722,6 +738,20 @@ function showAppNotice(title: string, message: string, icon?: string, okText?: s
   noticeIcon.value = icon || 'fal fa-info-circle'
   noticeOkText.value = okText || t('Got it')
   showNotice.value = true
+}
+
+function showPromptReady(message: string, aiService: 'chatgpt' | 'gemini' = 'chatgpt', gotoText?: string, gotoUrl?: string) {
+  promptReadyMessage.value = message
+  promptReadyAIService.value = aiService
+  promptReadyGotoText.value = gotoText || ''
+  promptReadyGotoUrl.value = gotoUrl || ''
+  showPromptReadyModal.value = true
+}
+
+function handleGoToAI() {
+  if (promptReadyGotoUrl.value) {
+    window.open(promptReadyGotoUrl.value, '_blank')
+  }
 }
 
 // Image handling functions
