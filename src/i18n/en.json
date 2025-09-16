@@ -172,5 +172,13 @@
   "Remove recipe": "Remove recipe",
   "Failed to generate shopping list": "Failed to generate shopping list",
   "Import Plan": "Import Plan",
-  "Create your first meal plan to get started": "Create your first meal plan to get started"
+  "Create your first meal plan to get started": "Create your first meal plan to get started",
+  "Could not find valid JSON in the pasted text. Please make sure you only copy the JSON part from the AI response.": "Could not find valid JSON in the pasted text. Please make sure you only copy the JSON part from the AI response.",
+  "The pasted text contains invalid JSON. Please copy only the JSON object from the AI response.": "The pasted text contains invalid JSON. Please copy only the JSON object from the AI response.",
+  "The plan contains recipes that don't exist in your recipe collection. Please check the recipe IDs.": "The plan contains recipes that don't exist in your recipe collection. Please check the recipe IDs.",
+  "Could not find valid JSON in the AI response. Please make sure the AI provided a proper JSON response.": "Could not find valid JSON in the AI response. Please make sure the AI provided a proper JSON response.",
+  "The AI response contains invalid JSON. Please check that the AI followed the requested format.": "The AI response contains invalid JSON. Please check that the AI followed the requested format.",
+  "The generated plan contains recipes that don't exist. Please regenerate the plan with different preferences.": "The generated plan contains recipes that don't exist. Please regenerate the plan with different preferences.",
+  "Plan imported successfully": "Plan imported successfully",
+  "Auto-generated plan imported successfully!": "Auto-generated plan imported successfully!"
 }

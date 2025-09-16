@@ -1,4 +1,4 @@
-import { WeeklyPlan, ShoppingListItem, Recipe, Ingredient } from '~src/store/index'
+import { WeeklyPlan, ShoppingListItem, Recipe, Ingredient, DayPlan } from '~src/store/index'
 import { recipes } from '~src/store/index'
 import { buildImportRecipePrompt } from './prompt'
 import { openChatGPT } from './chatgpt'
@@ -137,7 +137,7 @@ ${options.includeSnacks ? '3. Include snacks as requested' : '3. Focus on main m
 10. Assign appropriate meal types from the selected options: ${mealTypesText}
 
 OUTPUT FORMAT:
-Return ONLY a valid JSON object with this exact structure:
+Return ONLY a valid JSON object with this exact structure (copy this format exactly):
 {
   "name": "Auto-Generated Meal Plan",
   "days": [
@@ -147,31 +147,65 @@ Return ONLY a valid JSON object with this exact structure:
           "recipeId": "exact-recipe-id-from-list",
           "servings": 2,
           "mealType": "breakfast"
+        },
+        {
+          "recipeId": "another-recipe-id",
+          "servings": 4,
+          "mealType": "dinner"
         }
       ],
       "note": "Optional note for the day"
+    },
+    {
+      "recipes": [
+        {
+          "recipeId": "third-recipe-id",
+          "servings": 2,
+          "mealType": "lunch"
+        }
+      ],
+      "note": "Another optional note"
     }
   ],
-  "notes": "Optional notes about the plan"
+  "notes": "Optional overall notes about the plan"
 }
 
 IMPORTANT:
-- Use recipe IDs exactly as they appear in the source list
-- Each day must have at least ${mealTypes.length} meal(s): ${mealTypesText}
+- Use recipe IDs exactly as they appear in the SOURCE OF TRUTH - AVAILABLE RECIPES list above
+- Each recipeId must be one of the exact IDs from the available recipes
+- Each day must include recipes for the selected meal types: ${mealTypesText}
+- Use valid meal types: breakfast, lunch, dinner, or snack
+- servings should be a number (typically 2-4)
 - JSON must be valid and parseable
-- Do not include any text outside the JSON structure`
+- Do not include any text outside the JSON structure
+- Do not add extra fields to the JSON structure
+- The "days" array must contain exactly ${length} day objects`
 }
 
 // Parse GPT response into WeeklyPlan
-function parseMealPlanResponse(response: string, availableRecipes: Recipe[]): WeeklyPlan | null {
+export function parseMealPlanResponse(response: string, availableRecipes: Recipe[]): WeeklyPlan | null {
   try {
     // Try to extract JSON from response
-    const jsonMatch = response.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-      throw new Error('No JSON found in response')
+    let cleanResponse = response.trim()
+
+    // If the response doesn't start with '{', try to find JSON within it
+    if (!cleanResponse.startsWith('{')) {
+      const jsonMatch = cleanResponse.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) {
+        throw new Error('No valid JSON object found in the AI response')
+      }
+      cleanResponse = jsonMatch[0]
     }
 
-    const planData = JSON.parse(jsonMatch[0])
+    const planData = JSON.parse(cleanResponse)
+
+    // Basic validation
+    if (!planData.days || !Array.isArray(planData.days)) {
+      throw new Error('Invalid plan structure: missing or invalid days array')
+    }
+
+    // Create available recipe ID set for fast lookup
+    const availableRecipeIds = new Set(availableRecipes.map(r => r.id).filter(Boolean))
 
     // Validate and fix the plan data
     const plan: WeeklyPlan = {
@@ -183,19 +217,37 @@ function parseMealPlanResponse(response: string, availableRecipes: Recipe[]): We
       notes: planData.notes
     }
 
-    // Process days
-    if (planData.days && Array.isArray(planData.days)) {
-      plan.days = planData.days.map((day: any) => ({
-        recipes: (day.recipes || []).filter((recipePlan: any) => {
-          // Validate recipe exists
-          return availableRecipes.some(r => r.id === recipePlan.recipeId)
-        }).map((recipePlan: any) => ({
-          recipeId: recipePlan.recipeId,
-          servings: recipePlan.servings || 2,
-          mealType: recipePlan.mealType || 'dinner'
-        })),
-        note: day.note
+    // Process days with enhanced validation
+    plan.days = planData.days.map((day: any, dayIndex: number) => {
+      const dayRecipes = (day.recipes || []).filter((recipePlan: any) => {
+        // Validate recipe exists and has required fields
+        const isValid = recipePlan.recipeId &&
+                       availableRecipeIds.has(recipePlan.recipeId) &&
+                       typeof recipePlan.servings === 'number' &&
+                       recipePlan.servings > 0 &&
+                       ['breakfast', 'lunch', 'dinner', 'snack'].includes(recipePlan.mealType)
+
+        if (!isValid) {
+          console.warn(`Filtering out invalid recipe plan in day ${dayIndex + 1}:`, recipePlan)
+        }
+
+        return isValid
+      }).map((recipePlan: any) => ({
+        recipeId: recipePlan.recipeId,
+        servings: Math.max(1, Math.min(10, recipePlan.servings || 2)), // Clamp servings between 1-10
+        mealType: recipePlan.mealType || 'dinner'
       }))
+
+      return {
+        recipes: dayRecipes,
+        note: day.note
+      }
+    })
+
+    // Final validation - ensure we have at least one day with recipes
+    const totalRecipes = plan.days.reduce((sum, day) => sum + day.recipes.length, 0)
+    if (totalRecipes === 0) {
+      throw new Error('Plan contains no valid recipes')
     }
 
     return plan
@@ -211,27 +263,76 @@ export function exportPlanToJson(plan: WeeklyPlan): string {
 }
 
 // Import plan from JSON
-export function importPlanFromJson(jsonString: string): WeeklyPlan | null {
+export function importPlanFromJson(jsonString: string, availableRecipes?: Recipe[]): WeeklyPlan | null {
   try {
-    const plan = JSON.parse(jsonString)
+    // Try to extract JSON from the string if it contains extra text
+    let cleanJsonString = jsonString.trim()
 
-    // Validate structure
-    if (!plan.id || !plan.name || !Array.isArray(plan.days)) {
-      throw new Error('Invalid plan structure')
+    // If the string doesn't start with '{', try to find JSON within it
+    if (!cleanJsonString.startsWith('{')) {
+      // Look for JSON object pattern using regex
+      const jsonMatch = cleanJsonString.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        cleanJsonString = jsonMatch[0]
+      } else {
+        throw new Error('No valid JSON object found in the provided text')
+      }
     }
 
-    // Ensure required fields
-    return {
-      id: plan.id,
-      name: plan.name,
-      days: plan.days.map((day: any) => ({
-        recipes: day.recipes || [],
+    const plan = JSON.parse(cleanJsonString)
+
+    // Validate structure
+    if (!plan.name || !Array.isArray(plan.days)) {
+      throw new Error('Invalid plan structure: missing name or days array')
+    }
+
+    // If available recipes are provided, validate recipe IDs
+    let availableRecipeIds: Set<string> | null = null
+    if (availableRecipes) {
+      availableRecipeIds = new Set(availableRecipes.map(r => r.id).filter((id): id is string => Boolean(id)))
+    }
+
+    // Process and validate days
+    const validatedDays = plan.days.map((day: any, dayIndex: number) => {
+      const dayRecipes = (day.recipes || []).filter((recipePlan: any) => {
+        // Basic validation
+        const hasRequiredFields = recipePlan.recipeId &&
+                                 typeof recipePlan.servings === 'number' &&
+                                 recipePlan.servings > 0 &&
+                                 ['breakfast', 'lunch', 'dinner', 'snack'].includes(recipePlan.mealType)
+
+        // If we have available recipes, also validate recipe exists
+        const recipeExists = !availableRecipeIds || availableRecipeIds.has(recipePlan.recipeId)
+
+        if (!hasRequiredFields) {
+          console.warn(`Invalid recipe plan in day ${dayIndex + 1}: missing required fields`, recipePlan)
+        } else if (!recipeExists) {
+          console.warn(`Recipe ID ${recipePlan.recipeId} not found in available recipes for day ${dayIndex + 1}`)
+        }
+
+        return hasRequiredFields && recipeExists
+      }).map((recipePlan: any) => ({
+        recipeId: recipePlan.recipeId,
+        servings: Math.max(1, Math.min(10, recipePlan.servings || 2)),
+        mealType: recipePlan.mealType || 'dinner'
+      }))
+
+      return {
+        recipes: dayRecipes,
         note: day.note
-      })),
+      }
+    })
+
+    // Create the imported plan object
+    return {
+      id: plan.id || `imported-${Date.now()}`,
+      name: plan.name,
+      days: validatedDays,
       createdAt: plan.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       notes: plan.notes
     }
+
   } catch (error) {
     console.error('Failed to import plan from JSON:', error)
     return null
