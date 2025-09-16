@@ -37,7 +37,7 @@
                 <span
                   class="text-gray-300 mr-2"
                   :class="{'font-normal': denseMode, 'font-bold': !denseMode}"
-                  >{{ recipe.servings || 2 }}</span>
+                  >{{ scaledServings }}</span>
                 <span
                   class="text-red-300"
                   :style="{ fontSize: denseMode ? '1rem' : '1.2rem' }"
@@ -392,6 +392,12 @@ watch(
 
 const markedRender = computed(() => (marked as any).parse(recipe.value?.note || ''))
 const ratio = computed(() => (recipe.value ? recipe.value.original / recipe.value.desired : 1))
+
+const scaledServings = computed(() => {
+  const servings = recipe.value?.servings || 2
+  const rat = ratio.value || 1
+  return Math.round(servings / rat)
+})
 
 const hasNotes = computed(() => {
   return recipe.value?.ingredients?.some((item: any) => item.note && item.note.trim()) || false
