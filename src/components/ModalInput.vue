@@ -1,90 +1,75 @@
 <template>
-  <div v-if="modelValue">
-    <div class="fixed w-screen h-screen bg-black top-0 left-0 z-40 opacity-50" />
-    <Transition
-      appear
-      enter-active-class="transition ease-out duration-150"
-      enter-from-class="opacity-0 translate-y-3"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition ease-in duration-150"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 translate-y-2"
-    >
-      <div
-        v-if="modelValue"
-        class="fixed w-screen w-full h-screen top-0 left-0 z-50 overflow-y-auto"
-        style="backdrop-filter: blur(1px)"
-        @click="close"
-      >
-        <div class="w-full min-h-full px-6 sm:px-12 py-8 flex flex-col transform">
-          <div class="bg-white p-5 rounded-xl drop-shadow" @click.stop>
-            <div class="text-lg text-gray-600 font-bold">{{ title }}</div>
-            <div class="my-5">
-              <SInput
-                v-if="!multiline"
-                v-model="localValue"
-                :placeholder="placeholder"
-                :autofocus="true"
-                ref="inputRef"
-              />
-              <textarea
-                v-else
-                v-model="localValue"
-                :placeholder="placeholder"
-                ref="textareaRef"
-                class="w-full border focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
-              />
-            </div>
-            <div class="text-white text-center">
-              <div
-                class="cursor-pointer py-3 my-2 bg-green-500 rounded-lg drop-shadow"
-                @click="confirm"
-              >
-                {{ confirmText }}
-              </div>
-              <div
-                class="cursor-pointer py-3 bg-gray-500 rounded-lg drop-shadow"
-                @click="close"
-              >
-                {{ cancelText }}
-              </div>
-            </div>
-          </div>
-        </div>
+  <BaseDialog v-model="showModal" size="sm" @close="close">
+    <template #header>
+      <div class="px-4 py-3">
+        <div class="text-lg text-gray-600 font-bold">{{ title }}</div>
       </div>
-    </Transition>
-  </div>
+    </template>
+
+    <template #content>
+      <div class="px-4 pb-4">
+        <SInput
+          v-if="!props.multiline"
+          v-model="localValue"
+          :placeholder="props.placeholder || ''"
+          :autofocus="true"
+          ref="inputRef"
+        />
+        <textarea
+          v-else
+          v-model="localValue"
+          :placeholder="props.placeholder || ''"
+          ref="textareaRef"
+          class="w-full border focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+    </template>
+
+    <template #footer>
+      <div class="px-4 py-3 flex gap-3">
+        <button
+          class="cursor-pointer py-3 px-4 bg-gray-500 text-white rounded-lg drop-shadow flex-1 hover:bg-gray-600 transition-colors"
+          @click="close"
+        >
+          {{ props.cancelText || t('Cancel') }}
+        </button>
+        <button
+          class="cursor-pointer py-3 px-4 bg-green-500 text-white rounded-lg drop-shadow flex-1 hover:bg-green-600 transition-colors"
+          @click="confirm"
+        >
+          {{ props.confirmText || t('OK') }}
+        </button>
+      </div>
+    </template>
+  </BaseDialog>
 </template>
 
-<script lang="ts" setup>
-import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+<script setup lang="ts">
+import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue'
 import SInput from './Input.vue'
 import { t } from '~src/i18n'
 import { vibrate } from '~src/services/vibrate'
+import BaseDialog from './BaseDialog.vue'
 
-const props = withDefaults(
-  defineProps<{
-    modelValue: boolean
-    title: string
-    placeholder?: string
-    confirmText?: string
-    cancelText?: string
-    value?: string
-    multiline?: boolean
-  }>(),
-  {
-    placeholder: '',
-    confirmText: t('OK'),
-    cancelText: t('Cancel'),
-    value: '',
-    multiline: false,
-  }
-)
+const props = defineProps<{
+  modelValue: boolean
+  title: string
+  placeholder?: string
+  confirmText?: string
+  cancelText?: string
+  value?: string
+  multiline?: boolean
+}>()
 const emit = defineEmits<{
   (e: 'confirm', v: string): void
   (e: 'cancel'): void
   (e: 'update:modelValue', v: boolean): void
 }>()
+
+const showModal = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value)
+})
 
 const localValue = ref(props.value)
 const inputRef = ref<InstanceType<typeof SInput> | null>(null)
@@ -128,18 +113,11 @@ watch(
 
 function confirm() {
   vibrate()
-  emit('confirm', localValue.value)
+  emit('confirm', localValue.value || '')
 }
 function close() {
-  vibrate()
   emit('cancel')
-  emit('update:modelValue', false)
+  showModal.value = false
 }
 </script>
 
-<style scoped>
-  .drop-shadow {
-    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))
-      drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
-  }
-</style>

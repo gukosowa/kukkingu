@@ -1,110 +1,90 @@
 <template>
-  <div v-if="modelValue">
-    <div class="fixed w-screen h-screen bg-black top-0 left-0 z-40 opacity-50" />
-    <Transition
-      appear
-      enter-active-class="transition ease-out duration-150"
-      enter-from-class="opacity-0 translate-y-3"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition ease-in duration-150"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 translate-y-2"
-    >
-      <div
-        v-if="modelValue"
-        class="fixed w-screen h-screen top-0 left-0 z-50 overflow-y-auto"
-        style="backdrop-filter: blur(1px)"
-        @click="close"
-      >
-        <div class="w-full min-h-full px-6 sm:px-12 py-8 flex flex-col transform">
-          <div class="bg-white p-5 rounded-xl drop-shadow max-w-md mx-auto" @click.stop>
-            <div class="text-lg text-gray-600 font-bold mb-4">{{ t('Ask GPT') }}</div>
+  <BaseDialog v-model="showModal" size="lg" @close="close">
+    <template #header>
+      <div class="px-4 py-3">
+        <div class="text-lg text-gray-600 font-bold">{{ props.title || t('Ask GPT') }}</div>
+      </div>
+    </template>
 
-            <!-- Predefined Questions -->
-            <div class="mb-4">
-              <div class="text-sm text-gray-500 mb-2">{{ t('Quick questions') }}:</div>
-              <div class="space-y-2">
-                <button
-                  @click="addQuestion(t('gpt_add_tags'))"
-                  class="w-full text-left p-3 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors whitespace-nowrap"
-                >
-                  <div class="font-medium text-blue-800">{{ t('Add Tags') }}</div>
-                  <div class="text-sm text-blue-600">{{ t('Add tags to this recipe') }}</div>
-                </button>
+    <template #content>
+      <div class="space-y-4">
+        <!-- Predefined Questions -->
+        <div>
+          <div class="text-sm text-gray-500 mb-2">{{ t('Quick questions') }}:</div>
+          <div class="space-y-2">
+            <button
+              @click="addQuestion(t('gpt_add_tags'))"
+              class="w-full text-left p-3 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors"
+            >
+              <div class="font-medium text-blue-800 break-words">{{ t('Add Tags') }}</div>
+              <div class="text-sm text-blue-600 break-words">{{ t('Add tags to this recipe') }}</div>
+            </button>
 
-                <button
-                  @click="addQuestion(t('gpt_add_procedure'))"
-                  class="w-full text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors whitespace-nowrap"
-                >
-                  <div class="font-medium text-green-800">{{ t('Add Cooking Procedure') }}</div>
-                  <div class="text-sm text-green-600">{{ t('Add cooking procedure to this recipe') }}</div>
-                </button>
+            <button
+              @click="addQuestion(t('gpt_add_procedure'))"
+              class="w-full text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors"
+            >
+              <div class="font-medium text-green-800 break-words">{{ t('Add Cooking Procedure') }}</div>
+              <div class="text-sm text-green-600 break-words">{{ t('Add cooking procedure to this recipe') }}</div>
+            </button>
 
-                <button
-                  @click="addQuestion(t('gpt_find_similar'))"
-                  class="w-full text-left p-3 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 transition-colors whitespace-nowrap"
-                >
-                  <div class="font-medium text-purple-800">{{ t('Find Similar Recipes') }}</div>
-                  <div class="text-sm text-purple-600">{{ t('List me 10 URLs of similar recipes or cooking sites') }}</div>
-                </button>
-              </div>
-            </div>
-
-            <!-- Custom Question -->
-            <div class="mb-4">
-              <div class="text-sm text-gray-500 mb-2">{{ t('Or ask your own question') }}:</div>
-              <textarea
-                v-model="localValue"
-                :placeholder="t('Type your question here...')"
-                ref="textareaRef"
-                class="w-full border focus:ring-indigo-500 text-black p-3 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md min-h-[80px] resize-none"
-                rows="3"
-              />
-            </div>
-
-            <div class="text-white text-center space-y-2">
-              <div
-                class="cursor-pointer py-3 bg-green-500 rounded-lg drop-shadow hover:bg-green-600 transition-colors"
-                @click="confirm"
-              >
-                {{ t('Ask GPT') }}
-              </div>
-              <div
-                class="cursor-pointer py-2 bg-gray-500 rounded-lg drop-shadow hover:bg-gray-600 transition-colors"
-                @click="close"
-              >
-                {{ t('Cancel') }}
-              </div>
-            </div>
+            <button
+              @click="addQuestion(t('gpt_find_similar'))"
+              class="w-full text-left p-3 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 transition-colors"
+            >
+              <div class="font-medium text-purple-800 break-words">{{ t('Find Similar Recipes') }}</div>
+              <div class="text-sm text-purple-600 break-words">{{ t('List me 10 URLs of similar recipes or cooking sites') }}</div>
+            </button>
           </div>
         </div>
+
+        <!-- Custom Question -->
+        <div>
+          <div class="text-sm text-gray-500 mb-2">{{ t('Or ask your own question') }}:</div>
+          <textarea
+            v-model="localValue"
+            :placeholder="props.placeholder || t('Type your question here...')"
+            ref="textareaRef"
+            class="w-full border focus:ring-indigo-500 text-black p-3 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md min-h-[80px] resize-none"
+            rows="3"
+          />
+        </div>
       </div>
-    </Transition>
-  </div>
+    </template>
+
+    <template #footer>
+      <div class="px-4 py-3 flex gap-3">
+        <button
+          class="cursor-pointer py-3 flex-1 bg-gray-500 text-white rounded-lg drop-shadow hover:bg-gray-600 transition-colors"
+          @click="close"
+        >
+          {{ props.cancelText || t('Cancel') }}
+        </button>
+        <button
+          class="cursor-pointer py-3 flex-1 bg-green-500 text-white rounded-lg drop-shadow hover:bg-green-600 transition-colors"
+          @click="confirm"
+        >
+          {{ props.confirmText || t('Ask GPT') }}
+        </button>
+      </div>
+    </template>
+  </BaseDialog>
 </template>
 
-<script lang="ts" setup>
-import { ref, watch, nextTick } from 'vue'
+<script setup lang="ts">
+import { ref, watch, nextTick, computed } from 'vue'
 import { t } from '~src/i18n'
 import { vibrate } from '~src/services/vibrate'
+import BaseDialog from './BaseDialog.vue'
 
-const props = withDefaults(
-  defineProps<{
-    modelValue: boolean
-    title?: string
-    placeholder?: string
-    confirmText?: string
-    cancelText?: string
-    value?: string
-  }>(),
-  {
-    title: t('Ask GPT'),
-    placeholder: t('Type your question here...'),
-    confirmText: t('Ask GPT'),
-    cancelText: t('Cancel'),
-    value: '',
-  }
-)
+const props = defineProps<{
+  modelValue: boolean
+  title?: string
+  placeholder?: string
+  confirmText?: string
+  cancelText?: string
+  value?: string
+}>()
 
 const emit = defineEmits<{
   (e: 'confirm', v: string): void
@@ -112,11 +92,16 @@ const emit = defineEmits<{
   (e: 'update:modelValue', v: boolean): void
 }>()
 
+const showModal = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value)
+})
+
 const localValue = ref(props.value)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
 function addQuestion(question: string) {
-  if (localValue.value.trim()) {
+  if (localValue.value?.trim()) {
     localValue.value += '\n\n' + question
   } else {
     localValue.value = question
@@ -147,19 +132,13 @@ watch(
 
 function confirm() {
   vibrate()
-  emit('confirm', localValue.value)
+  emit('confirm', localValue.value || '')
 }
 
 function close() {
   vibrate()
   emit('cancel')
-  emit('update:modelValue', false)
+  showModal.value = false
 }
 </script>
 
-<style scoped>
-.drop-shadow {
-  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))
-    drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
-}
-</style>

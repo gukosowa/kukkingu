@@ -41,9 +41,6 @@
         <div class="flex items-start justify-between mb-3">
           <div class="flex-grow">
             <h3 class="font-semibold text-lg text-gray-900">{{ plan.name }}</h3>
-            <p class="text-sm text-gray-500">
-              {{ formatWeekRange(plan) }}
-            </p>
           </div>
           <Button
             @click="deletePlan(plan.id)"
@@ -103,50 +100,34 @@
     </div>
 
     <!-- Unified Plan Modal (Create/Edit) -->
-    <div v-if="showPlanModal">
-      <div class="fixed w-screen h-screen bg-black top-0 left-0 z-40 opacity-50" />
-      <Transition
-        appear
-        enter-active-class="transition ease-out duration-150"
-        enter-from-class="opacity-0 translate-y-3"
-        enter-to-class="opacity-100 translate-y-0"
-        leave-active-class="transition ease-in duration-150"
-        leave-from-class="opacity-100 translate-y-0"
-        leave-to-class="opacity-0 translate-y-2"
-      >
-        <div
-          v-if="showPlanModal"
-          class="fixed w-screen h-screen top-0 left-0 z-50 overflow-y-auto"
-          style="backdrop-filter: blur(1px)"
-          @click="closePlanModal"
-        >
-          <div class="w-full min-h-full px-6 sm:px-12 py-8 flex flex-col transform">
-            <div class="w- bg-white rounded-xl drop-shadow flex flex-col overflow-hidden" @click.stop>
-              <!-- Header - Fixed at top -->
-              <div class="px-4 py-3 border-b border-gray-200">
-                <div class="text-lg text-gray-600 font-bold">{{ isEditing ? currentPlan?.name : t('Create Plan') }}</div>
-              </div>
+    <BaseDialog v-model="showPlanModal" size="xl" dense @close="closePlanModal">
+      <template #header>
+        <div class="px-4 py-3">
+          <div class="text-lg text-gray-600 font-bold">{{ isEditing ? currentPlan?.name : t('Create Plan') }}</div>
+        </div>
+      </template>
 
-              <!-- Plan Name Input (only for create mode) -->
-              <div v-if="!isEditing" class="p-5 border-b bg-gray-50">
-                <div class="max-w-md">
-                  <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('Plan name') }}</label>
-                  <SInput
-                    v-model="newPlanName"
-                    :placeholder="t('Enter plan name')"
-                    class="w-full"
-                  />
-                </div>
-              </div>
+      <template #content>
+        <!-- Plan Name Input (only for create mode) -->
+        <div v-if="!isEditing" class="mb-4 p-4 bg-gray-50 rounded-lg">
+          <div class="max-w-md">
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('Plan name') }}</label>
+            <SInput
+              v-model="newPlanName"
+              :placeholder="t('Enter plan name')"
+              class="w-full"
+            />
+          </div>
+        </div>
 
-              <!-- Days Grid -->
-              <div class="flex-1 overflow-y-auto p-5 bg-gray-200">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                  <div
-                    v-for="(day, index) in modalDays"
-                    :key="index"
-                    class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow"
-                  >
+        <!-- Days Grid -->
+        <div class="bg-gray-200 p-4 rounded-lg">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div
+              v-for="(day, index) in modalDays"
+              :key="index"
+              class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow"
+            >
                     <!-- Day Header -->
                     <div class="flex items-center justify-between mb-3">
                       <h4 class="font-medium text-gray-900">{{ t('Day') }} {{ index + 1 }}</h4>
@@ -210,142 +191,117 @@
                 </div>
               </div>
 
-              <!-- Footer - Fixed at bottom -->
-              <div class="py-3 px-3 border-t border-gray-200 bg-gray-50">
-                <div class="flex flex-wrap gap-4">
-                  <div
-                    class="cursor-pointer py-2 px-4 bg-gray-500 text-white rounded-lg drop-shadow flex-1"
-                    @click.stop="closePlanModal"
-                  >
-                    {{ t('Cancel') }}
-                  </div>
-                  <div
-                    class="cursor-pointer py-2 px-4 bg-blue-500 text-white rounded-lg drop-shadow flex-1"
-                    @click.stop="savePlan"
-                  >
-                    {{ isEditing ? t('Save Changes') : t('Create Plan') }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+      </template>
+
+      <template #footer>
+        <div class="px-4 py-3 flex gap-3">
+          <button
+            class="cursor-pointer py-3 flex-1 bg-gray-500 text-white rounded-lg drop-shadow hover:bg-gray-600 transition-colors"
+            @click="closePlanModal"
+          >
+            {{ t('Cancel') }}
+          </button>
+          <button
+            class="cursor-pointer py-3 flex-1 bg-blue-500 text-white rounded-lg drop-shadow hover:bg-blue-600 transition-colors"
+            @click="savePlan"
+          >
+            {{ isEditing ? t('Save Changes') : t('Create Plan') }}
+          </button>
         </div>
-      </Transition>
-    </div>
+      </template>
+    </BaseDialog>
 
     <!-- Auto Plan Modal -->
-    <div v-if="showAutoPlanModal">
-      <div class="fixed w-screen h-screen bg-black top-0 left-0 z-40 opacity-50" />
-      <Transition
-        appear
-        enter-active-class="transition ease-out duration-150"
-        enter-from-class="opacity-0 translate-y-3"
-        enter-to-class="opacity-100 translate-y-0"
-        leave-active-class="transition ease-in duration-150"
-        leave-from-class="opacity-100 translate-y-0"
-        leave-to-class="opacity-0 translate-y-2"
-      >
-        <div
-          v-if="showAutoPlanModal"
-          class="fixed w-screen h-screen top-0 left-0 z-50 overflow-y-auto"
-          style="backdrop-filter: blur(1px)"
-          @click="closeAutoPlanModal"
-        >
-          <div class="w-full min-h-full px-6 sm:px-12 py-8 flex flex-col transform">
-            <div class="w- bg-white rounded-xl drop-shadow flex flex-col overflow-hidden" @click.stop>
-              <!-- Header - Fixed at top -->
-              <div class="px-4 py-3 border-b border-gray-200">
-                <div class="text-lg text-gray-600 font-bold">{{ t('Generate Auto Meal Plan') }}</div>
+    <BaseDialog v-model="showAutoPlanModal" size="lg" @close="closeAutoPlanModal">
+      <template #header>
+        <div class="px-4 py-3">
+          <div class="text-lg text-gray-600 font-bold">{{ t('Generate Auto Meal Plan') }}</div>
+        </div>
+      </template>
+
+      <template #content>
+        <div class="space-y-6">
+          <!-- Length Input -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Plan Length (Days)') }}</label>
+            <SInput
+              v-model.number="autoPlanLength"
+              :placeholder="t('Number of days')"
+              class="w-full"
+              type="number"
+              :min="1"
+              :max="30"
+            />
+            <p class="text-xs text-gray-500 mt-1">{{ t('How many days should this plan cover?') }}</p>
+          </div>
+
+          <!-- Preferences -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Preferred Tags') }}</label>
+            <p class="text-xs text-gray-500 mb-2">{{ t('Select tags for recipes you prefer to include') }}</p>
+            <div class="min-h-[120px] max-h-48 overflow-y-auto border rounded-lg p-2">
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="tag in allTags"
+                  :key="tag"
+                  @click="togglePreference(tag)"
+                  :class="[
+                    'px-3 py-1 text-sm rounded-full border transition-colors whitespace-nowrap',
+                    autoPlanPreferences.includes(tag)
+                      ? 'bg-blue-100 border-blue-300 text-blue-700'
+                      : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
+                  ]"
+                >
+                  {{ tag }}
+                </button>
               </div>
+            </div>
+          </div>
 
-              <!-- Content - Scrollable -->
-              <div class="flex-1 overflow-y-auto p-5">
-                <div class="space-y-6">
-                  <!-- Length Input -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Plan Length (Days)') }}</label>
-                    <SInput
-                      v-model.number="autoPlanLength"
-                      :placeholder="t('Number of days')"
-                      class="w-full"
-                      type="number"
-                      :min="1"
-                      :max="30"
-                    />
-                    <p class="text-xs text-gray-500 mt-1">{{ t('How many days should this plan cover?') }}</p>
-                  </div>
-
-                  <!-- Preferences -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Preferred Tags') }}</label>
-                    <p class="text-xs text-gray-500 mb-2">{{ t('Select tags for recipes you prefer to include') }}</p>
-                    <div class="min-h-[120px] max-h-48 overflow-y-auto border rounded-lg p-2">
-                      <div class="flex flex-wrap gap-2">
-                        <button
-                          v-for="tag in allTags"
-                          :key="tag"
-                          @click="togglePreference(tag)"
-                          :class="[
-                            'px-3 py-1 text-sm rounded-full border transition-colors whitespace-nowrap',
-                            autoPlanPreferences.includes(tag)
-                              ? 'bg-blue-100 border-blue-300 text-blue-700'
-                              : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
-                          ]"
-                        >
-                          {{ tag }}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Exclusions -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Excluded Tags') }}</label>
-                    <p class="text-xs text-gray-500 mb-2">{{ t('Select tags for recipes you want to exclude') }}</p>
-                    <div class="min-h-[120px] max-h-48 overflow-y-auto border rounded-lg p-2">
-                      <div class="flex flex-wrap gap-2">
-                        <button
-                          v-for="tag in allTags"
-                          :key="tag"
-                          @click="toggleExclusion(tag)"
-                          :class="[
-                            'px-3 py-1 text-sm rounded-full border transition-colors whitespace-nowrap',
-                            autoPlanExclusions.includes(tag)
-                              ? 'bg-red-100 border-red-300 text-red-700'
-                              : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
-                          ]"
-                        >
-                          {{ tag }}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Footer - Fixed at bottom -->
-              <div class="py-3 px-3 border-t border-gray-200 bg-gray-50">
-                <div class="flex flex-wrap gap-4">
-                  <div
-                    class="cursor-pointer py-2 px-4 bg-gray-500 text-white rounded-lg drop-shadow flex-1"
-                    @click.stop="closeAutoPlanModal"
-                  >
-                    {{ t('Cancel') }}
-                  </div>
-                  <div
-                    class="cursor-pointer py-2 px-4 bg-green-500 text-white rounded-lg drop-shadow flex-1"
-                    :class="{ 'opacity-50 cursor-not-allowed': !autoPlanLength || autoPlanLength < 1 }"
-                    @click.stop="(!autoPlanLength || autoPlanLength < 1) ? null : generateAutoPlan()"
-                  >
-                    {{ t('Generate') }}
-                  </div>
-                </div>
+          <!-- Exclusions -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Excluded Tags') }}</label>
+            <p class="text-xs text-gray-500 mb-2">{{ t('Select tags for recipes you want to exclude') }}</p>
+            <div class="min-h-[120px] max-h-48 overflow-y-auto border rounded-lg p-2">
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="tag in allTags"
+                  :key="tag"
+                  @click="toggleExclusion(tag)"
+                  :class="[
+                    'px-3 py-1 text-sm rounded-full border transition-colors whitespace-nowrap',
+                    autoPlanExclusions.includes(tag)
+                      ? 'bg-red-100 border-red-300 text-red-700'
+                      : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
+                  ]"
+                >
+                  {{ tag }}
+                </button>
               </div>
             </div>
           </div>
         </div>
-      </Transition>
-    </div>
+      </template>
+
+      <template #footer>
+        <div class="px-4 py-3 flex gap-3">
+          <button
+            class="cursor-pointer py-3 flex-1 bg-gray-500 text-white rounded-lg drop-shadow hover:bg-gray-600 transition-colors"
+            @click="closeAutoPlanModal"
+          >
+            {{ t('Cancel') }}
+          </button>
+          <button
+            class="cursor-pointer py-3 flex-1 bg-green-500 text-white rounded-lg drop-shadow hover:bg-green-600 transition-colors"
+            :class="{ 'opacity-50 cursor-not-allowed': !autoPlanLength || autoPlanLength < 1 }"
+            :disabled="!autoPlanLength || autoPlanLength < 1"
+            @click="generateAutoPlan()"
+          >
+            {{ t('Generate') }}
+          </button>
+        </div>
+      </template>
+    </BaseDialog>
 
     <!-- Import Modal -->
     <ModalInput
@@ -442,6 +398,7 @@ import ModalAutoPlanPrompt from './ModalAutoPlanPrompt.vue'
 import RecipeSelector from './RecipeSelector.vue'
 import RecipeDetailsModal from './RecipeDetailsModal.vue'
 import ShoppingListModal from './ShoppingListModal.vue'
+import BaseDialog from './BaseDialog.vue'
 import SInput from './Input.vue'
 
 const router = useRouter()

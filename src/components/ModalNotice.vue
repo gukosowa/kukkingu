@@ -1,83 +1,69 @@
 <template>
-  <div v-if="modelValue">
-    <div class="fixed w-screen h-screen bg-black top-0 left-0 z-40 opacity-50" />
-    <Transition
-      appear
-      enter-active-class="transition ease-out duration-150"
-      enter-from-class="opacity-0 translate-y-3"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition ease-in duration-150"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 translate-y-2"
-    >
-      <div
-        v-if="modelValue"
-        class="fixed w-screen w-full h-screen top-0 left-0 z-50 overflow-y-auto"
-        style="backdrop-filter: blur(1px)"
-        @click="close"
-      >
-        <div class="w-full min-h-full px-6 sm:px-12 py-8 flex flex-col transform">
-          <div class="bg-white p-5 rounded-xl drop-shadow" @click.stop>
-            <div class="flex items-start">
-              <Icon v-if="icon" :icon="icon" class="text-blue-500 mr-3 mt-1" size="1.5rem" />
-              <div class="flex-1">
-                <div class="text-lg text-gray-700 font-bold">{{ title }}</div>
-                <div class="text-sm text-gray-700 mt-2 whitespace-pre-line">{{ message }}</div>
-                <slot />
-              </div>
-            </div>
-            <div class="text-white text-center mt-6">
-              <div
-                class="cursor-pointer py-3 bg-blue-600 rounded-lg drop-shadow"
-                @click="acknowledge"
-              >
-                {{ okText }}
-              </div>
-            </div>
+  <BaseDialog v-model="showModal" size="sm" @close="close">
+    <template #header>
+      <div class="px-4 py-3">
+        <div class="flex items-start">
+          <Icon v-if="props.icon || 'fal fa-info-circle'" :icon="props.icon || 'fal fa-info-circle'" class="text-blue-500 mr-3 mt-1" size="1.5rem" />
+          <div class="flex-1">
+            <div class="text-lg text-gray-700 font-bold">{{ title }}</div>
           </div>
         </div>
       </div>
-    </Transition>
-  </div>
+    </template>
+
+    <template #content>
+      <div class="px-5 pb-4">
+        <div class="text-sm text-gray-700 whitespace-pre-line">{{ message }}</div>
+        <slot />
+      </div>
+    </template>
+
+    <template #footer>
+      <div class="px-4 py-3">
+        <button
+          class="cursor-pointer py-3 w-full bg-blue-600 text-white rounded-lg drop-shadow hover:bg-blue-700 transition-colors"
+          @click="acknowledge"
+        >
+          {{ props.okText || t('OK') }}
+        </button>
+      </div>
+    </template>
+  </BaseDialog>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
+import { computed } from 'vue'
 import Icon from './Icon.vue'
 import { t } from '~src/i18n'
 import { vibrate } from '~src/services/vibrate'
+import BaseDialog from './BaseDialog.vue'
 
-const props = withDefaults(
-  defineProps<{
-    modelValue: boolean
-    title: string
-    message: string
-    icon?: string
-    okText?: string
-  }>(),
-  {
-    icon: 'fal fa-info-circle',
-    okText: t('OK'),
-  }
-)
+const props = defineProps<{
+  modelValue: boolean
+  title: string
+  message: string
+  icon?: string
+  okText?: string
+}>()
 const emit = defineEmits<{
   (e: 'update:modelValue', v: boolean): void
   (e: 'ok'): void
 }>()
 
+const showModal = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value)
+})
+
 function acknowledge() {
   vibrate()
   emit('ok')
-  emit('update:modelValue', false)
+  showModal.value = false
 }
 function close() {
   vibrate()
-  emit('update:modelValue', false)
+  showModal.value = false
 }
 </script>
 
-<style scoped>
-.drop-shadow {
-  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
-}
-</style>
 
