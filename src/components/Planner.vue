@@ -83,6 +83,25 @@
           </div>
         </div>
 
+        <!-- Overall Notes -->
+        <div v-if="plan.notes" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div class="text-xs text-blue-700 font-medium mb-1">{{ t('Overall notes') }}:</div>
+          <div class="text-sm text-blue-800 whitespace-pre-wrap">{{ plan.notes }}</div>
+        </div>
+
+        <!-- Timestamp -->
+        <div class="mb-4 text-xs text-gray-500">
+          <div v-if="plan.updatedAt && plan.createdAt && plan.updatedAt !== plan.createdAt">
+            {{ t('Updated') }}: {{ formatDate(plan.updatedAt) }}
+          </div>
+          <div v-else-if="plan.createdAt">
+            {{ t('Created') }}: {{ formatDate(plan.createdAt) }}
+          </div>
+          <div v-else-if="plan.updatedAt">
+            {{ t('Updated') }}: {{ formatDate(plan.updatedAt) }}
+          </div>
+        </div>
+
         <div class="flex flex-wrap gap-2">
           <Button
             @click="openEditPlan(plan)"
@@ -121,6 +140,16 @@
               class="w-full"
             />
           </div>
+        </div>
+
+        <!-- Overall Notes Input -->
+        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('Overall notes') }}</label>
+          <textarea
+            v-model="newPlanNotes"
+            :placeholder="t('Add overall notes about this plan (optional)')"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical min-h-[80px]"
+          />
         </div>
 
         <!-- Days Grid -->
@@ -320,7 +349,7 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { t } from '~src/i18n'
+import { t, currentLocale } from '~src/i18n'
 import { dailyPlans, createWeeklyPlan, updateWeeklyPlan, removeWeeklyPlan, WeeklyPlan, DayPlan, Recipe, getAllTags, getShoppingListForPlan, saveShoppingListForPlan, ShoppingListItem } from '~src/store/index'
 import { saveDailyPlan } from '~src/services/indexeddb'
 import { generateShoppingList as generateList, generateAutoMealPlanPrompt, importPlanFromJson, parseMealPlanResponse } from '~src/services/planner'
@@ -354,6 +383,7 @@ const isEditing = ref(false)
 const currentPlan = ref<WeeklyPlan | null>(null)
 const planToDelete = ref<WeeklyPlan | null>(null)
 const newPlanName = ref('')
+const newPlanNotes = ref('')
 const modalDays = ref<DayPlan[]>([])
 const autoPlanLength = ref(7)
 const autoPlanServings = ref(2)
@@ -395,6 +425,7 @@ function openCreatePlan() {
   isEditing.value = false
   currentPlan.value = null
   newPlanName.value = ''
+  newPlanNotes.value = ''
 
   // Initialize with 1 day
   modalDays.value = []
@@ -411,6 +442,7 @@ function openEditPlan(plan: WeeklyPlan) {
   isEditing.value = true
   currentPlan.value = { ...plan }
   newPlanName.value = plan.name
+  newPlanNotes.value = plan.notes || ''
   modalDays.value = [...plan.days]
   showPlanModal.value = true
 }
@@ -433,11 +465,13 @@ async function savePlan() {
       // Update existing plan
       currentPlan.value.days = modalDays.value
       currentPlan.value.name = newPlanName.value || currentPlan.value.name
+      currentPlan.value.notes = newPlanNotes.value
       await updateWeeklyPlan(currentPlan.value)
     } else {
       // Create new plan
       const plan = await createWeeklyPlan(newPlanName.value.trim(), modalDays.value.length)
       plan.days = modalDays.value
+      plan.notes = newPlanNotes.value
       await updateWeeklyPlan(plan)
     }
     closePlanModal()
@@ -451,6 +485,7 @@ function closePlanModal() {
   isEditing.value = false
   currentPlan.value = null
   newPlanName.value = ''
+  newPlanNotes.value = ''
   modalDays.value = []
 }
 
@@ -787,6 +822,23 @@ function getMealTypeLabel(mealType: string): string {
       return t('Snack')
     default:
       return mealType
+  }
+}
+
+// Helper function to format date strings
+function formatDate(dateString: string): string {
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString(currentLocale.value, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch (error) {
+    console.error('Failed to format date:', error)
+    return dateString
   }
 }
 </script>
