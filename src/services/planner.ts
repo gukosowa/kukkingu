@@ -2,6 +2,21 @@ import { WeeklyPlan, ShoppingListItem, Recipe, Ingredient, DayPlan } from '~src/
 import { recipes } from '~src/store/index'
 import { buildImportRecipePrompt } from './prompt'
 import { openChatGPT } from './chatgpt'
+import { t, currentLocale } from '~src/i18n'
+
+// Helper function to get language name for current locale
+function getCurrentLanguageName(): string {
+  switch (currentLocale.value) {
+    case 'en':
+      return t('English')
+    case 'de':
+      return t('German')
+    case 'jp':
+      return t('Japanese')
+    default:
+      return 'English'
+  }
+}
 
 // Generate shopping list from a weekly plan
 export function generateShoppingList(plan: WeeklyPlan): ShoppingListItem[] {
@@ -62,6 +77,7 @@ function getPopulatedPlan(plan: WeeklyPlan): WeeklyPlan {
 // Generate auto meal plan prompt for GPT
 export function generateAutoMealPlanPrompt(options: {
   length?: number
+  servings?: number
   preferences?: string[]
   exclusions?: string[]
   dietaryRestrictions?: string[]
@@ -69,6 +85,7 @@ export function generateAutoMealPlanPrompt(options: {
   maxRecipesPerDay?: number
   includeSnacks?: boolean
   mealTypes?: string[]
+  preferenceText?: string
 } = {}): string {
   // Get all available recipes
   const availableRecipes = recipes.value.filter(recipe =>
@@ -86,6 +103,7 @@ export function generateAutoMealPlanPrompt(options: {
 // Build prompt for meal planning
 function buildMealPlanPrompt(recipes: Recipe[], options: {
   length?: number
+  servings?: number
   preferences?: string[]
   exclusions?: string[]
   dietaryRestrictions?: string[]
@@ -93,6 +111,7 @@ function buildMealPlanPrompt(recipes: Recipe[], options: {
   maxRecipesPerDay?: number
   includeSnacks?: boolean
   mealTypes?: string[]
+  preferenceText?: string
 }): string {
   const recipeSummaries = recipes.map(recipe => ({
     id: recipe.id,
@@ -102,6 +121,7 @@ function buildMealPlanPrompt(recipes: Recipe[], options: {
   }))
 
   const length = options.length || 7
+  const servings = options.servings || 2
   const preferencesText = options.preferences && options.preferences.length > 0
     ? `Preferred tags: ${options.preferences.join(', ')}`
     : 'No specific preferences'
@@ -112,8 +132,16 @@ function buildMealPlanPrompt(recipes: Recipe[], options: {
     ? options.mealTypes
     : ['breakfast', 'lunch', 'dinner']
   const mealTypesText = mealTypes.join(', ')
+  const currentLanguage = getCurrentLanguageName()
 
-  return `You are a meal planning assistant. Create a balanced ${length}-day meal plan using ONLY the recipes provided below as the source of truth.
+  // Determine plan type based on selected meal types
+  const planType = mealTypes.length === 1
+    ? `${mealTypes[0]} plan`
+    : mealTypes.length === 2
+    ? `${mealTypes.join(' and ')} plan`
+    : 'meal plan'
+
+  return `You are a meal planning assistant. Create a balanced ${length}-day ${planType} using ONLY the recipes provided below as the source of truth.
 
 SOURCE OF TRUTH - AVAILABLE RECIPES:
 ${JSON.stringify(recipeSummaries, null, 2)}
@@ -121,11 +149,13 @@ ${JSON.stringify(recipeSummaries, null, 2)}
 USER PREFERENCES:
 - ${preferencesText}
 - ${exclusionsText}
+- Default servings per recipe: ${servings}
 ${options.dietaryRestrictions ? `- Dietary restrictions: ${options.dietaryRestrictions.join(', ')}` : ''}
 ${options.cuisineTypes ? `- Preferred cuisines: ${options.cuisineTypes.join(', ')}` : ''}
+${options.preferenceText ? `- Additional preferences: ${options.preferenceText}` : ''}
 
 PLANNING REQUIREMENTS:
-1. Create exactly ${length} days of meals (Day 1 through Day ${length})
+1. Create exactly ${length} days of planning (Day 1 through Day ${length})
 2. Each day should include: ${mealTypesText}
 ${options.includeSnacks ? '3. Include snacks as requested' : '3. Focus on main meals'}
 4. Use ONLY recipe IDs from the available recipes list above
@@ -133,41 +163,42 @@ ${options.includeSnacks ? '3. Include snacks as requested' : '3. Focus on main m
 6. Consider nutritional balance and meal variety across the plan
 7. Prioritize recipes with preferred tags when available
 8. Strictly avoid recipes with excluded tags
-9. Each recipe plan should specify appropriate serving sizes (typically 2-4 servings)
+9. Each recipe plan should specify serving sizes using the default of ${servings} servings per recipe
 10. Assign appropriate meal types from the selected options: ${mealTypesText}
+11. IMPORTANT: Write all day notes and overall plan notes in ${currentLanguage} (the user's current language)
 
 OUTPUT FORMAT:
 Return ONLY a valid JSON object with this exact structure (copy this format exactly):
 {
-  "name": "Auto-Generated Meal Plan",
+  "name": "${t('Auto-Generated Meal Plan')}",
   "days": [
     {
       "recipes": [
         {
           "recipeId": "exact-recipe-id-from-list",
-          "servings": 2,
+          "servings": ${servings},
           "mealType": "breakfast"
         },
         {
           "recipeId": "another-recipe-id",
-          "servings": 4,
+          "servings": ${servings},
           "mealType": "dinner"
         }
       ],
-      "note": "Optional note for the day"
+      "note": "Optional note for the day (write in ${currentLanguage})"
     },
     {
       "recipes": [
         {
           "recipeId": "third-recipe-id",
-          "servings": 2,
+          "servings": ${servings},
           "mealType": "lunch"
         }
       ],
-      "note": "Another optional note"
+      "note": "Another optional note (write in ${currentLanguage})"
     }
   ],
-  "notes": "Optional overall notes about the plan"
+  "notes": "Optional overall notes about the plan (write in ${currentLanguage})"
 }
 
 IMPORTANT:
@@ -175,7 +206,7 @@ IMPORTANT:
 - Each recipeId must be one of the exact IDs from the available recipes
 - Each day must include recipes for the selected meal types: ${mealTypesText}
 - Use valid meal types: breakfast, lunch, dinner, or snack
-- servings should be a number (typically 2-4)
+- servings should be a number (use default of ${servings})
 - JSON must be valid and parseable
 - Do not include any text outside the JSON structure
 - Do not add extra fields to the JSON structure
@@ -210,7 +241,7 @@ export function parseMealPlanResponse(response: string, availableRecipes: Recipe
     // Validate and fix the plan data
     const plan: WeeklyPlan = {
       id: `auto-${Date.now()}`,
-      name: planData.name || 'Auto-Generated Meal Plan',
+      name: planData.name || t('Auto-Generated Meal Plan'),
       days: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

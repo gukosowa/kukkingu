@@ -10,7 +10,7 @@
           <Icon icon="fal fa-plus" size="0.9rem" class="mr-1" />
           {{ t('Create Plan') }}
         </Button>
-        <Button @click="showAutoPlanModal = true" class="bg-green-600 hover:bg-green-700">
+        <Button @click="openAutoPlanModal" class="bg-green-600 hover:bg-green-700">
           <Icon icon="fal fa-magic" size="0.9rem" class="mr-1" />
           {{ t('Auto Plan') }}
         </Button>
@@ -77,6 +77,9 @@
                 </template>
               </div>
             </div>
+            <div v-if="day.note" class="text-xs text-gray-500 italic ml-6">
+              {{ day.note }}
+            </div>
           </div>
         </div>
 
@@ -141,6 +144,15 @@
                       </Button>
                     </div>
 
+                    <!-- Day Note Input -->
+                    <div class="mb-3">
+                      <Input
+                        v-model="day.note"
+                        :placeholder="t('Day note (optional)')"
+                        class="text-sm"
+                      />
+                    </div>
+
                     <!-- Recipes List -->
                     <div class="space-y-2">
                       <div
@@ -151,7 +163,7 @@
                       >
                         <div class="flex-1 min-w-0">
                           <span class="truncate block">{{ getRecipeName(recipePlan.recipeId) }}</span>
-                          <span class="text-xs text-gray-500">{{ recipePlan.servings }}x • {{ t(recipePlan.mealType) }}</span>
+                          <span class="text-xs text-gray-500">{{ recipePlan.servings }}x • {{ getMealTypeLabel(recipePlan.mealType) }}</span>
                         </div>
                         <Button
                           @click.stop="removeRecipeFromDay(index, recipePlan.recipeId)"
@@ -215,14 +227,18 @@
     <ModalAutoPlan
       v-model="showAutoPlanModal"
       :length="autoPlanLength"
+      :servings="autoPlanServings"
       :preferences="autoPlanPreferences"
       :exclusions="autoPlanExclusions"
       :meal-types="autoPlanMealTypes"
+      :preference-text="autoPlanPreferenceText"
       :all-tags="allTags"
       @update:length="autoPlanLength = $event"
+      @update:servings="autoPlanServings = $event"
       @update:preferences="autoPlanPreferences = $event"
       @update:exclusions="autoPlanExclusions = $event"
       @update:mealTypes="autoPlanMealTypes = $event"
+      @update:preferenceText="autoPlanPreferenceText = $event"
       @generate="generateAutoPlan"
     />
 
@@ -340,9 +356,11 @@ const planToDelete = ref<WeeklyPlan | null>(null)
 const newPlanName = ref('')
 const modalDays = ref<DayPlan[]>([])
 const autoPlanLength = ref(7)
+const autoPlanServings = ref(2)
 const autoPlanPreferences = ref<string[]>([])
 const autoPlanExclusions = ref<string[]>([])
 const autoPlanMealTypes = ref<string[]>(['lunch']) // Default to lunch only
+const autoPlanPreferenceText = ref('')
 
 
 // Shopping list state
@@ -439,18 +457,20 @@ function closePlanModal() {
 async function generateAutoPlan() {
   if (!autoPlanLength.value || autoPlanLength.value < 1) return
 
-  // Close the current modal
-  closeAutoPlanModal()
-
   try {
     // Generate the prompt
     const options = {
       length: autoPlanLength.value,
+      servings: autoPlanServings.value,
       preferences: autoPlanPreferences.value,
       exclusions: autoPlanExclusions.value,
-      mealTypes: autoPlanMealTypes.value
+      mealTypes: autoPlanMealTypes.value,
+      preferenceText: autoPlanPreferenceText.value
     }
     const prompt = generateAutoMealPlanPrompt(options)
+
+    // Close the current modal after generating the prompt
+    closeAutoPlanModal()
 
     // Copy prompt to clipboard
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -591,12 +611,22 @@ function cancelDelete() {
   planToDelete.value = null
 }
 
+function openAutoPlanModal() {
+  resetAutoPlanModal()
+  showAutoPlanModal.value = true
+}
+
 function closeAutoPlanModal() {
   showAutoPlanModal.value = false
-  autoPlanLength.value = 7
+}
+
+function resetAutoPlanModal() {
+  autoPlanLength.value = 3
+  autoPlanServings.value = 2
   autoPlanPreferences.value = []
   autoPlanExclusions.value = []
   autoPlanMealTypes.value = ['lunch'] // Reset to default
+  autoPlanPreferenceText.value = ''
 }
 
 async function openChatGPT() {
@@ -742,6 +772,22 @@ function getRecipeDetailsForEditing(): { name: string; servings: number; mealTyp
 
 function navigateToRecipe(recipeId: string): void {
   router.push(`/recipe/${recipeId}`)
+}
+
+// Helper function to translate meal type values
+function getMealTypeLabel(mealType: string): string {
+  switch (mealType) {
+    case 'breakfast':
+      return t('Breakfast')
+    case 'lunch':
+      return t('Lunch')
+    case 'dinner':
+      return t('Dinner')
+    case 'snack':
+      return t('Snack')
+    default:
+      return mealType
+  }
 }
 </script>
 

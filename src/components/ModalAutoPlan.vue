@@ -22,6 +22,20 @@
           <p class="text-xs text-gray-500 mt-1">{{ t('How many days should this plan cover?') }}</p>
         </div>
 
+        <!-- Servings Input -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Default Servings') }}</label>
+          <Input
+            v-model="localServingsString"
+            :placeholder="t('Number of servings')"
+            class="w-full"
+            type="number"
+            :min="1"
+            :max="10"
+          />
+          <p class="text-xs text-gray-500 mt-1">{{ t('Default number of servings per recipe') }}</p>
+        </div>
+
         <!-- Preferences -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Preferred Tags') }}</label>
@@ -84,9 +98,21 @@
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               ]"
             >
-              {{ t(meal.label) }}
+              {{ meal.label }}
             </button>
           </div>
+        </div>
+
+        <!-- Preference Text -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Additional Preferences') }}</label>
+          <p class="text-xs text-gray-500 mb-2">{{ t('Describe any additional preferences or requirements for the meal plan') }}</p>
+          <textarea
+            v-model="localPreferenceText"
+            :placeholder="t('e.g., low carb, vegetarian options, quick recipes, budget-friendly, etc.')"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg resize-vertical min-h-[80px] max-h-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            rows="3"
+          ></textarea>
         </div>
 
         <!-- Plan Details Summary -->
@@ -96,6 +122,10 @@
             <div>
               <span class="text-gray-500">{{ t('Days') }}:</span>
               <span class="ml-2 font-medium">{{ localLength }}</span>
+            </div>
+            <div>
+              <span class="text-gray-500">{{ t('Servings') }}:</span>
+              <span class="ml-2 font-medium">{{ localServings }}</span>
             </div>
             <div>
               <span class="text-gray-500">{{ t('Recipes Available') }}:</span>
@@ -124,8 +154,8 @@
         </button>
         <button
           class="cursor-pointer py-3 flex-1 bg-green-500 text-white rounded-lg drop-shadow hover:bg-green-600 transition-colors"
-          :class="{ 'opacity-50 cursor-not-allowed': !localLength || localLength < 1 }"
-          :disabled="!localLength || localLength < 1"
+          :class="{ 'opacity-50 cursor-not-allowed': !localLength || localLength < 1 || !localServings || localServings < 1 }"
+          :disabled="!localLength || localLength < 1 || !localServings || localServings < 1"
           @click="generate"
         >
           {{ t('Generate') }}
@@ -145,10 +175,12 @@ import Input from './Input.vue'
 interface Props {
   modelValue: boolean
   length: number
+  servings?: number
   preferences: string[]
   exclusions: string[]
   mealTypes?: string[]
   allTags: string[]
+  preferenceText?: string
 }
 
 const props = defineProps<Props>()
@@ -156,25 +188,30 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   'update:length': [value: number]
+  'update:servings': [value: number]
   'update:preferences': [value: string[]]
   'update:exclusions': [value: string[]]
   'update:mealTypes': [value: string[]]
+  'update:preferenceText': [value: string]
   'generate': []
 }>()
 
-// Meal types configuration
-const mealTypes = [
-  { id: 'breakfast', label: 'Breakfast' },
-  { id: 'lunch', label: 'Lunch' },
-  { id: 'dinner', label: 'Dinner' },
-  { id: 'snack', label: 'Snack' }
-]
+// Meal types configuration (computed to be reactive to locale changes)
+const mealTypes = computed(() => [
+  { id: 'breakfast', label: t('Breakfast') },
+  { id: 'lunch', label: t('Lunch') },
+  { id: 'dinner', label: t('Dinner') },
+  { id: 'snack', label: t('Snack') }
+])
 
 // Local reactive state
 const localLength = ref(props.length)
+const localServings = ref(props.servings || 2)
+const localServingsString = ref((props.servings || 2).toString())
 const localPreferences = ref([...props.preferences])
 const localExclusions = ref([...props.exclusions])
 const localMealTypes = ref([...(props.mealTypes || ['lunch'])])
+const localPreferenceText = ref(props.preferenceText || '')
 
 // Flag to prevent recursive updates
 const updatingFromParent = ref(false)
@@ -196,6 +233,15 @@ watch(() => props.length, (newLength) => {
   if (!updatingFromLocal.value) {
     updatingFromParent.value = true
     localLength.value = newLength
+    updatingFromParent.value = false
+  }
+})
+
+watch(() => props.servings, (newServings) => {
+  if (!updatingFromLocal.value) {
+    updatingFromParent.value = true
+    localServings.value = newServings || 2
+    localServingsString.value = (newServings || 2).toString()
     updatingFromParent.value = false
   }
 })
@@ -224,10 +270,38 @@ watch(() => props.mealTypes, (newMealTypes) => {
   }
 }, { deep: true })
 
+watch(() => props.preferenceText, (newPreferenceText) => {
+  if (!updatingFromLocal.value) {
+    updatingFromParent.value = true
+    localPreferenceText.value = newPreferenceText || ''
+    updatingFromParent.value = false
+  }
+})
+
 // Watch local changes and emit updates
 watch(localLength, (newLength) => {
   if (!updatingFromParent.value) {
     emit('update:length', newLength)
+  }
+})
+
+watch(localServings, (newServings) => {
+  if (!updatingFromParent.value) {
+    emit('update:servings', newServings)
+  }
+})
+
+watch(localPreferenceText, (newPreferenceText) => {
+  if (!updatingFromParent.value) {
+    emit('update:preferenceText', newPreferenceText)
+  }
+})
+
+// Watch string input and convert to number
+watch(localServingsString, (newString) => {
+  const numValue = newString === '' ? 0 : parseInt(newString, 10) || 0
+  if (numValue !== localServings.value) {
+    localServings.value = numValue
   }
 })
 

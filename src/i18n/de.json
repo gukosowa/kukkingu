@@ -172,5 +172,22 @@
   "Remove recipe": "Rezept entfernen",
   "Failed to generate shopping list": "Einkaufsliste konnte nicht generiert werden",
   "Import Plan": "Plan importieren",
-  "Create your first meal plan to get started": "Erstelle deinen ersten Essensplan um zu beginnen"
+  "Create your first meal plan to get started": "Erstelle deinen ersten Essensplan um zu beginnen",
+  "Plan Length (Days)": "Planlänge (Tage)",
+  "Default Servings": "Standardportionen",
+  "Number of servings": "Anzahl der Portionen",
+  "Default number of servings per recipe": "Standardanzahl der Portionen pro Rezept",
+  "Meal Types": "Mahlzeiten-Typen",
+  "Select which meals to include in the plan": "Wähle aus, welche Mahlzeiten in den Plan einbezogen werden sollen",
+  "Additional Preferences": "Zusätzliche Vorlieben",
+  "Describe any additional preferences or requirements for the meal plan": "Beschreibe alle zusätzlichen Vorlieben oder Anforderungen für den Essensplan",
+  "e.g., low carb, vegetarian options, quick recipes, budget-friendly, etc.": "z.B. kohlenhydratarm, vegetarische Optionen, schnelle Rezepte, budgetfreundlich, etc.",
+  "Plan Details": "Plandetails",
+  "Days": "Tage",
+  "Recipes Available": "Verfügbare Rezepte",
+  "Day note (optional)": "Tagesnotiz (optional)",
+  "Auto-Generated Meal Plan": "Automatisch generierter Essensplan",
+  "English": "Englisch",
+  "German": "Deutsch",
+  "Japanese": "Japanisch"
 }

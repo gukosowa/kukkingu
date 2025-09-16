@@ -172,5 +172,22 @@
   "Remove recipe": "レシピを削除",
   "Failed to generate shopping list": "買い物リストの生成に失敗しました",
   "Import Plan": "プランをインポート",
-  "Create your first meal plan to get started": "最初の食事プランを作成して始めましょう"
+  "Create your first meal plan to get started": "最初の食事プランを作成して始めましょう",
+  "Plan Length (Days)": "プランの長さ（日数）",
+  "Default Servings": "デフォルトの人数",
+  "Number of servings": "人数",
+  "Default number of servings per recipe": "レシピごとのデフォルト人数",
+  "Meal Types": "食事の種類",
+  "Select which meals to include in the plan": "プランに含める食事を選択してください",
+  "Additional Preferences": "追加の好み",
+  "Describe any additional preferences or requirements for the meal plan": "食事プランの追加の好みや要件を説明してください",
+  "e.g., low carb, vegetarian options, quick recipes, budget-friendly, etc.": "例: 低炭水化物、ベジタリアン向け、簡単レシピ、予算重視など",
+  "Plan Details": "プランの詳細",
+  "Days": "日数",
+  "Recipes Available": "利用可能なレシピ",
+  "Day note (optional)": "日付メモ（任意）",
+  "Auto-Generated Meal Plan": "自動生成食事プラン",
+  "English": "英語",
+  "German": "ドイツ語",
+  "Japanese": "日本語"
 }

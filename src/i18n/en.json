@@ -180,5 +180,22 @@
   "The AI response contains invalid JSON. Please check that the AI followed the requested format.": "The AI response contains invalid JSON. Please check that the AI followed the requested format.",
   "The generated plan contains recipes that don't exist. Please regenerate the plan with different preferences.": "The generated plan contains recipes that don't exist. Please regenerate the plan with different preferences.",
   "Plan imported successfully": "Plan imported successfully",
-  "Auto-generated plan imported successfully!": "Auto-generated plan imported successfully!"
+  "Auto-generated plan imported successfully!": "Auto-generated plan imported successfully!",
+  "Plan Length (Days)": "Plan Length (Days)",
+  "Default Servings": "Default Servings",
+  "Number of servings": "Number of servings",
+  "Default number of servings per recipe": "Default number of servings per recipe",
+  "Meal Types": "Meal Types",
+  "Select which meals to include in the plan": "Select which meals to include in the plan",
+  "Additional Preferences": "Additional Preferences",
+  "Describe any additional preferences or requirements for the meal plan": "Describe any additional preferences or requirements for the meal plan",
+  "e.g., low carb, vegetarian options, quick recipes, budget-friendly, etc.": "e.g., low carb, vegetarian options, quick recipes, budget-friendly, etc.",
+  "Plan Details": "Plan Details",
+  "Days": "Days",
+  "Recipes Available": "Recipes Available",
+  "Day note (optional)": "Day note (optional)",
+  "Auto-Generated Meal Plan": "Auto-Generated Meal Plan",
+  "English": "English",
+  "German": "German",
+  "Japanese": "Japanese"
 }
