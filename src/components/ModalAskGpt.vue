@@ -16,7 +16,7 @@
         style="backdrop-filter: blur(1px)"
         @click="close"
       >
-        <div class="w-full min-h-full px-12 py-8 flex flex-col transform">
+        <div class="w-full min-h-full px-6 sm:px-12 py-8 flex flex-col transform">
           <div class="bg-white p-5 rounded-xl drop-shadow max-w-md mx-auto" @click.stop>
             <div class="text-lg text-gray-600 font-bold mb-4">{{ t('Ask GPT') }}</div>
 

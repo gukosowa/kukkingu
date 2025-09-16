@@ -104,214 +104,248 @@
     </div>
 
     <!-- Unified Plan Modal (Create/Edit) -->
-    <div
-      v-if="showPlanModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-    >
-      <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col">
-        <!-- Header - Fixed at top -->
-        <div class="flex-shrink-0 px-6 py-4 border-b">
-          <h2 class="text-lg font-semibold mb-1">{{ isEditing ? currentPlan?.name : t('Create Plan') }}</h2>
-          <p class="text-sm text-gray-500">
-            {{ isEditing ? `${currentPlan!.days.length} ${t('days')}` : t('Set up your meal plan day by day') }}
-          </p>
-        </div>
-
-        <!-- Plan Name Input (only for create mode) -->
-        <div v-if="!isEditing" class="px-6 py-3 border-b bg-gray-50">
-          <div class="max-w-md">
-            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('Plan name') }}</label>
-            <SInput
-              v-model="newPlanName"
-              :placeholder="t('Enter plan name')"
-              class="w-full"
-            />
-          </div>
-        </div>
-
-        <!-- Days Grid -->
-        <div class="flex-1 overflow-y-auto px-4 py-3 bg-gray-200">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            <div
-              v-for="(day, index) in modalDays"
-              :key="index"
-              class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <!-- Day Header -->
-              <div class="flex items-center justify-between mb-3">
-                <h4 class="font-medium text-gray-900">{{ t('Day') }} {{ index + 1 }}</h4>
-                <Button
-                  v-if="modalDays.length > 1"
-                  @click="removeDay(index)"
-                  class="bg-red-600 hover:bg-red-700 text-white p-2"
-                  :title="t('Remove day')"
-                >
-                  <Icon icon="fal fa-trash" size="0.9rem" />
-                </Button>
+    <div v-if="showPlanModal">
+      <div class="fixed w-screen h-screen bg-black top-0 left-0 z-40 opacity-50" />
+      <Transition
+        appear
+        enter-active-class="transition ease-out duration-150"
+        enter-from-class="opacity-0 translate-y-3"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition ease-in duration-150"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 translate-y-2"
+      >
+        <div
+          v-if="showPlanModal"
+          class="fixed w-screen h-screen top-0 left-0 z-50 overflow-y-auto"
+          style="backdrop-filter: blur(1px)"
+          @click="closePlanModal"
+        >
+          <div class="w-full min-h-full px-6 sm:px-12 py-8 flex flex-col transform">
+            <div class="w- bg-white rounded-xl drop-shadow flex flex-col overflow-hidden" @click.stop>
+              <!-- Header - Fixed at top -->
+              <div class="px-4 py-3 border-b border-gray-200">
+                <div class="text-lg text-gray-600 font-bold">{{ isEditing ? currentPlan?.name : t('Create Plan') }}</div>
               </div>
 
-              <!-- Recipes List -->
-              <div class="space-y-2">
-                <div
-                  v-for="(recipePlan, recipeIndex) in day.recipes"
-                  :key="recipePlan.recipeId"
-                  class="bg-gray-100 rounded px-3 py-2 text-sm flex items-center justify-between shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                  @click="openRecipeDetailsModal(index, recipeIndex)"
-                >
-                  <div class="flex-1 min-w-0">
-                    <span class="truncate block">{{ getRecipeName(recipePlan.recipeId) }}</span>
-                    <span class="text-xs text-gray-500">{{ recipePlan.servings }}x • {{ t(recipePlan.mealType) }}</span>
-                  </div>
-                  <Button
-                    @click.stop="removeRecipeFromDay(index, recipePlan.recipeId)"
-                    class="bg-red-600 hover:bg-red-700 text-white p-1 ml-2"
-                    :title="t('Remove recipe')"
+              <!-- Plan Name Input (only for create mode) -->
+              <div v-if="!isEditing" class="p-5 border-b bg-gray-50">
+                <div class="max-w-md">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('Plan name') }}</label>
+                  <SInput
+                    v-model="newPlanName"
+                    :placeholder="t('Enter plan name')"
+                    class="w-full"
+                  />
+                </div>
+              </div>
+
+              <!-- Days Grid -->
+              <div class="flex-1 overflow-y-auto p-5 bg-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  <div
+                    v-for="(day, index) in modalDays"
+                    :key="index"
+                    class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow"
                   >
-                    <Icon icon="fal fa-times" size="0.7rem" />
+                    <!-- Day Header -->
+                    <div class="flex items-center justify-between mb-3">
+                      <h4 class="font-medium text-gray-900">{{ t('Day') }} {{ index + 1 }}</h4>
+                      <Button
+                        v-if="modalDays.length > 1"
+                        @click="removeDay(index)"
+                        class="bg-red-600 hover:bg-red-700 text-white p-2"
+                        :title="t('Remove day')"
+                      >
+                        <Icon icon="fal fa-trash" size="0.9rem" />
+                      </Button>
+                    </div>
+
+                    <!-- Recipes List -->
+                    <div class="space-y-2">
+                      <div
+                        v-for="(recipePlan, recipeIndex) in day.recipes"
+                        :key="recipePlan.recipeId"
+                        class="bg-gray-100 rounded px-3 py-2 text-sm flex items-center justify-between shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                        @click="openRecipeDetailsModal(index, recipeIndex)"
+                      >
+                        <div class="flex-1 min-w-0">
+                          <span class="truncate block">{{ getRecipeName(recipePlan.recipeId) }}</span>
+                          <span class="text-xs text-gray-500">{{ recipePlan.servings }}x • {{ t(recipePlan.mealType) }}</span>
+                        </div>
+                        <Button
+                          @click.stop="removeRecipeFromDay(index, recipePlan.recipeId)"
+                          class="bg-red-600 hover:bg-red-700 text-white p-1 ml-2"
+                          :title="t('Remove recipe')"
+                        >
+                          <Icon icon="fal fa-times" size="0.7rem" />
+                        </Button>
+                      </div>
+                      <div v-if="day.recipes.length === 0" class="text-xs text-gray-400 italic py-2">
+                        {{ t('No recipes') }}
+                      </div>
+                    </div>
+
+                    <!-- Add Recipe Button -->
+                    <div class="mt-3">
+                      <Button
+                        @click="openRecipeSelector(index)"
+                        class="w-full bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <Icon icon="fal fa-plus" size="0.8rem" class="mr-1" />
+                        {{ t('Add Recipe') }}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Add Entry Button -->
+                <div class="flex justify-center">
+                  <Button
+                    @click="addDay"
+                    class="bg-green-600 hover:bg-green-700 text-white px-6"
+                  >
+                    <Icon icon="fal fa-plus" size="0.9rem" class="mr-2" />
+                    {{ t('Add Day') }}
                   </Button>
                 </div>
-                <div v-if="day.recipes.length === 0" class="text-xs text-gray-400 italic py-2">
-                  {{ t('No recipes') }}
-                </div>
               </div>
 
-              <!-- Add Recipe Button -->
-              <div class="mt-3">
-                <Button
-                  @click="openRecipeSelector(index)"
-                  class="w-full bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <Icon icon="fal fa-plus" size="0.8rem" class="mr-1" />
-                  {{ t('Add Recipe') }}
-                </Button>
+              <!-- Footer - Fixed at bottom -->
+              <div class="py-3 px-3 border-t border-gray-200 bg-gray-50">
+                <div class="flex gap-4">
+                  <div
+                    class="cursor-pointer py-2 px-4 bg-gray-500 text-white rounded-lg drop-shadow flex-1"
+                    @click.stop="closePlanModal"
+                  >
+                    {{ t('Cancel') }}
+                  </div>
+                  <div
+                    class="cursor-pointer py-2 px-4 bg-blue-500 text-white rounded-lg drop-shadow flex-1"
+                    @click.stop="savePlan"
+                  >
+                    {{ isEditing ? t('Save Changes') : t('Create Plan') }}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-
-          <!-- Add Entry Button -->
-          <div class="flex justify-center">
-            <Button
-              @click="addDay"
-              class="bg-green-600 hover:bg-green-700 text-white px-6"
-            >
-              <Icon icon="fal fa-plus" size="0.9rem" class="mr-2" />
-              {{ t('Add Day') }}
-            </Button>
-          </div>
         </div>
-
-        <!-- Footer - Fixed at bottom -->
-        <div class="flex-shrink-0 px-6 py-4 border-t bg-gray-50 flex gap-3">
-          <Button
-            @click="closePlanModal"
-            class="flex-1 bg-gray-500 hover:bg-gray-600 text-white"
-          >
-            {{ t('Cancel') }}
-          </Button>
-          <Button
-            @click="savePlan"
-            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-            :disabled="!canSavePlan"
-          >
-            {{ isEditing ? t('Save Changes') : t('Create Plan') }}
-          </Button>
-        </div>
-      </div>
+      </Transition>
     </div>
 
     <!-- Auto Plan Modal -->
-    <div
-      v-if="showAutoPlanModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-    >
-      <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] flex flex-col">
-        <!-- Header - Fixed at top -->
-        <div class="flex-shrink-0 p-6 border-b border-gray-200">
-          <h2 class="text-xl font-semibold">{{ t('Generate Auto Meal Plan') }}</h2>
-        </div>
+    <div v-if="showAutoPlanModal">
+      <div class="fixed w-screen h-screen bg-black top-0 left-0 z-40 opacity-50" />
+      <Transition
+        appear
+        enter-active-class="transition ease-out duration-150"
+        enter-from-class="opacity-0 translate-y-3"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition ease-in duration-150"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 translate-y-2"
+      >
+        <div
+          v-if="showAutoPlanModal"
+          class="fixed w-screen h-screen top-0 left-0 z-50 overflow-y-auto"
+          style="backdrop-filter: blur(1px)"
+          @click="closeAutoPlanModal"
+        >
+          <div class="w-full min-h-full px-6 sm:px-12 py-8 flex flex-col transform">
+            <div class="w- bg-white rounded-xl drop-shadow flex flex-col overflow-hidden" @click.stop>
+              <!-- Header - Fixed at top -->
+              <div class="px-4 py-3 border-b border-gray-200">
+                <div class="text-lg text-gray-600 font-bold">{{ t('Generate Auto Meal Plan') }}</div>
+              </div>
 
-        <!-- Content - Scrollable -->
-        <div class="flex-1 overflow-y-auto p-6">
-          <div class="space-y-6">
-            <!-- Length Input -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Plan Length (Days)') }}</label>
-              <SInput
-                v-model.number="autoPlanLength"
-                :placeholder="t('Number of days')"
-                class="w-full"
-                type="number"
-                :min="1"
-                :max="30"
-              />
-              <p class="text-xs text-gray-500 mt-1">{{ t('How many days should this plan cover?') }}</p>
-            </div>
+              <!-- Content - Scrollable -->
+              <div class="flex-1 overflow-y-auto p-5">
+                <div class="space-y-6">
+                  <!-- Length Input -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Plan Length (Days)') }}</label>
+                    <SInput
+                      v-model.number="autoPlanLength"
+                      :placeholder="t('Number of days')"
+                      class="w-full"
+                      type="number"
+                      :min="1"
+                      :max="30"
+                    />
+                    <p class="text-xs text-gray-500 mt-1">{{ t('How many days should this plan cover?') }}</p>
+                  </div>
 
-            <!-- Preferences -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Preferred Tags') }}</label>
-              <p class="text-xs text-gray-500 mb-2">{{ t('Select tags for recipes you prefer to include') }}</p>
-              <div class="min-h-[120px] max-h-48 overflow-y-auto border rounded-lg p-2">
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    v-for="tag in allTags"
-                    :key="tag"
-                    @click="togglePreference(tag)"
-                    :class="[
-                      'px-3 py-1 text-sm rounded-full border transition-colors',
-                      autoPlanPreferences.includes(tag)
-                        ? 'bg-blue-100 border-blue-300 text-blue-700'
-                        : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
-                    ]"
-                  >
-                    {{ tag }}
-                  </button>
+                  <!-- Preferences -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Preferred Tags') }}</label>
+                    <p class="text-xs text-gray-500 mb-2">{{ t('Select tags for recipes you prefer to include') }}</p>
+                    <div class="min-h-[120px] max-h-48 overflow-y-auto border rounded-lg p-2">
+                      <div class="flex flex-wrap gap-2">
+                        <button
+                          v-for="tag in allTags"
+                          :key="tag"
+                          @click="togglePreference(tag)"
+                          :class="[
+                            'px-3 py-1 text-sm rounded-full border transition-colors',
+                            autoPlanPreferences.includes(tag)
+                              ? 'bg-blue-100 border-blue-300 text-blue-700'
+                              : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
+                          ]"
+                        >
+                          {{ tag }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Exclusions -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Excluded Tags') }}</label>
+                    <p class="text-xs text-gray-500 mb-2">{{ t('Select tags for recipes you want to exclude') }}</p>
+                    <div class="min-h-[120px] max-h-48 overflow-y-auto border rounded-lg p-2">
+                      <div class="flex flex-wrap gap-2">
+                        <button
+                          v-for="tag in allTags"
+                          :key="tag"
+                          @click="toggleExclusion(tag)"
+                          :class="[
+                            'px-3 py-1 text-sm rounded-full border transition-colors',
+                            autoPlanExclusions.includes(tag)
+                              ? 'bg-red-100 border-red-300 text-red-700'
+                              : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
+                          ]"
+                        >
+                          {{ tag }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Exclusions -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Excluded Tags') }}</label>
-              <p class="text-xs text-gray-500 mb-2">{{ t('Select tags for recipes you want to exclude') }}</p>
-              <div class="min-h-[120px] max-h-48 overflow-y-auto border rounded-lg p-2">
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    v-for="tag in allTags"
-                    :key="tag"
-                    @click="toggleExclusion(tag)"
-                    :class="[
-                      'px-3 py-1 text-sm rounded-full border transition-colors',
-                      autoPlanExclusions.includes(tag)
-                        ? 'bg-red-100 border-red-300 text-red-700'
-                        : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
-                    ]"
+              <!-- Footer - Fixed at bottom -->
+              <div class="py-3 px-3 border-t border-gray-200 bg-gray-50">
+                <div class="flex gap-4">
+                  <div
+                    class="cursor-pointer py-2 px-4 bg-gray-500 text-white rounded-lg drop-shadow flex-1"
+                    @click.stop="closeAutoPlanModal"
                   >
-                    {{ tag }}
-                  </button>
+                    {{ t('Cancel') }}
+                  </div>
+                  <div
+                    class="cursor-pointer py-2 px-4 bg-green-500 text-white rounded-lg drop-shadow flex-1"
+                    :class="{ 'opacity-50 cursor-not-allowed': !autoPlanLength || autoPlanLength < 1 }"
+                    @click.stop="(!autoPlanLength || autoPlanLength < 1) ? null : generateAutoPlan()"
+                  >
+                    {{ t('Generate') }}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Footer - Fixed at bottom -->
-        <div class="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-gray-50 flex gap-3">
-          <Button
-            @click="closeAutoPlanModal"
-            class="flex-1 bg-gray-500 hover:bg-gray-600 text-white"
-          >
-            {{ t('Cancel') }}
-          </Button>
-          <Button
-            @click="generateAutoPlan"
-            class="flex-1 bg-green-600 hover:bg-green-700 text-white"
-            :disabled="!autoPlanLength || autoPlanLength < 1"
-          >
-            {{ t('Generate') }}
-          </Button>
-        </div>
-      </div>
+      </Transition>
     </div>
 
     <!-- Import Modal -->
@@ -772,3 +806,10 @@ function navigateToRecipe(recipeId: string): void {
   router.push(`/recipe/${recipeId}`)
 }
 </script>
+
+<style scoped>
+.drop-shadow {
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))
+    drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
+}
+</style>

@@ -16,7 +16,7 @@
         style="backdrop-filter: blur(1px)"
         @click="close"
       >
-        <div class="w-full min-h-full px-12 py-8 flex flex-col transform">
+        <div class="w-full min-h-full px-6 sm:px-12 py-8 flex flex-col transform">
           <div class="bg-white p-5 rounded-xl drop-shadow" @click.stop>
             <div class="flex items-start">
               <Icon v-if="icon" :icon="icon" class="text-blue-500 mr-3 mt-1" size="1.5rem" />

@@ -19,7 +19,7 @@
         style="backdrop-filter: blur(1px)"
         @click="close"
       >
-        <div class="w-full min-h-full px-12 py-8 flex flex-col transform">
+        <div class="w-full min-h-full px-6 sm:px-12 py-8 flex flex-col transform">
           <div class="bg-white p-5 rounded-xl drop-shadow max-w-2xl mx-auto" @click.stop>
             <!-- Header -->
             <div class="flex items-start mb-4">

@@ -146,5 +146,9 @@
   "Dinner": "夕食",
   "Snack": "スナック",
   "Import Weekly Plan": "週間プランをインポート",
-  "Paste JSON here": "ここにJSONを貼り付け"
+  "Paste JSON here": "ここにJSONを貼り付け",
+  "Set up your meal plan day by day": "日ごとに食事プランを設定してください",
+  "Enter plan name": "プラン名を入力",
+  "Add Recipe": "レシピを追加",
+  "Add Day": "日を追加"
 }

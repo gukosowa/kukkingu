@@ -16,7 +16,7 @@
         style="backdrop-filter: blur(1px)"
         @click="clickNo"
       >
-        <div class="w-full min-h-full px-12 py-8 flex flex-col transform">
+        <div class="w-full min-h-full px-6 sm:px-12 py-8 flex flex-col transform">
           <div class="w- bg-white rounded-xl drop-shadow flex flex-col overflow-hidden">
             <!-- Header -->
             <div class="px-4 py-3 border-b border-gray-200">

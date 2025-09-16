@@ -146,5 +146,9 @@
   "Dinner": "Abendessen",
   "Snack": "Snack",
   "Import Weekly Plan": "Wochenplan importieren",
-  "Paste JSON here": "JSON hier einfügen"
+  "Paste JSON here": "JSON hier einfügen",
+  "Set up your meal plan day by day": "Richte deinen Essensplan Tag für Tag ein",
+  "Enter plan name": "Plannamen eingeben",
+  "Add Recipe": "Rezept hinzufügen",
+  "Add Day": "Tag hinzufügen"
 }
