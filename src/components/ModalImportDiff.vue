@@ -65,37 +65,43 @@
     </template>
 
     <template #footer>
-      <div class="px-3 py-2 flex gap-2">
-        <Button
-          @click="handleCancel"
-          color="gray"
-          class="flex-1"
-        >
-          {{ t('Cancel') }}
-        </Button>
-        <Button
-          v-if="diff.updates.length > 0"
-          @click="handleUpdate"
-          color="blue"
-          class="flex-1"
-        >
-          {{ t('Update Existing') }}
-        </Button>
-        <Button
-          v-if="diff.creates.length > 0"
-          @click="handleCreateNew"
-          color="green"
-          class="flex-1"
-        >
-          {{ t('Create New') }}
-        </Button>
-        <Button
-          @click="handleAddAsNew"
-          color="pink"
-          class="flex-1"
-        >
-          {{ t('Add as New') }}
-        </Button>
+      <div class="px-3 py-2 flex flex-col gap-2">
+        <!-- Cancel button on first row -->
+        <div class="flex">
+          <Button
+            @click="handleCancel"
+            color="gray"
+            class="flex-1"
+          >
+            {{ t('Cancel') }}
+          </Button>
+        </div>
+        <!-- Update and Add buttons on second row -->
+        <div v-if="diff.updates.length > 0 || diff.creates.length > 0" class="flex gap-2">
+          <Button
+            v-if="diff.updates.length > 0"
+            @click="handleUpdate"
+            color="blue"
+            class="flex-1"
+          >
+            {{ t('Update Existing') }}
+          </Button>
+          <Button
+            v-if="diff.creates.length > 0"
+            @click="handleCreateNew"
+            color="green"
+            class="flex-1"
+          >
+            {{ t('Create New') }}
+          </Button>
+          <Button
+            @click="handleAddAsNew"
+            color="pink"
+            class="flex-1"
+          >
+            {{ t('Add as New') }}
+          </Button>
+        </div>
       </div>
     </template>
   </BaseDialog>
