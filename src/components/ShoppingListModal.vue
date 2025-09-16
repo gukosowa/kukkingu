@@ -39,21 +39,23 @@
           <div
             v-for="item in shoppingList"
             :key="item.name + item.amountType"
-            class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
+            class="flex items-center gap-3 p-3 rounded-lg bg-gray-900 text-white cursor-pointer hover:bg-gray-800"
+            @click="toggleItemChecked(item)"
           >
             <Checkbox
               v-model="item.checked"
               @change="updateItemChecked(item)"
+              @click.stop
               class="flex-shrink-0"
             />
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
-                <span class="font-medium text-gray-900 truncate">{{ item.name }}</span>
-                <span class="text-sm text-gray-500 flex-shrink-0">
+                <span class="font-medium text-white truncate">{{ item.name }}</span>
+                <span class="text-sm text-gray-300 flex-shrink-0">
                   {{ formatAmount(item.amount) }} {{ item.amountType }}
                 </span>
               </div>
-              <div v-if="item.recipes.length > 0" class="text-xs text-gray-500 mt-1">
+              <div v-if="item.recipes.length > 0" class="text-xs text-gray-300 mt-1">
                 {{ t('Used in') }}: {{ getRecipeNames(item.recipes).join(', ') }}
               </div>
             </div>
@@ -118,6 +120,11 @@ function clearAll() {
 }
 
 function updateItemChecked(item: ShoppingListItem) {
+  updateShoppingListItem(props.planId, item)
+}
+
+function toggleItemChecked(item: ShoppingListItem) {
+  item.checked = !item.checked
   updateShoppingListItem(props.planId, item)
 }
 

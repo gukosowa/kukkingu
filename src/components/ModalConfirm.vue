@@ -17,23 +17,36 @@
         @click="clickNo"
       >
         <div class="w-full min-h-full px-12 py-8 flex flex-col transform">
-          <div class="w- bg-white p-5 rounded-xl drop-shadow">
-            <div class="text-lg text-gray-600 font-bold">
-              {{ t('Really delete') }}?<br />
-              <span class="text-sm">> {{ removeName }}</span>
-            </div>
-            <div class="text-white text-center">
-              <div
-                class="cursor-pointer py-3 my-5 bg-red-500 rounded-lg drop-shadow"
-                @click.stop="clickYes"
-              >
-                {{ t('Yes') }}
+          <div class="w- bg-white rounded-xl drop-shadow flex flex-col overflow-hidden">
+            <!-- Header -->
+            <div class="px-4 py-3 border-b border-gray-200">
+              <div class="text-lg text-gray-600 font-bold">
+                {{ t('Really delete') }}?
               </div>
-              <div
-                class="cursor-pointer py-3 bg-gray-500 rounded-lg drop-shadow"
-                @click.stop="clickNo"
-              >
-                {{ t('Cancel') }}
+            </div>
+
+            <!-- Content -->
+            <div class="p-5">
+              <div class="text-sm text-gray-500">
+                > {{ removeName }}
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="py-3 px-3 border-t border-gray-200 bg-gray-50">
+              <div class="flex gap-4">
+                <div
+                  class="cursor-pointer py-2 px-4 bg-gray-500 text-white rounded-lg drop-shadow flex-1"
+                  @click.stop="clickNo"
+                >
+                  {{ t('Cancel') }}
+                </div>
+                <div
+                  class="cursor-pointer py-2 px-4 bg-red-500 text-white rounded-lg drop-shadow flex-1"
+                  @click.stop="clickYes"
+                >
+                  {{ t('Yes') }}
+                </div>
               </div>
             </div>
           </div>
