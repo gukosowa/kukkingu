@@ -60,7 +60,7 @@
             ref="imageElement"
             :src="imageSrc"
             :style="imageStyle"
-            class="max-w-none select-none"
+            class="w-full h-auto max-w-none select-none block"
             alt="Recipe image"
             draggable="false"
           />
@@ -97,6 +97,8 @@ const zoomLevel = ref(1)
 const panX = ref(0)
 const panY = ref(0)
 const isPanning = ref(false)
+const isZooming = ref(false)
+const zoomingTimeout = ref<number | null>(null)
 const lastMouseX = ref(0)
 const lastMouseY = ref(0)
 
@@ -105,23 +107,38 @@ const initialDistance = ref(0)
 const initialZoom = ref(1)
 const touches = ref<Touch[]>([])
 
-const minZoom = 0.5
+const minZoom = 0.7
 const maxZoom = 5
-const zoomStep = 0.25
+const zoomStep = 0.1
 
 const imageStyle = computed(() => ({
-  transform: `scale(${zoomLevel.value}) translate(${panX.value}px, ${panY.value}px)`,
-  transition: isPanning.value ? 'none' : 'transform 0.2s ease-out'
+  transform: `translate(${panX.value}px, ${panY.value}px) scale(${zoomLevel.value})`,
+  transition: isPanning.value || isZooming.value ? 'none' : 'transform 0.2s ease-out',
+  transformOrigin: 'center center'
 }))
 
+function startZooming() {
+  isZooming.value = true
+  if (zoomingTimeout.value) window.clearTimeout(zoomingTimeout.value)
+  zoomingTimeout.value = window.setTimeout(() => {
+    isZooming.value = false
+  }, 80)
+}
+
 function zoomIn() {
-  zoomLevel.value = Math.min(maxZoom, zoomLevel.value + zoomStep)
-  constrainPan()
+  const rect = imageContainer.value?.getBoundingClientRect()
+  const centerX = rect ? rect.left + rect.width / 2 : 0
+  const centerY = rect ? rect.top + rect.height / 2 : 0
+  startZooming()
+  zoomTo(zoomLevel.value + zoomStep, centerX, centerY)
 }
 
 function zoomOut() {
-  zoomLevel.value = Math.max(minZoom, zoomLevel.value - zoomStep)
-  constrainPan()
+  const rect = imageContainer.value?.getBoundingClientRect()
+  const centerX = rect ? rect.left + rect.width / 2 : 0
+  const centerY = rect ? rect.top + rect.height / 2 : 0
+  startZooming()
+  zoomTo(zoomLevel.value - zoomStep, centerX, centerY)
 }
 
 function resetZoom() {
@@ -133,8 +150,8 @@ function resetZoom() {
 function handleWheel(event: WheelEvent) {
   event.preventDefault()
   const delta = event.deltaY > 0 ? -zoomStep : zoomStep
-  zoomLevel.value = Math.max(minZoom, Math.min(maxZoom, zoomLevel.value + delta))
-  constrainPan()
+  startZooming()
+  zoomTo(zoomLevel.value + delta, event.clientX, event.clientY)
 }
 
 function startPan(event: MouseEvent) {
@@ -151,11 +168,8 @@ function updatePan(event: MouseEvent) {
   const deltaX = event.clientX - lastMouseX.value
   const deltaY = event.clientY - lastMouseY.value
 
-  // Scale pan movement by zoom level for more natural feel
-  // When zoomed in, movement should be slower relative to zoom
-  const panSpeed = 1 / zoomLevel.value
-  panX.value += deltaX * panSpeed
-  panY.value += deltaY * panSpeed
+  panX.value += deltaX
+  panY.value += deltaY
 
   lastMouseX.value = event.clientX
   lastMouseY.value = event.clientY
@@ -168,21 +182,52 @@ function endPan() {
 }
 
 function constrainPan() {
-  if (!imageElement.value || !imageContainer.value || zoomLevel.value <= 1) {
+  if (!imageElement.value || !imageContainer.value) {
     panX.value = 0
     panY.value = 0
     return
   }
 
   const containerRect = imageContainer.value.getBoundingClientRect()
-  const imageRect = imageElement.value.getBoundingClientRect()
+  const naturalWidth = imageElement.value.naturalWidth
+  const naturalHeight = imageElement.value.naturalHeight
 
-  // Calculate maximum pan distances
-  const maxPanX = Math.max(0, (imageRect.width - containerRect.width) / 2)
-  const maxPanY = Math.max(0, (imageRect.height - containerRect.height) / 2)
+  // Image is rendered to fit container width
+  const renderedWidth = containerRect.width * zoomLevel.value
+  const renderedHeight = (naturalHeight / naturalWidth) * containerRect.width * zoomLevel.value
+
+  // Clamp so the image edge can move to the container center
+  const maxPanX = renderedWidth / 2
+  const maxPanY = renderedHeight / 2
 
   panX.value = Math.max(-maxPanX, Math.min(maxPanX, panX.value))
   panY.value = Math.max(-maxPanY, Math.min(maxPanY, panY.value))
+}
+
+function zoomTo(targetZoom: number, originClientX: number, originClientY: number) {
+  const clampedZoom = Math.max(minZoom, Math.min(maxZoom, targetZoom))
+  const currentZoom = zoomLevel.value
+
+  if (!imageContainer.value || clampedZoom === currentZoom) {
+    zoomLevel.value = clampedZoom
+    constrainPan()
+    return
+  }
+
+  const rect = imageContainer.value.getBoundingClientRect()
+  const centerX = rect.left + rect.width / 2
+  const centerY = rect.top + rect.height / 2
+
+  const dx = originClientX - centerX
+  const dy = originClientY - centerY
+
+  const scaleRatio = clampedZoom / currentZoom
+  // Keep focal point under cursor: pan' = r*pan + (1 - r)*c
+  panX.value = scaleRatio * panX.value + (1 - scaleRatio) * dx
+  panY.value = scaleRatio * panY.value + (1 - scaleRatio) * dy
+
+  zoomLevel.value = clampedZoom
+  constrainPan()
 }
 
 // Touch gesture handlers for pinch zoom and single-touch drag
@@ -230,18 +275,21 @@ function handleTouchMove(event: TouchEvent) {
     // Handle pinch zoom (only if not on button)
     const currentDistance = getDistance(event.touches[0], event.touches[1])
     const scale = currentDistance / initialDistance.value
-    zoomLevel.value = Math.max(minZoom, Math.min(maxZoom, initialZoom.value * scale))
-    constrainPan()
+
+    // Midpoint between the two touches in viewport coordinates
+    const midX = (event.touches[0].clientX + event.touches[1].clientX) / 2
+    const midY = (event.touches[0].clientY + event.touches[1].clientY) / 2
+
+    startZooming()
+    zoomTo(initialZoom.value * scale, midX, midY)
   } else if (event.touches.length === 1 && isPanning.value && zoomLevel.value > 1 && !isButton) {
     // Handle single-touch drag (only when zoomed in and not on button)
     const touch = event.touches[0]
     const deltaX = touch.clientX - lastMouseX.value
     const deltaY = touch.clientY - lastMouseY.value
 
-    // Scale pan movement by zoom level for more natural feel
-    const panSpeed = 1 / zoomLevel.value
-    panX.value += deltaX * panSpeed
-    panY.value += deltaY * panSpeed
+    panX.value += deltaX
+    panY.value += deltaY
 
     lastMouseX.value = touch.clientX
     lastMouseY.value = touch.clientY
