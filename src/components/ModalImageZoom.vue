@@ -155,7 +155,6 @@ function handleWheel(event: WheelEvent) {
 }
 
 function startPan(event: MouseEvent) {
-  if (zoomLevel.value <= 1) return
   isPanning.value = true
   lastMouseX.value = event.clientX
   lastMouseY.value = event.clientY
@@ -163,7 +162,7 @@ function startPan(event: MouseEvent) {
 }
 
 function updatePan(event: MouseEvent) {
-  if (!isPanning.value || zoomLevel.value <= 1) return
+  if (!isPanning.value) return
 
   const deltaX = event.clientX - lastMouseX.value
   const deltaY = event.clientY - lastMouseY.value
@@ -253,8 +252,8 @@ function handleTouchStart(event: TouchEvent) {
     // Start pinch gesture (only if not on button)
     initialDistance.value = getDistance(event.touches[0], event.touches[1])
     initialZoom.value = zoomLevel.value
-  } else if (event.touches.length === 1 && zoomLevel.value > 1 && !isButton) {
-    // Start single-touch drag (only when zoomed in and not on button)
+  } else if (event.touches.length === 1 && !isButton) {
+    // Start single-touch drag (not on button)
     isPanning.value = true
     lastMouseX.value = event.touches[0].clientX
     lastMouseY.value = event.touches[0].clientY
@@ -282,8 +281,8 @@ function handleTouchMove(event: TouchEvent) {
 
     startZooming()
     zoomTo(initialZoom.value * scale, midX, midY)
-  } else if (event.touches.length === 1 && isPanning.value && zoomLevel.value > 1 && !isButton) {
-    // Handle single-touch drag (only when zoomed in and not on button)
+  } else if (event.touches.length === 1 && isPanning.value && !isButton) {
+    // Handle single-touch drag (not on button)
     const touch = event.touches[0]
     const deltaX = touch.clientX - lastMouseX.value
     const deltaY = touch.clientY - lastMouseY.value

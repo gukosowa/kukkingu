@@ -36,53 +36,69 @@
               @touchstart.stop.prevent="startMoveCrop"
             >
               <div
-                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+                class="absolute w-6 h-6 cursor-nwse-resize"
                 style="top: 0; left: 0; transform: translate(-50%, -50%);"
                 @mousedown.stop="(e) => startResizeCrop(e, 'nw')"
                 @touchstart.stop.prevent="(e) => startResizeCrop(e, 'nw')"
-              ></div>
+              >
+                <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+              </div>
               <div
-                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+                class="absolute w-6 h-6 cursor-nesw-resize"
                 style="top: 0; left: 50%; transform: translate(-50%, -50%);"
                 @mousedown.stop="(e) => startResizeCrop(e, 'n')"
                 @touchstart.stop.prevent="(e) => startResizeCrop(e, 'n')"
-              ></div>
+              >
+                <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+              </div>
               <div
-                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+                class="absolute w-6 h-6 cursor-nwse-resize"
                 style="top: 0; left: 100%; transform: translate(-50%, -50%);"
                 @mousedown.stop="(e) => startResizeCrop(e, 'ne')"
                 @touchstart.stop.prevent="(e) => startResizeCrop(e, 'ne')"
-              ></div>
+              >
+                <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+              </div>
               <div
-                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+                class="absolute w-6 h-6 cursor-nesw-resize"
                 style="top: 50%; left: 0; transform: translate(-50%, -50%);"
                 @mousedown.stop="(e) => startResizeCrop(e, 'w')"
                 @touchstart.stop.prevent="(e) => startResizeCrop(e, 'w')"
-              ></div>
+              >
+                <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+              </div>
               <div
-                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+                class="absolute w-6 h-6 cursor-nesw-resize"
                 style="top: 50%; left: 100%; transform: translate(-50%, -50%);"
                 @mousedown.stop="(e) => startResizeCrop(e, 'e')"
                 @touchstart.stop.prevent="(e) => startResizeCrop(e, 'e')"
-              ></div>
+              >
+                <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+              </div>
               <div
-                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+                class="absolute w-6 h-6 cursor-nwse-resize"
                 style="top: 100%; left: 0; transform: translate(-50%, -50%);"
                 @mousedown.stop="(e) => startResizeCrop(e, 'sw')"
                 @touchstart.stop.prevent="(e) => startResizeCrop(e, 'sw')"
-              ></div>
+              >
+                <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+              </div>
               <div
-                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+                class="absolute w-6 h-6 cursor-nesw-resize"
                 style="top: 100%; left: 50%; transform: translate(-50%, -50%);"
                 @mousedown.stop="(e) => startResizeCrop(e, 's')"
                 @touchstart.stop.prevent="(e) => startResizeCrop(e, 's')"
-              ></div>
+              >
+                <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+              </div>
               <div
-                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+                class="absolute w-6 h-6 cursor-nwse-resize"
                 style="top: 100%; left: 100%; transform: translate(-50%, -50%);"
                 @mousedown.stop="(e) => startResizeCrop(e, 'se')"
                 @touchstart.stop.prevent="(e) => startResizeCrop(e, 'se')"
-              ></div>
+              >
+                <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+              </div>
             </div>
           </div>
 
@@ -151,53 +167,69 @@
             @touchstart.stop.prevent="startMoveCrop"
           >
             <div
-              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+              class="absolute w-6 h-6 cursor-nwse-resize"
               style="top: 0; left: 0; transform: translate(-50%, -50%);"
               @mousedown.stop="(e) => startResizeCrop(e, 'nw')"
               @touchstart.stop.prevent="(e) => startResizeCrop(e, 'nw')"
-            ></div>
+            >
+              <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+            </div>
             <div
-              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+              class="absolute w-6 h-6 cursor-nesw-resize"
               style="top: 0; left: 50%; transform: translate(-50%, -50%);"
               @mousedown.stop="(e) => startResizeCrop(e, 'n')"
               @touchstart.stop.prevent="(e) => startResizeCrop(e, 'n')"
-            ></div>
+            >
+              <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+            </div>
             <div
-              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+              class="absolute w-6 h-6 cursor-nwse-resize"
               style="top: 0; left: 100%; transform: translate(-50%, -50%);"
               @mousedown.stop="(e) => startResizeCrop(e, 'ne')"
               @touchstart.stop.prevent="(e) => startResizeCrop(e, 'ne')"
-            ></div>
+            >
+              <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+            </div>
             <div
-              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+              class="absolute w-6 h-6 cursor-nesw-resize"
               style="top: 50%; left: 0; transform: translate(-50%, -50%);"
               @mousedown.stop="(e) => startResizeCrop(e, 'w')"
               @touchstart.stop.prevent="(e) => startResizeCrop(e, 'w')"
-            ></div>
+            >
+              <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+            </div>
             <div
-              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+              class="absolute w-6 h-6 cursor-nesw-resize"
               style="top: 50%; left: 100%; transform: translate(-50%, -50%);"
               @mousedown.stop="(e) => startResizeCrop(e, 'e')"
               @touchstart.stop.prevent="(e) => startResizeCrop(e, 'e')"
-            ></div>
+            >
+              <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+            </div>
             <div
-              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+              class="absolute w-6 h-6 cursor-nwse-resize"
               style="top: 100%; left: 0; transform: translate(-50%, -50%);"
               @mousedown.stop="(e) => startResizeCrop(e, 'sw')"
               @touchstart.stop.prevent="(e) => startResizeCrop(e, 'sw')"
-            ></div>
+            >
+              <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+            </div>
             <div
-              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+              class="absolute w-6 h-6 cursor-nesw-resize"
               style="top: 100%; left: 50%; transform: translate(-50%, -50%);"
               @mousedown.stop="(e) => startResizeCrop(e, 's')"
               @touchstart.stop.prevent="(e) => startResizeCrop(e, 's')"
-            ></div>
+            >
+              <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+            </div>
             <div
-              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+              class="absolute w-6 h-6 cursor-nwse-resize"
               style="top: 100%; left: 100%; transform: translate(-50%, -50%);"
               @mousedown.stop="(e) => startResizeCrop(e, 'se')"
               @touchstart.stop.prevent="(e) => startResizeCrop(e, 'se')"
-            ></div>
+            >
+              <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 rounded-full"></div>
+            </div>
           </div>
         </div>
 
