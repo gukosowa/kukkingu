@@ -19,12 +19,13 @@
         v-if="modelValue"
         class="fixed w-screen h-screen top-0 left-0 z-50"
         style="backdrop-filter: blur(1px)"
-        @click="handleBackdropClick"
+        @mousedown="handleBackdropClick"
       >
-        <div class="w-full min-h-full px-6 sm:px-12 md:px-8 py-8 flex flex-col justify-start items-center transform">
+        <div class="w-full min-h-full px-6 sm:px-12 md:px-8 py-8 flex flex-col justify-start items-center transform" :class="$attrs.class">
           <div
             class="bg-white rounded-xl drop-shadow w-full  md:w-[600px] flex flex-col overflow-hidden max-h-[90vh]"
             :class="size"
+            @mousedown.stop
             @click.stop
           >
             <!-- Header Slot -->
@@ -67,18 +68,16 @@ const props = defineProps<{
   modelValue: boolean
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
   contentClass?: string
-  closeOnBackdropClick?: boolean
   dense?: boolean
 }>()
 
 const emit = defineEmits<Emits>()
 
 function handleBackdropClick() {
-  if (props.closeOnBackdropClick ?? true) {
+  console.log('backdrop')
     vibrate()
     emit('close')
     emit('update:modelValue', false)
-  }
 }
 
 // Size classes mapping

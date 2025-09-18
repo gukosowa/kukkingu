@@ -25,6 +25,8 @@ export type Recipe = {
   // Timestamp of last export (ISO string)
   exportedAt?: string
   image?: string // Base64 encoded image data
+  showAsBackground?: boolean // Whether to display image as background
+  backgroundArea?: { xPct: number; yPct: number; wPct: number; hPct: number } | null
   tags?: string[]
   ingredients: Ingredient[]
 }
@@ -48,6 +50,7 @@ export type WeeklyPlan = {
   createdAt: string
   updatedAt: string
   notes?: string
+  servings?: number // General servings for the entire plan
 }
 
 export type ShoppingListItem = {
@@ -147,6 +150,28 @@ export const modalStates = ref({
 
 // Global search state for cross-component search functionality
 export const globalSearchFilter = ref('')
+
+// Recipe view settings stored globally in IndexedDB
+export const recipeViewSettings = ref({
+  denseMode: false,
+  showNotes: false
+})
+
+// Load recipe view settings from IndexedDB
+getSetting('recipeViewSettings', { denseMode: false, showNotes: false }).then(settings => {
+  recipeViewSettings.value = { ...recipeViewSettings.value, ...settings }
+}).catch(error => {
+  console.error('Failed to load recipe view settings from IndexedDB:', error)
+})
+
+// Persist recipe view settings changes to IndexedDB
+watch(recipeViewSettings, async (settings) => {
+  try {
+    await setSetting('recipeViewSettings', settings)
+  } catch (error) {
+    console.error('Failed to save recipe view settings to IndexedDB:', error)
+  }
+}, { deep: true })
 
 export function uuidv4() {
   return ([1e7] as any + -1e3 + -4e3 + -8e3 + -1e11).replace(

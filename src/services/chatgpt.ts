@@ -1,4 +1,4 @@
-function legacyCopyToClipboard(text: string) {
+export function legacyCopyToClipboard(text: string) {
   try {
     const textarea = document.createElement('textarea')
     textarea.value = text

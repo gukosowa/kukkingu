@@ -33,10 +33,33 @@
               <div class="font-medium text-blue-900 mb-2">
                 {{ update.existing.name }}
               </div>
-              <div class="text-sm text-blue-800 space-y-1">
-                <div v-for="change in update.changes" :key="change" class="flex">
-                  <span class="mr-2">•</span>
-                  <span>{{ change }}</span>
+              <div class="text-sm space-y-2">
+                <!-- Detailed changes with color highlighting -->
+                <div v-if="update.detailedChanges && update.detailedChanges.length > 0">
+                  <div v-for="detailedChange in update.detailedChanges" :key="detailedChange.description" class="space-y-1">
+                    <div class="font-medium text-blue-800">{{ detailedChange.description }}:</div>
+                    <div class="ml-4 flex flex-wrap items-center whitespace-pre-wrap">
+                      <span
+                        v-for="(part, index) in detailedChange.parts"
+                        :key="index"
+                        :class="[
+                          'px-1 rounded text-xs font-mono',
+                          part.type === 'removed' ? 'bg-red-100 text-red-800' : '',
+                          part.type === 'added' ? 'bg-green-100 text-green-800' : '',
+                          part.type === 'unchanged' ? 'text-gray-600' : ''
+                        ]"
+                      >
+                        {{ part.text }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Fallback to simple text changes if detailed changes not available -->
+                <div v-else class="text-blue-800 space-y-1">
+                  <div v-for="change in update.changes" :key="change" class="flex">
+                    <span class="mr-2">•</span>
+                    <span>{{ change }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -112,7 +135,7 @@ import { computed } from 'vue'
 import { t } from '~src/i18n'
 import Button from './Button.vue'
 import BaseDialog from './BaseDialog.vue'
-import type { ImportDiff } from '~src/services/importExport'
+import type { ImportDiff, DetailedChange } from '~src/services/importExport'
 
 interface Props {
   modelValue: boolean

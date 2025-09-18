@@ -6,9 +6,9 @@ import { getAllTags } from '~src/store/index'
 export type LocaleText = 'English' | 'Japanese' | 'German'
 
 export function buildImportRecipePrompt(
-  input: { url?: string; text?: string; locale: LocaleText; fromPicture?: boolean }
+  input: { url?: string; text?: string; locale: LocaleText; fromPicture?: boolean; additionalInstruction?: string }
 ): string {
-  const { url, text, locale, fromPicture } = input
+  const { url, text, locale, fromPicture, additionalInstruction } = input
   const ackMap = {
     English: "Understood. Now write anything and I'll try to convert it to the json.",
     German: 'Verstanden. Schreibe jetzt irgendetwas und ich versuche, es in JSON umzuwandeln.',
@@ -82,11 +82,18 @@ export function buildImportRecipePrompt(
     sourceInstruction = 'Extract the recipe information from the attached pictures and convert it into a clean, structured recipe JSON.'
   }
 
-  return `${sourceInstruction} ${localeRule} Follow these strict rules: ${unitRules} ${servingsRule} ${ingredientRules} ${noteRules} ${tagsRule} The JSON must match this exact structure: ${jsonSchema} ${formattingRule}`
+  // Add additional instruction if provided
+  const additionalInstructionText = additionalInstruction?.trim()
+    ? `\n\nAdditional instructions: ${additionalInstruction?.trim()}`
+    : ''
+
+  return `${sourceInstruction} ${localeRule} Follow these strict rules: ${unitRules} ${servingsRule} ${ingredientRules} ${noteRules} ${tagsRule} The JSON must match this exact structure: ${jsonSchema} ${formattingRule}${additionalInstructionText}`
 }
 
 export function buildAskRecipePrompt(recipe: any, question: string, locale: LocaleText): string {
-  const recipeJson = JSON.stringify(recipe, null, 2)
+  // Create a copy of the recipe without the image field to avoid including it in prompts
+  const { image, ...recipeWithoutImage } = recipe
+  const recipeJson = JSON.stringify(recipeWithoutImage, null, 2)
 
   // Get existing tags from database and add suggested tags
   const existingTags = getAllTags()
@@ -166,4 +173,44 @@ JSON structure for recipe changes: ${jsonSchema}
 - Respond only in ${locale} for text answers.
 - Be clear, accurate, and concise.
 - If relevant, provide helpful cooking tips or clarifications for text answers.`
+}
+
+export function buildAskGptStoragePrompt(recipes: any[], question: string, locale: LocaleText): string {
+  // Create a compact representation of all recipes (without images)
+  const compactRecipes = recipes.map(recipe => {
+    const { image, ...recipeWithoutImage } = recipe
+    return {
+      ...recipeWithoutImage,
+      // Make ingredients more compact: join name, amount, and unit with separator
+      ingredients: recipe.ingredients?.map((ing: any) =>
+        `${ing.name || ''} ${ing.amount || 0}${ing.amountType || ''}`.trim() +
+        (ing.note ? ` (${ing.note})` : '')
+      ) || [],
+      // Make tags more compact: join with separator
+      tags: recipe.tags?.join(', ') || ''
+    }
+  })
+
+  const recipesJson = JSON.stringify(compactRecipes, null, 2)
+
+  return `You are a world-class culinary expert and recipe master.
+You have access to the following recipe collection:
+
+\`\`\`json
+${recipesJson}
+\`\`\`
+
+Your task is to carefully analyze all recipes in the collection and answer the following question:
+"${question}"
+
+Guidelines:
+- This question is about the entire recipe collection shown above.
+- Analyze patterns, common ingredients, meal types, cooking methods, etc. across all recipes.
+- Provide insights, suggestions, and recommendations based on the full collection.
+- Be helpful, accurate, and provide practical cooking advice when relevant.
+- For questions about meal planning, suggest combinations from the available recipes.
+- For questions about ingredients, analyze usage patterns across recipes.
+- For questions about dietary restrictions, identify suitable recipes.
+- Respond in ${locale} and be clear and concise.
+- If the question asks for specific recipe recommendations, reference them by name and explain why they fit.`
 }

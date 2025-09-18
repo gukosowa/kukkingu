@@ -1,22 +1,23 @@
 <template>
   <div v-if="recipe" class='flex-grow flex flex-col'>
-    <div class="flex items-center my-1">
-      <div class="flex-1"></div>
+    <div class="flex flex-wrap items-center my-1">
+      <div class="flex-1 min-w-0 mr-4">
+        <h1 class="text-lg font-bold truncate">
+          {{ recipe.name }}
+        </h1>
+      </div>
 
-      <Button v-if="hasNotes" @click="showNotes = !showNotes" class="mr-2" color="text-only">
-        <Icon :icon="showNotes ? 'fal fa-eye-slash' : 'fal fa-eye'" class="mr-1 py-[3px]" size="0.8rem" />
-        {{ t('Notes') }}
-      </Button>
+      <div class="flex items-center">
+        <Button v-if="hasNotes" @click="showNotes = !showNotes" class="mr-2" color="text-only">
+          <Icon :icon="showNotes ? 'fal fa-eye-slash' : 'fal fa-eye'" class="mr-1 py-[3px]" size="0.8rem" />
+          {{ t('Notes') }}
+        </Button>
 
-      <Button @click="denseMode = !denseMode" class="mr-2" color="text-only">
-        <Icon :icon="denseMode ? 'fal fa-expand' : 'fal fa-compress'" class="py-[3px]" size="0.8rem" />
-      </Button>
+        <Button @click="denseMode = !denseMode" class="mr-2" color="text-only">
+          <Icon :icon="denseMode ? 'fal fa-expand' : 'fal fa-compress'" class="py-[3px]" size="0.8rem" />
+        </Button>
+      </div>
 
-      <ModeButtonGroup
-        :mode="currentMode"
-        @mode-change="handleModeChange"
-        class="mr-2"
-      />
     </div>
 
     <!-- Clear Checklist Button (below button group) -->
@@ -244,7 +245,7 @@
 
         <!-- Image Section -->
         <div class="flex flex-col mt-4">
-          <label class="text-sm font-medium text-gray-700 mb-2">{{ t('Image') }}</label>
+          <label v-if="recipe.image" class="text-sm font-medium text-gray-700 mb-2">{{ t('Image') }}</label>
           <template v-if="recipe.edit">
             <div class="flex gap-2">
               <div
@@ -277,14 +278,22 @@
                 style="max-height: 300px;"
               />
               <template v-if="recipe.edit">
-                <Button
-                  @click="deleteImage"
-                  class="absolute top-2 right-2"
-                  color="red"
-                  :class="'bg-red-600 hover:bg-red-700'"
-                >
-                  <Icon icon="fal fa-trash" size="0.8rem" />
-                </Button>
+                <div class="absolute top-2 right-2 flex space-x-2">
+                  <Button
+                    @click="openCropModal"
+                    color="blue"
+                    :class="'bg-blue-600 hover:bg-blue-700'"
+                  >
+                    <Icon icon="fal fa-crop" size="0.8rem" />
+                  </Button>
+                  <Button
+                    @click="deleteImage"
+                    color="red"
+                    :class="'bg-red-600 hover:bg-red-700'"
+                  >
+                    <Icon icon="fal fa-trash" size="0.8rem" />
+                  </Button>
+                </div>
               </template>
             </div>
           </template>
@@ -296,6 +305,15 @@
         </div>
       </div>
     </div>
+
+    <!-- JSON Import Button (Edit Mode Only) -->
+    <div v-if="recipe.edit" class="mt-4 mb-2">
+      <Button @click="openImportJson" color="gray" class="!text-xs">
+        <Icon icon="fal fa-upload" class="mr-1" size="0.8rem" />
+        {{ t('Import JSON') }}
+      </Button>
+    </div>
+
       <Footer />
     </div>
     <ModalAskGpt
@@ -320,14 +338,29 @@
       :gotoUrl="promptReadyGotoUrl"
       @goToAI="handleGoToAI"
     />
+    <ModalCropImage
+      v-model="showCropModal"
+      :imageSrc="recipe.image || ''"
+      @confirm="confirmCropImage"
+    />
+    <ModalInput
+      v-model="showImportJsonModal"
+      :value="importJsonText"
+      :title="t('Import JSON')"
+      :confirmText="t('Import')"
+      :placeholder="t('Paste JSON')"
+      :multiline="true"
+      @confirm="confirmImportJson"
+      @cancel="cancelImportJson"
+    />
   </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as marked from 'marked'
 import Footer from '~components/Footer.vue'
-import { recipes as _recipes, globalSearchFilter } from '~src/store/index'
+import { recipes as _recipes, globalSearchFilter, recipeViewSettings } from '~src/store/index'
 import Button from './Button.vue'
 import SInput from './Input.vue'
 import Icon from './Icon.vue'
@@ -336,8 +369,9 @@ import AmountTypeModal from './AmountTypeModal.vue'
 import ModalAskGpt from './ModalAskGpt.vue'
 import ModalNotice from './ModalNotice.vue'
 import ModalPromptReady from './ModalPromptReady.vue'
+import ModalCropImage from './ModalCropImage.vue'
+import ModalInput from './ModalInput.vue'
 import TagInput from './TagInput.vue'
-import ModeButtonGroup from './ModeButtonGroup.vue'
 import { t, currentLocale } from '~src/i18n'
 import { buildAskRecipePrompt } from '~src/services/prompt'
 import { normalizeAmountType } from '~src/services/units'
@@ -346,10 +380,19 @@ import { fileToBase64, isValidImageFile, pasteImageFromClipboard } from '~src/se
 
 const route = useRoute()
 const router = useRouter()
-const showNotes = ref(false)
-const denseMode = ref(false)
 const pasteArea = ref<HTMLDivElement | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
+
+// Use global settings for dense mode and show notes
+const showNotes = computed({
+  get: () => recipeViewSettings.value.showNotes,
+  set: (value) => recipeViewSettings.value.showNotes = value
+})
+
+const denseMode = computed({
+  get: () => recipeViewSettings.value.denseMode,
+  set: (value) => recipeViewSettings.value.denseMode = value
+})
 
 const recipeId = computed(() => {
   return route.params.recipeId as string
@@ -426,11 +469,6 @@ const hasNotes = computed(() => {
   return recipe.value?.ingredients?.some((item: any) => item.note && item.note.trim()) || false
 })
 
-const currentMode = computed<'view' | 'edit' | 'checklist'>(() => {
-  if (recipe.value?.edit) return 'edit'
-  if (recipe.value?.checklist) return 'checklist'
-  return 'view'
-})
 const showAskGpt = ref(false)
 const showNotice = ref(false)
 const noticeTitle = ref('')
@@ -445,8 +483,20 @@ const promptReadyAIService = ref<'chatgpt' | 'gemini'>('chatgpt')
 const promptReadyGotoText = ref('')
 const promptReadyGotoUrl = ref('')
 
+// ModalCropImage state
+const showCropModal = ref(false)
+
+// ModalImportJson state
+const showImportJsonModal = ref(false)
+const importJsonText = ref('')
+
 function openAskGpt() {
   showAskGpt.value = true
+}
+
+function openImportJson() {
+  importJsonText.value = ''
+  showImportJsonModal.value = true
 }
 
 async function confirmAskGpt(question: string) {
@@ -473,6 +523,24 @@ async function confirmAskGpt(question: string) {
     t('Goto ChatGPT'),
     'https://chatgpt.com/'
   )
+}
+
+function confirmImportJson(json: string) {
+  showImportJsonModal.value = false
+  try {
+    const parsed = JSON.parse(json)
+    // Update the current recipe with the imported data
+    const updatedRecipe = { ...recipe.value, ...parsed }
+    recipe.value = updatedRecipe
+    showAppNotice(t('Success'), t('Recipe updated from JSON'), 'fal fa-check-circle')
+  } catch (e) {
+    showAppNotice(t('Error'), t('Invalid JSON'), 'fal fa-exclamation-triangle')
+  }
+}
+
+function cancelImportJson() {
+  importJsonText.value = ''
+  showImportJsonModal.value = false
 }
 
 function norm(type: string): string {
@@ -630,24 +698,6 @@ function handleAmountTypeChange(newType: string, index: number) {
 
   // Update the current ingredient
   ingredients[index].amountType = newType
-  _recipes.value = copy
-}
-function handleModeChange(newMode: 'view' | 'edit' | 'checklist') {
-  const copy = [..._recipes.value]
-  if (newMode === 'edit') {
-    copy[recipeIndex.value].edit = true
-    copy[recipeIndex.value].checklist = false
-    // Initialize tags array if it doesn't exist
-    if (!copy[recipeIndex.value].tags) {
-      copy[recipeIndex.value].tags = []
-    }
-  } else if (newMode === 'checklist') {
-    copy[recipeIndex.value].checklist = true
-    copy[recipeIndex.value].edit = false
-  } else {
-    copy[recipeIndex.value].edit = false
-    copy[recipeIndex.value].checklist = false
-  }
   _recipes.value = copy
 }
 
@@ -850,6 +900,21 @@ function deleteImage() {
   const copy = [..._recipes.value]
   copy[recipeIndex.value].image = undefined
   _recipes.value = copy
+}
+
+async function openCropModal() {
+  if (recipe.value?.image) {
+    // Force reactivity update
+    await nextTick()
+    // Small delay to ensure image is properly set
+    await new Promise(resolve => setTimeout(resolve, 10))
+    showCropModal.value = true
+  }
+}
+
+function confirmCropImage(croppedImage: string) {
+  updateRecipeImage(croppedImage)
+  showCropModal.value = false
 }
 
 function openChatGPTTab() {

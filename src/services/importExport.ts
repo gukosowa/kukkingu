@@ -54,11 +54,22 @@ export function mergeRecipesByExportedAt(
   return result
 }
 
+export type ChangePart = {
+  text: string
+  type: 'added' | 'removed' | 'unchanged'
+}
+
+export type DetailedChange = {
+  description: string
+  parts: ChangePart[]
+}
+
 export type ImportDiff = {
   updates: Array<{
     existing: Recipe
     incoming: Recipe
     changes: string[]
+    detailedChanges?: DetailedChange[]
   }>
   creates: Recipe[]
 }
@@ -121,11 +132,13 @@ export function analyzeImportDiff(
       // This is an update
       const existingRecipe = existingMap.get(incomingRecipe.id)!
       const changes = getRecipeChanges(existingRecipe, incomingRecipe)
+      const detailedChanges = getDetailedRecipeChanges(existingRecipe, incomingRecipe)
       if (changes.length > 0) {
         updates.push({
           existing: existingRecipe,
           incoming: incomingRecipe,
-          changes
+          changes,
+          detailedChanges
         })
       }
     } else {
@@ -239,6 +252,84 @@ function getRecipeChanges(existing: Recipe, incoming: Recipe): string[] {
   }
 
   return changes
+}
+
+function getDetailedRecipeChanges(existing: Recipe, incoming: Recipe): DetailedChange[] {
+  const detailedChanges: DetailedChange[] = []
+
+  // Compare basic fields
+  if (existing.name !== incoming.name) {
+    detailedChanges.push({
+      description: 'Name',
+      parts: [
+        { text: `"${existing.name}"`, type: 'removed' },
+        { text: ' → ', type: 'unchanged' },
+        { text: `"${incoming.name}"`, type: 'added' }
+      ]
+    })
+  }
+
+  if (existing.note !== incoming.note) {
+    detailedChanges.push({
+      description: 'Note',
+      parts: [
+        { text: `"${existing.note || '(empty)'}"`, type: 'removed' },
+        { text: ' → ', type: 'unchanged' },
+        { text: `"${incoming.note || '(empty)'}"`, type: 'added' }
+      ]
+    })
+  }
+
+  if (existing.original !== incoming.original) {
+    detailedChanges.push({
+      description: 'Original servings',
+      parts: [
+        { text: existing.original.toString(), type: 'removed' },
+        { text: ' → ', type: 'unchanged' },
+        { text: incoming.original.toString(), type: 'added' }
+      ]
+    })
+  }
+
+  if (existing.desired !== incoming.desired) {
+    detailedChanges.push({
+      description: 'Desired servings',
+      parts: [
+        { text: existing.desired.toString(), type: 'removed' },
+        { text: ' → ', type: 'unchanged' },
+        { text: incoming.desired.toString(), type: 'added' }
+      ]
+    })
+  }
+
+  // Compare tags
+  const existingTags = existing.tags || []
+  const incomingTags = incoming.tags || []
+  const tagsAdded = incomingTags.filter(t => !existingTags.includes(t))
+  const tagsRemoved = existingTags.filter(t => !incomingTags.includes(t))
+
+  if (tagsAdded.length > 0 || tagsRemoved.length > 0) {
+    const parts: ChangePart[] = []
+
+    if (tagsRemoved.length > 0) {
+      parts.push({ text: tagsRemoved.join(', '), type: 'removed' })
+    }
+
+    if (tagsAdded.length > 0 && tagsRemoved.length > 0) {
+      parts.push({ text: ' → ', type: 'unchanged' })
+    }
+
+    if (tagsAdded.length > 0) {
+      parts.push({ text: tagsAdded.join(', '), type: 'added' })
+    }
+
+    detailedChanges.push({
+      description: 'Tags',
+      parts
+    })
+  }
+
+  return detailedChanges
 }
 
 export function mergeChatGPTRecipe(

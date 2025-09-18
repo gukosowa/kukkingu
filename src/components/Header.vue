@@ -17,13 +17,15 @@
           <Button class="shadow-none" @click="home">
             <Icon icon="fal fa-arrow-alt-left" size="1.2rem" />
           </Button>
-          <div class="recipe-title flex-1 mr-2 text-xs font-bold leading-tight overflow-hidden">
-            {{ recipe?.name }}
-          </div>
         </div>
       </template>
 
       <template v-if="recipe">
+        <ModeButtonGroup
+          :mode="currentMode"
+          @mode-change="handleModeChange"
+          class="mr-2"
+        />
         <SInput
           class="w-20"
           :placeholder="t('Original amount')"
@@ -33,7 +35,7 @@
           @update="onchange"
           v-model="recipe.original"
         />
-        <Icon class="mx-1" size="1.6rem" icon="fal fa-play-circle cursor-pointer px-1" @click="recipe.desired = recipe.original" />
+        <Icon class="mx-1" icon="fal fa-play-circle cursor-pointer px-0 !text-sm min-[310px]:px-1 min-[310px]:!text-xl" @click="recipe.desired = recipe.original" />
         <SInput
           class="w-20"
           :placeholder="t('Target amount')"
@@ -62,6 +64,7 @@
       :url="importUrl"
       :text="importText"
       :fromPicture="importFromPicture"
+      :additionalInstruction="additionalInstruction"
       :title="t('JSON from URL')"
       :confirmText="t('Open GPT')"
       :placeholderUrl="t('https://example.com')"
@@ -90,6 +93,7 @@ import Icon from './Icon.vue'
 import Button from './Button.vue'
 import ModalUrlText from './ModalUrlText.vue'
 import ModalPromptReady from './ModalPromptReady.vue'
+import ModeButtonGroup from './ModeButtonGroup.vue'
 import { buildImportRecipePrompt } from '~src/services/prompt'
 import { openChatGPT } from '~src/services/chatgpt'
 import { handlePromptNoticeOk } from '~src/services/notice'
@@ -102,6 +106,7 @@ let showImportUrlModal = ref(false)
 let importUrl = ref('')
 let importText = ref('')
 let importFromPicture = ref(false)
+let additionalInstruction = ref('')
 let showPromptReadyModal = ref(false)
 let promptReadyMessage = ref('')
 let promptReadyAIService = ref<'chatgpt' | 'gemini'>('chatgpt')
@@ -132,6 +137,12 @@ const recipe = computed<any>({
   },
 })
 
+const currentMode = computed<'view' | 'edit' | 'checklist'>(() => {
+  if (recipe.value?.edit) return 'edit'
+  if (recipe.value?.checklist) return 'checklist'
+  return 'view'
+})
+
 function onchange() {
   if (recipeIndex.value !== -1) {
     const copy = [...recipes.value]
@@ -146,6 +157,26 @@ function focusNext() {
 }
 function blurInput(e: { el: HTMLInputElement | null }) {
   e.el?.blur()
+}
+
+function handleModeChange(newMode: 'view' | 'edit' | 'checklist') {
+  if (!recipe.value) return
+
+  const copy = [...recipes.value]
+  const currentRecipe = copy[recipeIndex.value]
+
+  // Reset all mode flags first
+  currentRecipe.edit = false
+  currentRecipe.checklist = false
+
+  // Set the new mode
+  if (newMode === 'edit') {
+    currentRecipe.edit = true
+  } else if (newMode === 'checklist') {
+    currentRecipe.checklist = true
+  }
+
+  recipes.value = copy
 }
 function home() {
   // Prefer history back so Vue Router restores saved scroll position
@@ -168,14 +199,17 @@ function openPlanner() {
 // GPT functionality functions
 function openImportUrl() {
   importUrl.value = ''
+  importText.value = ''
   importFromPicture.value = false
+  additionalInstruction.value = ''
   showImportUrlModal.value = true
 }
 
-async function confirmImportUrl(payload: { url: string; text: string; fromPicture: boolean }) {
+async function confirmImportUrl(payload: { url: string; text: string; fromPicture: boolean; additionalInstruction: string }) {
   importUrl.value = payload.url
   importText.value = payload.text
   importFromPicture.value = payload.fromPicture
+  additionalInstruction.value = payload.additionalInstruction
   showImportUrlModal.value = false
 
   const locale = currentLocale.value === 'jp' ? 'Japanese' : currentLocale.value === 'de' ? 'German' : 'English'
@@ -184,6 +218,7 @@ async function confirmImportUrl(payload: { url: string; text: string; fromPictur
     text: importText.value,
     locale,
     fromPicture: importFromPicture.value,
+    additionalInstruction: additionalInstruction.value,
   })
 
   const url = importUrl.value || ''
@@ -223,12 +258,14 @@ async function confirmImportUrl(payload: { url: string; text: string; fromPictur
   importUrl.value = ''
   importText.value = ''
   importFromPicture.value = false
+  additionalInstruction.value = ''
 }
 
 function cancelImportUrl() {
   importUrl.value = ''
   importText.value = ''
   importFromPicture.value = false
+  additionalInstruction.value = ''
   showImportUrlModal.value = false
 }
 
@@ -274,10 +311,3 @@ function legacyCopyToClipboard(text: string) {
 }
 </script>
 
-<style scoped>
-.recipe-title {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-</style>

@@ -23,7 +23,7 @@ export const newRecipe = async (name) => {
     desired: 100,
     note: '',
     url: '',
-    ingredients: [newIngredient('person', '2', 'g')],
+    ingredients: [newIngredient('', '', 'g')],
   }
 
   return [...localRecipes, recipeObj]

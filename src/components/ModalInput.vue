@@ -7,7 +7,7 @@
     </template>
 
     <template #content>
-      <div class="px-4 pb-4">
+      <div>
         <SInput
           v-if="!props.multiline"
           v-model="localValue"

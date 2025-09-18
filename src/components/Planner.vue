@@ -130,8 +130,8 @@
       </template>
 
       <template #content>
-        <!-- Plan Name Input (only for create mode) -->
-        <div v-if="!isEditing" class="mb-4 p-4 bg-gray-50 rounded-lg">
+        <!-- Plan Name Input (for both create and edit modes) -->
+        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
           <div class="max-w-md">
             <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('Plan name') }}</label>
             <Input
@@ -139,6 +139,22 @@
               :placeholder="t('Enter plan name')"
               class="w-full"
             />
+          </div>
+        </div>
+
+        <!-- General Servings Input -->
+        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+          <div class="max-w-md">
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('General servings') }}</label>
+            <Input
+              v-model.number="generalServings"
+              type="number"
+              :min="1"
+              :max="20"
+              :placeholder="t('Number of servings for the plan')"
+              class="w-full"
+            />
+            <p class="text-xs text-gray-500 mt-1">{{ t('All recipes in this plan will use this serving size') }}</p>
           </div>
         </div>
 
@@ -192,7 +208,7 @@
                       >
                         <div class="flex-1 min-w-0">
                           <span class="truncate block">{{ getRecipeName(recipePlan.recipeId) }}</span>
-                          <span class="text-xs text-gray-500">{{ recipePlan.servings }}x • {{ getMealTypeLabel(recipePlan.mealType) }}</span>
+                          <span class="text-xs text-gray-500">{{ generalServings }}x • {{ getMealTypeLabel(recipePlan.mealType) }}</span>
                         </div>
                         <Button
                           @click.stop="removeRecipeFromDay(index, recipePlan.recipeId)"
@@ -326,7 +342,7 @@
     >
       <RecipeDetailsModal
         :recipe-name="getRecipeDetailsForEditing().name"
-        :initial-servings="getRecipeDetailsForEditing().servings"
+        :initial-servings="generalServings"
         :initial-meal-type="getRecipeDetailsForEditing().mealType"
         @save="saveRecipeDetails"
         @cancel="closeRecipeDetailsModal"
@@ -339,6 +355,8 @@
       :shopping-list="currentShoppingList"
       :plan-name="currentShoppingListPlan?.name || ''"
       :plan-id="currentShoppingListPlan?.id || ''"
+      @before-navigate-to-recipe="saveShoppingListState"
+      @navigate-to-recipe="navigateToRecipe"
     />
 
 
@@ -347,7 +365,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { t, currentLocale } from '~src/i18n'
 import { dailyPlans, createWeeklyPlan, updateWeeklyPlan, removeWeeklyPlan, WeeklyPlan, DayPlan, Recipe, getAllTags, getShoppingListForPlan, saveShoppingListForPlan, ShoppingListItem } from '~src/store/index'
@@ -397,6 +415,45 @@ const autoPlanPreferenceText = ref('')
 const currentShoppingList = ref<ShoppingListItem[]>([])
 const currentShoppingListPlan = ref<WeeklyPlan | null>(null)
 
+// Temporary storage for shopping list state when navigating to recipes
+// Use computed property with sessionStorage to persist across component remounts
+const savedShoppingListState = computed<{
+  shoppingList: ShoppingListItem[]
+  plan: WeeklyPlan
+  scrollPosition: number
+} | null>({
+  get: () => {
+    try {
+      const stored = sessionStorage.getItem('kukkingu-shopping-list-state')
+      return stored ? JSON.parse(stored) : null
+    } catch (error) {
+      console.error('Failed to read shopping list state from sessionStorage:', error)
+      return null
+    }
+  },
+  set: (value) => {
+    try {
+      if (value) {
+        sessionStorage.setItem('kukkingu-shopping-list-state', JSON.stringify(value))
+      } else {
+        sessionStorage.removeItem('kukkingu-shopping-list-state')
+      }
+    } catch (error) {
+      console.error('Failed to save shopping list state to sessionStorage:', error)
+    }
+  }
+})
+
+// General servings for the plan
+const generalServings = ref(2)
+
+// Watch for changes to general servings and update existing recipes
+watch(generalServings, () => {
+  if (showPlanModal.value) {
+    updateExistingRecipeServings()
+  }
+})
+
 // Recipe selector state
 const showRecipeSelector = ref(false)
 const selectedDayIndex = ref(-1)
@@ -426,6 +483,7 @@ function openCreatePlan() {
   currentPlan.value = null
   newPlanName.value = ''
   newPlanNotes.value = ''
+  generalServings.value = 2 // Reset to default
 
   // Initialize with 1 day
   modalDays.value = []
@@ -443,8 +501,20 @@ function openEditPlan(plan: WeeklyPlan) {
   currentPlan.value = { ...plan }
   newPlanName.value = plan.name
   newPlanNotes.value = plan.notes || ''
+  generalServings.value = plan.servings || 2 // Set general servings from plan
   modalDays.value = [...plan.days]
   showPlanModal.value = true
+}
+
+// Helper function to update existing recipes' servings when general servings change
+function updateExistingRecipeServings() {
+  if (modalDays.value) {
+    modalDays.value.forEach(day => {
+      day.recipes.forEach(recipe => {
+        recipe.servings = generalServings.value
+      })
+    })
+  }
 }
 
 function addDay() {
@@ -466,12 +536,14 @@ async function savePlan() {
       currentPlan.value.days = modalDays.value
       currentPlan.value.name = newPlanName.value || currentPlan.value.name
       currentPlan.value.notes = newPlanNotes.value
+      currentPlan.value.servings = generalServings.value
       await updateWeeklyPlan(currentPlan.value)
     } else {
       // Create new plan
       const plan = await createWeeklyPlan(newPlanName.value.trim(), modalDays.value.length)
       plan.days = modalDays.value
       plan.notes = newPlanNotes.value
+      plan.servings = generalServings.value
       await updateWeeklyPlan(plan)
     }
     closePlanModal()
@@ -745,7 +817,7 @@ function addRecipeToDay(recipe: Recipe) {
 
   modalDays.value[selectedDayIndex.value].recipes.push({
     recipeId: recipe.id,
-    servings: 2, // Default servings
+    servings: generalServings.value, // Use general plan servings
     mealType: defaultMealType
   })
 
@@ -781,7 +853,7 @@ function saveRecipeDetails(data: { servings: number; mealType: 'breakfast' | 'lu
 
   const recipePlan = modalDays.value[editingDayIndex.value].recipes[editingRecipeIndex.value]
   if (recipePlan) {
-    recipePlan.servings = data.servings
+    recipePlan.servings = generalServings.value // Use general plan servings
     recipePlan.mealType = data.mealType
   }
 
@@ -805,9 +877,92 @@ function getRecipeDetailsForEditing(): { name: string; servings: number; mealTyp
   }
 }
 
+// Function to save shopping list state before navigation
+function saveShoppingListState(): void {
+  if (showShoppingListModal.value && currentShoppingList.value.length > 0 && currentShoppingListPlan.value) {
+    // Find the scrollable content area in the BaseDialog
+    const scrollContainer = document.querySelector('.fixed.z-50 .flex-1.overflow-y-auto') as HTMLElement
+    const scrollPosition = scrollContainer ? scrollContainer.scrollTop : 0
+
+    console.log('💾 Saving shopping list state before navigation')
+    savedShoppingListState.value = {
+      shoppingList: [...currentShoppingList.value],
+      plan: { ...currentShoppingListPlan.value },
+      scrollPosition
+    }
+    console.log('✅ Shopping list state saved to sessionStorage')
+  } else {
+    console.log('Cannot save state - modal not open or empty list', {
+      modalOpen: showShoppingListModal.value,
+      listLength: currentShoppingList.value?.length || 0,
+      hasPlan: !!currentShoppingListPlan.value
+    })
+  }
+}
+
 function navigateToRecipe(recipeId: string): void {
+  console.log('🔄 Navigating to recipe:', recipeId)
   router.push(`/recipe/${recipeId}`)
 }
+
+// Function to restore saved shopping list state
+function restoreShoppingListState(): void {
+  console.log('🔄 Restoring shopping list state from sessionStorage')
+  if (savedShoppingListState.value) {
+    const { shoppingList, plan, scrollPosition } = savedShoppingListState.value
+
+    console.log(`📋 Restoring ${shoppingList.length} items, plan: ${plan.name}`)
+
+    // Restore shopping list data
+    currentShoppingList.value = [...shoppingList]
+    currentShoppingListPlan.value = { ...plan }
+    showShoppingListModal.value = true
+
+    // Restore scroll position after modal is rendered
+    nextTick(() => {
+      const scrollContainer = document.querySelector('.fixed.z-50 .flex-1.overflow-y-auto') as HTMLElement
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollPosition
+        console.log(`📍 Scroll position restored to: ${scrollPosition}px`)
+      }
+    })
+
+    // Clear saved state
+    savedShoppingListState.value = null
+    console.log('🧹 Shopping list state cleared from sessionStorage')
+  }
+}
+
+// Watch for route changes to restore shopping list when returning to planner
+watch(
+  () => router.currentRoute.value.path,
+  (newPath) => {
+    console.log(`🧭 Route changed to: ${newPath}`)
+    if (newPath === '/planner' && savedShoppingListState.value) {
+      console.log('🔄 Found saved shopping list state, restoring...')
+      setTimeout(() => {
+        restoreShoppingListState()
+      }, 100)
+    }
+  },
+  { immediate: true }
+)
+
+// Also check on mount if there's saved state
+onMounted(() => {
+  console.log('🏗️ Planner component mounted')
+  if (savedShoppingListState.value) {
+    console.log('🔄 Found saved shopping list state on mount, restoring...')
+    setTimeout(() => {
+      restoreShoppingListState()
+    }, 200)
+  }
+})
+
+// Debug on unmount
+onUnmounted(() => {
+  console.log('Planner component unmounted')
+})
 
 // Helper function to translate meal type values
 function getMealTypeLabel(mealType: string): string {

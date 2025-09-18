@@ -224,7 +224,7 @@ class IndexedDBService {
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([SETTINGS_STORE], 'readwrite')
       const store = transaction.objectStore(SETTINGS_STORE)
-      const request = store.put({ key, value })
+      const request = store.put({ key, value: deepCloneSerializable(value) })
 
       request.onsuccess = () => {
         resolve()

@@ -100,6 +100,53 @@ export function generateAutoMealPlanPrompt(options: {
   return buildMealPlanPrompt(availableRecipes, options)
 }
 
+// Generate a more representative plan name
+function generatePlanName(
+  length: number,
+  servings: number,
+  mealTypes: string[],
+  preferences?: string[],
+  exclusions?: string[]
+): string {
+  const currentLanguage = getCurrentLanguageName()
+
+  // Base structure: duration + meal types
+  let nameParts = []
+
+  // Duration (e.g., "7-Day", "Weekly")
+  if (length === 7) {
+    nameParts.push(t('Weekly'))
+  } else if (length === 1) {
+    nameParts.push(t('Daily'))
+  } else {
+    nameParts.push(`${length}-${t('Day')}`)
+  }
+
+  // Meal types (e.g., "Lunch & Dinner", "Full Day")
+  if (mealTypes.length === 1) {
+    nameParts.push(t(mealTypes[0].charAt(0).toUpperCase() + mealTypes[0].slice(1)))
+  } else if (mealTypes.length === 2) {
+    const mealNames = mealTypes.map(type => t(type.charAt(0).toUpperCase() + type.slice(1)))
+    nameParts.push(mealNames.join(' & '))
+  } else if (mealTypes.length > 2) {
+    nameParts.push(t('Full Day'))
+  }
+
+  // Add preferences if available (limit to 2 most relevant)
+  if (preferences && preferences.length > 0) {
+    const relevantPrefs = preferences.slice(0, 2)
+    const prefText = relevantPrefs.map(pref => t(pref) || pref).join(', ')
+    nameParts.push(`(${prefText})`)
+  }
+
+  // Add servings info if not standard
+  if (servings !== 2) {
+    nameParts.push(`${servings}x ${t('servings')}`)
+  }
+
+  return nameParts.join(' ') + ` - ${currentLanguage}`
+}
+
 // Build prompt for meal planning
 function buildMealPlanPrompt(recipes: Recipe[], options: {
   length?: number
@@ -141,6 +188,9 @@ function buildMealPlanPrompt(recipes: Recipe[], options: {
     ? `${mealTypes.join(' and ')} plan`
     : 'meal plan'
 
+  // Generate more representative plan name
+  const planName = generatePlanName(length, servings, mealTypes, options.preferences, options.exclusions)
+
   return `You are a meal planning assistant. Create a balanced ${length}-day ${planType} using ONLY the recipes provided below as the source of truth.
 
 SOURCE OF TRUTH - AVAILABLE RECIPES:
@@ -170,7 +220,7 @@ ${options.includeSnacks ? '3. Include snacks as requested' : '3. Focus on main m
 OUTPUT FORMAT:
 Return ONLY a valid JSON object with this exact structure (copy this format exactly):
 {
-  "name": "${t('Auto-Generated Meal Plan')}",
+  "name": "${planName}",
   "days": [
     {
       "recipes": [
@@ -245,7 +295,8 @@ export function parseMealPlanResponse(response: string, availableRecipes: Recipe
       days: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      notes: planData.notes
+      notes: planData.notes,
+      servings: 2 // Default servings for auto-generated plans
     }
 
     // Process days with enhanced validation

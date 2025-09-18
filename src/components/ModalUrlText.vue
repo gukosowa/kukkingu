@@ -37,6 +37,15 @@
             {{ t('From pictures') }}
           </label>
         </div>
+        <div>
+          <div class="text-sm text-gray-600 mb-1">{{ t('Additional Instructions') }}</div>
+          <textarea
+            v-model="localAdditionalInstruction"
+            :placeholder="t('Additional instructions for GPT (optional)')"
+            rows="2"
+            class="w-full focus:ring-indigo-500 border text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md overflow-hidden resize-none"
+          />
+        </div>
       </div>
     </template>
 
@@ -78,6 +87,7 @@ const props = withDefaults(
     url?: string
     text?: string
     fromPicture?: boolean
+    additionalInstruction?: string
   }>(),
   {
     placeholderUrl: t('https://example.com'),
@@ -87,10 +97,11 @@ const props = withDefaults(
     url: '',
     text: '',
     fromPicture: false,
+    additionalInstruction: '',
   }
 )
 const emit = defineEmits<{
-  (e: 'confirm', v: { url: string; text: string; fromPicture: boolean }): void
+  (e: 'confirm', v: { url: string; text: string; fromPicture: boolean; additionalInstruction: string }): void
   (e: 'cancel'): void
   (e: 'update:modelValue', v: boolean): void
 }>()
@@ -103,6 +114,7 @@ const showModal = computed({
 const localUrl = ref(props.url)
 const localText = ref(props.text)
 const localFromPicture = ref(props.fromPicture)
+const localAdditionalInstruction = ref(props.additionalInstruction)
 const inputRef = ref<InstanceType<typeof SInput> | null>(null)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
@@ -120,6 +132,7 @@ watch(
       localUrl.value = props.url || ''
       localText.value = props.text || ''
       localFromPicture.value = props.fromPicture || false
+      localAdditionalInstruction.value = props.additionalInstruction || ''
       nextTick(() => {
         inputRef.value?.focus?.()
         autoResize()
@@ -134,6 +147,7 @@ function confirm() {
     url: (localUrl.value || '').trim(),
     text: (localText.value || '').trim(),
     fromPicture: localFromPicture.value,
+    additionalInstruction: (localAdditionalInstruction.value || '').trim(),
   })
   showModal.value = false
 }

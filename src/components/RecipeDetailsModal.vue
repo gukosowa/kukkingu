@@ -28,16 +28,13 @@
         </div>
       </div>
 
-      <!-- Servings -->
+      <!-- Servings (Read-only, shows general plan servings) -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('Servings') }}</label>
-        <SInput
-          v-model.number="selectedServings"
-          type="number"
-          :min="1"
-          :max="20"
-          class="w-full"
-        />
+        <div class="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-700">
+          {{ selectedServings }} {{ t('(general plan servings)') }}
+        </div>
+        <p class="text-xs text-gray-500 mt-1">{{ t('Servings are set at the plan level') }}</p>
       </div>
     </div>
 
