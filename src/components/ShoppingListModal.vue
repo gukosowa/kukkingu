@@ -27,16 +27,24 @@
         <p class="text-gray-500">{{ t('Your shopping list is empty') }}</p>
       </div>
 
-      <div v-else :class="denseMode ? 'space-y-2' : 'space-y-3'">
-        <div
-          v-for="item in sortedShoppingList"
-          :key="item.name + item.amountType"
+      <div v-else>
+        <TransitionGroup
+          name="shopping-item"
+          tag="div"
           :class="[
-            'flex items-center gap-3 rounded-lg bg-gray-900 text-white cursor-pointer hover:bg-gray-800',
-            denseMode ? 'p-2 text-sm' : 'p-3'
+            'shopping-list-container',
+            { 'dense-mode': denseMode }
           ]"
-          @click.stop="toggleItemChecked(item)"
         >
+          <div
+            v-for="item in sortedShoppingList"
+            :key="item.name + item.amountType"
+            :class="[
+              'flex items-center gap-3 rounded-lg bg-gray-900 text-white cursor-pointer hover:bg-gray-800 shopping-list-item',
+              denseMode ? 'p-2 text-sm' : 'p-3'
+            ]"
+            @click.stop="toggleItemChecked(item)"
+          >
           <Checkbox
             v-model="item.checked"
             @change="updateItemChecked(item)"
@@ -67,7 +75,8 @@
               {{ t('Used in') }}: {{ getRecipeNames(item.recipes).join(', ') }}
             </div>
           </div>
-        </div>
+          </div>
+        </TransitionGroup>
       </div>
     </template>
 
@@ -356,3 +365,42 @@ function showAppNotice(title: string, message: string, icon?: string) {
 }
 </script>
 
+<style scoped>
+.shopping-list-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.shopping-list-container:not(.dense-mode) {
+  gap: 0.75rem; /* space-y-3 */
+}
+
+.shopping-list-container.dense-mode {
+  gap: 0.5rem; /* space-y-2 */
+}
+
+/* Transition animations for shopping list items */
+.shopping-item-enter-active,
+.shopping-item-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.shopping-item-move {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.shopping-item-enter-from {
+  opacity: 0;
+  transform: translateY(-15px) scale(0.95);
+}
+
+.shopping-item-leave-to {
+  opacity: 0;
+  transform: translateY(15px) scale(0.95);
+}
+
+.shopping-item-leave-active {
+  position: absolute;
+  width: 100%;
+}
+</style>
