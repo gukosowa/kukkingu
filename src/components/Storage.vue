@@ -182,16 +182,26 @@ const recipes = computed({
 })
 let filterQuery = ref(globalSearchFilter.value)
 
-// Get all available tags, sorted alphabetically
-const allAvailableTags = computed(() => getAllTags())
+// Get available tags from currently filtered recipes, sorted alphabetically
+const allAvailableTags = computed(() => {
+  const filteredRecipes = recipes.value.filter(filterMatch)
+  const tagSet = new Set<string>()
+  filteredRecipes.forEach(recipe => {
+    if (recipe.tags) {
+      recipe.tags.forEach((tag: string) => tagSet.add(tag))
+    }
+  })
+  return Array.from(tagSet).sort((a, b) => a.localeCompare(b))
+})
 
-// Get tag counts - how many recipes have each tag
+// Get tag counts from currently filtered recipes
 const tagCounts = computed(() => {
   const counts: Record<string, number> = {}
+  const filteredRecipes = recipes.value.filter(filterMatch)
 
-  recipes.value.forEach(recipe => {
+  filteredRecipes.forEach(recipe => {
     if (recipe.tags) {
-      recipe.tags.forEach(tag => {
+      recipe.tags.forEach((tag: string) => {
         counts[tag] = (counts[tag] || 0) + 1
       })
     }
