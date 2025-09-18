@@ -249,6 +249,8 @@ function handleTouchStart(event: TouchEvent) {
   }
 
   if (event.touches.length === 2 && !isButton) {
+    // Transition into pinch mode: disable any active panning so we don't mix gestures
+    isPanning.value = false
     // Start pinch gesture (only if not on button)
     initialDistance.value = getDistance(event.touches[0], event.touches[1])
     initialZoom.value = zoomLevel.value
@@ -303,6 +305,15 @@ function handleTouchEnd(event: TouchEvent) {
   // End single-touch drag
   if (event.touches.length === 0) {
     isPanning.value = false
+  } else if (event.touches.length === 1) {
+    // Seamlessly transition from pinch to pan without jumping by
+    // seeding the pan start position with the remaining finger.
+    const remaining = event.touches[0]
+    if (remaining) {
+      isPanning.value = true
+      lastMouseX.value = remaining.clientX
+      lastMouseY.value = remaining.clientY
+    }
   }
 
   // Check if touch is on a button - if so, don't prevent default
