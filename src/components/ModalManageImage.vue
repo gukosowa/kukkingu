@@ -115,9 +115,61 @@
               ></div>
               <div
                 v-if="selectionRect"
-                class="absolute border-2 border-blue-500 bg-blue-500 bg-opacity-20 pointer-events-none"
+                class="absolute border-2 border-blue-500 bg-blue-500 bg-opacity-20"
                 :style="selectionStyle"
-              ></div>
+                @mousedown.stop="startMove"
+                @touchstart.stop.prevent="startMove"
+              >
+                <!-- Resize handles -->
+                <div
+                  class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+                  style="top: 0; left: 0; transform: translate(-50%, -50%);"
+                  @mousedown.stop="(e) => startResize(e, 'nw')"
+                  @touchstart.stop.prevent="(e) => startResize(e, 'nw')"
+                ></div>
+                <div
+                  class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+                  style="top: 0; left: 50%; transform: translate(-50%, -50%);"
+                  @mousedown.stop="(e) => startResize(e, 'n')"
+                  @touchstart.stop.prevent="(e) => startResize(e, 'n')"
+                ></div>
+                <div
+                  class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+                  style="top: 0; left: 100%; transform: translate(-50%, -50%);"
+                  @mousedown.stop="(e) => startResize(e, 'ne')"
+                  @touchstart.stop.prevent="(e) => startResize(e, 'ne')"
+                ></div>
+                <div
+                  class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+                  style="top: 50%; left: 0; transform: translate(-50%, -50%);"
+                  @mousedown.stop="(e) => startResize(e, 'w')"
+                  @touchstart.stop.prevent="(e) => startResize(e, 'w')"
+                ></div>
+                <div
+                  class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+                  style="top: 50%; left: 100%; transform: translate(-50%, -50%);"
+                  @mousedown.stop="(e) => startResize(e, 'e')"
+                  @touchstart.stop.prevent="(e) => startResize(e, 'e')"
+                ></div>
+                <div
+                  class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+                  style="top: 100%; left: 0; transform: translate(-50%, -50%);"
+                  @mousedown.stop="(e) => startResize(e, 'sw')"
+                  @touchstart.stop.prevent="(e) => startResize(e, 'sw')"
+                ></div>
+                <div
+                  class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+                  style="top: 100%; left: 50%; transform: translate(-50%, -50%);"
+                  @mousedown.stop="(e) => startResize(e, 's')"
+                  @touchstart.stop.prevent="(e) => startResize(e, 's')"
+                ></div>
+                <div
+                  class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+                  style="top: 100%; left: 100%; transform: translate(-50%, -50%);"
+                  @mousedown.stop="(e) => startResize(e, 'se')"
+                  @touchstart.stop.prevent="(e) => startResize(e, 'se')"
+                ></div>
+              </div>
             </div>
             <div class="mt-2 flex items-center justify-between">
               <div class="text-xs text-gray-500">
@@ -201,6 +253,10 @@ const naturalSize = ref<{ w: number; h: number } | null>(null)
 const selectionRect = ref<{ x: number; y: number; width: number; height: number } | null>(null)
 const isSelecting = ref(false)
 const startPoint = ref<{ x: number; y: number } | null>(null)
+const dragMode = ref<'draw' | 'move' | 'resize' | null>(null)
+const activeHandle = ref<'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw' | null>(null)
+const dragStartRect = ref<{ x: number; y: number; width: number; height: number } | null>(null)
+const moveOffset = ref<{ dx: number; dy: number } | null>(null)
 const backgroundArea = ref<BackgroundArea | null>(props.recipe?.backgroundArea || null)
 
 // Create a reactive local copy of the recipe
@@ -336,29 +392,117 @@ function getClientPoint(event: MouseEvent | TouchEvent, bounds: DOMRect) {
   return { x, y }
 }
 
+function pointInsideSelection(p: { x: number; y: number }, r: { x: number; y: number; width: number; height: number }) {
+  return p.x >= r.x && p.x <= r.x + r.width && p.y >= r.y && p.y <= r.y + r.height
+}
+
 function startSelect(event: MouseEvent | TouchEvent) {
   if (!imageEl.value) return
   const rect = imageEl.value.getBoundingClientRect()
   const p = getClientPoint(event, rect)
   isSelecting.value = true
   startPoint.value = p
+
+  if (selectionRect.value && pointInsideSelection(p, selectionRect.value)) {
+    // fallback move when dragging inside selection on background layer
+    dragMode.value = 'move'
+    dragStartRect.value = { ...selectionRect.value }
+    moveOffset.value = { dx: p.x - selectionRect.value.x, dy: p.y - selectionRect.value.y }
+    addDragListeners()
+    return
+  }
+
+  dragMode.value = 'draw'
   selectionRect.value = { x: p.x, y: p.y, width: 0, height: 0 }
+  addDragListeners()
+}
+
+function startMove(event: MouseEvent | TouchEvent) {
+  if (!imageEl.value || !selectionRect.value) return
+  const rect = imageEl.value.getBoundingClientRect()
+  const p = getClientPoint(event as MouseEvent, rect)
+  isSelecting.value = true
+  dragMode.value = 'move'
+  dragStartRect.value = { ...selectionRect.value }
+  moveOffset.value = { dx: p.x - selectionRect.value.x, dy: p.y - selectionRect.value.y }
+  addDragListeners()
+}
+
+function startResize(event: MouseEvent | TouchEvent, handle: 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw') {
+  if (!imageEl.value || !selectionRect.value) return
+  const rect = imageEl.value.getBoundingClientRect()
+  const p = getClientPoint(event as MouseEvent, rect)
+  isSelecting.value = true
+  dragMode.value = 'resize'
+  activeHandle.value = handle
+  startPoint.value = p
+  dragStartRect.value = { ...selectionRect.value }
+  addDragListeners()
 }
 
 function updateSelect(event: MouseEvent | TouchEvent) {
-  if (!isSelecting.value || !imageEl.value || !startPoint.value) return
+  if (!isSelecting.value || !imageEl.value) return
   const rect = imageEl.value.getBoundingClientRect()
   const p = getClientPoint(event, rect)
-  const x = Math.min(startPoint.value.x, p.x)
-  const y = Math.min(startPoint.value.y, p.y)
-  const w = Math.abs(p.x - startPoint.value.x)
-  const h = Math.abs(p.y - startPoint.value.y)
-  selectionRect.value = { x, y, width: w, height: h }
+
+  if (dragMode.value === 'draw') {
+    if (!startPoint.value) return
+    const x = Math.min(startPoint.value.x, p.x)
+    const y = Math.min(startPoint.value.y, p.y)
+    const w = Math.abs(p.x - startPoint.value.x)
+    const h = Math.abs(p.y - startPoint.value.y)
+    selectionRect.value = { x, y, width: w, height: h }
+    return
+  }
+
+  if (!selectionRect.value || !dragStartRect.value) return
+
+  if (dragMode.value === 'move') {
+    if (!moveOffset.value) return
+    let newX = p.x - moveOffset.value.dx
+    let newY = p.y - moveOffset.value.dy
+    newX = Math.max(0, Math.min(newX, rect.width - dragStartRect.value.width))
+    newY = Math.max(0, Math.min(newY, rect.height - dragStartRect.value.height))
+    selectionRect.value = { x: newX, y: newY, width: dragStartRect.value.width, height: dragStartRect.value.height }
+    return
+  }
+
+  if (dragMode.value === 'resize' && activeHandle.value) {
+    const minSize = 5
+    let { x, y, width, height } = dragStartRect.value
+    const endX = x + width
+    const endY = y + height
+
+    // Adjust based on handle
+    if (activeHandle.value.includes('n')) {
+      y = Math.max(0, Math.min(p.y, endY - minSize))
+      height = endY - y
+    }
+    if (activeHandle.value.includes('s')) {
+      const newBottom = Math.max(y + minSize, Math.min(p.y, rect.height))
+      height = newBottom - y
+    }
+    if (activeHandle.value.includes('w')) {
+      x = Math.max(0, Math.min(p.x, endX - minSize))
+      width = endX - x
+    }
+    if (activeHandle.value.includes('e')) {
+      const newRight = Math.max(x + minSize, Math.min(p.x, rect.width))
+      width = newRight - x
+    }
+
+    selectionRect.value = { x, y, width, height }
+  }
 }
 
 function endSelect() {
   if (!isSelecting.value || !imageEl.value || !selectionRect.value) {
     isSelecting.value = false
+    dragMode.value = null
+    activeHandle.value = null
+    dragStartRect.value = null
+    moveOffset.value = null
+    removeDragListeners()
     return
   }
   const rect = imageEl.value.getBoundingClientRect()
@@ -368,6 +512,25 @@ function endSelect() {
   const hPct = (selectionRect.value.height / rect.height) * 100
   backgroundArea.value = { xPct, yPct, wPct, hPct }
   isSelecting.value = false
+  dragMode.value = null
+  activeHandle.value = null
+  dragStartRect.value = null
+  moveOffset.value = null
+  removeDragListeners()
+}
+
+function addDragListeners() {
+  window.addEventListener('mousemove', updateSelect as unknown as EventListener, { passive: false })
+  window.addEventListener('mouseup', endSelect as unknown as EventListener, { passive: false })
+  window.addEventListener('touchmove', updateSelect as unknown as EventListener, { passive: false })
+  window.addEventListener('touchend', endSelect as unknown as EventListener, { passive: false })
+}
+
+function removeDragListeners() {
+  window.removeEventListener('mousemove', updateSelect as unknown as EventListener)
+  window.removeEventListener('mouseup', endSelect as unknown as EventListener)
+  window.removeEventListener('touchmove', updateSelect as unknown as EventListener)
+  window.removeEventListener('touchend', endSelect as unknown as EventListener)
 }
 
 function clearBackgroundArea() {

@@ -30,9 +30,60 @@
             <!-- Crop overlay -->
             <div
               v-if="cropRect"
-              class="absolute border-2 border-blue-500 bg-blue-500 bg-opacity-20 pointer-events-none"
+              class="absolute border-2 border-blue-500 bg-blue-500 bg-opacity-20"
               :style="cropStyle"
-            />
+              @mousedown.stop="startMoveCrop"
+              @touchstart.stop.prevent="startMoveCrop"
+            >
+              <div
+                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+                style="top: 0; left: 0; transform: translate(-50%, -50%);"
+                @mousedown.stop="(e) => startResizeCrop(e, 'nw')"
+                @touchstart.stop.prevent="(e) => startResizeCrop(e, 'nw')"
+              ></div>
+              <div
+                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+                style="top: 0; left: 50%; transform: translate(-50%, -50%);"
+                @mousedown.stop="(e) => startResizeCrop(e, 'n')"
+                @touchstart.stop.prevent="(e) => startResizeCrop(e, 'n')"
+              ></div>
+              <div
+                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+                style="top: 0; left: 100%; transform: translate(-50%, -50%);"
+                @mousedown.stop="(e) => startResizeCrop(e, 'ne')"
+                @touchstart.stop.prevent="(e) => startResizeCrop(e, 'ne')"
+              ></div>
+              <div
+                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+                style="top: 50%; left: 0; transform: translate(-50%, -50%);"
+                @mousedown.stop="(e) => startResizeCrop(e, 'w')"
+                @touchstart.stop.prevent="(e) => startResizeCrop(e, 'w')"
+              ></div>
+              <div
+                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+                style="top: 50%; left: 100%; transform: translate(-50%, -50%);"
+                @mousedown.stop="(e) => startResizeCrop(e, 'e')"
+                @touchstart.stop.prevent="(e) => startResizeCrop(e, 'e')"
+              ></div>
+              <div
+                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+                style="top: 100%; left: 0; transform: translate(-50%, -50%);"
+                @mousedown.stop="(e) => startResizeCrop(e, 'sw')"
+                @touchstart.stop.prevent="(e) => startResizeCrop(e, 'sw')"
+              ></div>
+              <div
+                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+                style="top: 100%; left: 50%; transform: translate(-50%, -50%);"
+                @mousedown.stop="(e) => startResizeCrop(e, 's')"
+                @touchstart.stop.prevent="(e) => startResizeCrop(e, 's')"
+              ></div>
+              <div
+                class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+                style="top: 100%; left: 100%; transform: translate(-50%, -50%);"
+                @mousedown.stop="(e) => startResizeCrop(e, 'se')"
+                @touchstart.stop.prevent="(e) => startResizeCrop(e, 'se')"
+              ></div>
+            </div>
           </div>
 
           <div class="text-sm text-gray-600 text-center">
@@ -94,9 +145,60 @@
           <!-- Crop overlay -->
           <div
             v-if="cropRect"
-            class="absolute border-2 border-blue-500 bg-blue-500 bg-opacity-20 pointer-events-none"
+            class="absolute border-2 border-blue-500 bg-blue-500 bg-opacity-20"
             :style="cropStyle"
-          />
+            @mousedown.stop="startMoveCrop"
+            @touchstart.stop.prevent="startMoveCrop"
+          >
+            <div
+              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+              style="top: 0; left: 0; transform: translate(-50%, -50%);"
+              @mousedown.stop="(e) => startResizeCrop(e, 'nw')"
+              @touchstart.stop.prevent="(e) => startResizeCrop(e, 'nw')"
+            ></div>
+            <div
+              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+              style="top: 0; left: 50%; transform: translate(-50%, -50%);"
+              @mousedown.stop="(e) => startResizeCrop(e, 'n')"
+              @touchstart.stop.prevent="(e) => startResizeCrop(e, 'n')"
+            ></div>
+            <div
+              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+              style="top: 0; left: 100%; transform: translate(-50%, -50%);"
+              @mousedown.stop="(e) => startResizeCrop(e, 'ne')"
+              @touchstart.stop.prevent="(e) => startResizeCrop(e, 'ne')"
+            ></div>
+            <div
+              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+              style="top: 50%; left: 0; transform: translate(-50%, -50%);"
+              @mousedown.stop="(e) => startResizeCrop(e, 'w')"
+              @touchstart.stop.prevent="(e) => startResizeCrop(e, 'w')"
+            ></div>
+            <div
+              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+              style="top: 50%; left: 100%; transform: translate(-50%, -50%);"
+              @mousedown.stop="(e) => startResizeCrop(e, 'e')"
+              @touchstart.stop.prevent="(e) => startResizeCrop(e, 'e')"
+            ></div>
+            <div
+              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+              style="top: 100%; left: 0; transform: translate(-50%, -50%);"
+              @mousedown.stop="(e) => startResizeCrop(e, 'sw')"
+              @touchstart.stop.prevent="(e) => startResizeCrop(e, 'sw')"
+            ></div>
+            <div
+              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nesw-resize"
+              style="top: 100%; left: 50%; transform: translate(-50%, -50%);"
+              @mousedown.stop="(e) => startResizeCrop(e, 's')"
+              @touchstart.stop.prevent="(e) => startResizeCrop(e, 's')"
+            ></div>
+            <div
+              class="absolute w-3 h-3 bg-white border border-blue-500 rounded-sm cursor-nwse-resize"
+              style="top: 100%; left: 100%; transform: translate(-50%, -50%);"
+              @mousedown.stop="(e) => startResizeCrop(e, 'se')"
+              @touchstart.stop.prevent="(e) => startResizeCrop(e, 'se')"
+            ></div>
+          </div>
         </div>
 
         <div class="text-sm text-gray-600 text-center">
@@ -168,6 +270,10 @@ interface CropRect {
 const cropRect = ref<CropRect | null>(null)
 const isCropping = ref(false)
 const startPoint = ref<{ x: number; y: number } | null>(null)
+const cropDragMode = ref<'draw' | 'move' | 'resize' | null>(null)
+const cropActiveHandle = ref<'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw' | null>(null)
+const cropDragStartRect = ref<CropRect | null>(null)
+const cropMoveOffset = ref<{ dx: number; dy: number } | null>(null)
 
 const cropStyle = computed(() => {
   if (!cropRect.value) return {}
@@ -232,7 +338,8 @@ function startCrop(event: MouseEvent | TouchEvent) {
   if (!canvas.value) return
 
   isCropping.value = true
-  cropRect.value = null
+  cropActiveHandle.value = null
+  cropDragMode.value = 'draw'
 
   const rect = canvas.value.getBoundingClientRect()
   const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX
@@ -242,6 +349,9 @@ function startCrop(event: MouseEvent | TouchEvent) {
     x: clientX - rect.left,
     y: clientY - rect.top
   }
+
+  cropRect.value = { x: startPoint.value.x, y: startPoint.value.y, width: 0, height: 0 }
+  addCropDragListeners()
 }
 
 function updateCrop(event: MouseEvent | TouchEvent) {
@@ -256,16 +366,103 @@ function updateCrop(event: MouseEvent | TouchEvent) {
   const currentX = clientX - rect.left
   const currentY = clientY - rect.top
 
-  cropRect.value = {
-    x: Math.min(startPoint.value.x, currentX),
-    y: Math.min(startPoint.value.y, currentY),
-    width: Math.abs(currentX - startPoint.value.x),
-    height: Math.abs(currentY - startPoint.value.y)
+  if (cropDragMode.value === 'draw') {
+    cropRect.value = {
+      x: Math.min(startPoint.value.x, currentX),
+      y: Math.min(startPoint.value.y, currentY),
+      width: Math.abs(currentX - startPoint.value.x),
+      height: Math.abs(currentY - startPoint.value.y)
+    }
+    return
+  }
+
+  if (!cropRect.value || !cropDragStartRect.value) return
+
+  if (cropDragMode.value === 'move') {
+    if (!cropMoveOffset.value) return
+    let newX = currentX - cropMoveOffset.value.dx
+    let newY = currentY - cropMoveOffset.value.dy
+    newX = Math.max(0, Math.min(newX, rect.width - cropDragStartRect.value.width))
+    newY = Math.max(0, Math.min(newY, rect.height - cropDragStartRect.value.height))
+    cropRect.value = { x: newX, y: newY, width: cropDragStartRect.value.width, height: cropDragStartRect.value.height }
+    return
+  }
+
+  if (cropDragMode.value === 'resize' && cropActiveHandle.value) {
+    const minSize = 5
+    let { x, y, width, height } = cropDragStartRect.value
+    const endX = x + width
+    const endY = y + height
+
+    if (cropActiveHandle.value.includes('n')) {
+      y = Math.max(0, Math.min(currentY, endY - minSize))
+      height = endY - y
+    }
+    if (cropActiveHandle.value.includes('s')) {
+      const newBottom = Math.max(y + minSize, Math.min(currentY, rect.height))
+      height = newBottom - y
+    }
+    if (cropActiveHandle.value.includes('w')) {
+      x = Math.max(0, Math.min(currentX, endX - minSize))
+      width = endX - x
+    }
+    if (cropActiveHandle.value.includes('e')) {
+      const newRight = Math.max(x + minSize, Math.min(currentX, rect.width))
+      width = newRight - x
+    }
+
+    cropRect.value = { x, y, width, height }
   }
 }
 
 function endCrop() {
   isCropping.value = false
+  cropDragMode.value = null
+  cropActiveHandle.value = null
+  cropDragStartRect.value = null
+  cropMoveOffset.value = null
+  removeCropDragListeners()
+}
+
+function startMoveCrop(event: MouseEvent | TouchEvent) {
+  if (!canvas.value || !cropRect.value) return
+  const rect = canvas.value.getBoundingClientRect()
+  const clientX = 'touches' in event ? event.touches[0].clientX : (event as MouseEvent).clientX
+  const clientY = 'touches' in event ? event.touches[0].clientY : (event as MouseEvent).clientY
+  const p = { x: clientX - rect.left, y: clientY - rect.top }
+  isCropping.value = true
+  cropDragMode.value = 'move'
+  cropDragStartRect.value = { ...cropRect.value }
+  cropMoveOffset.value = { dx: p.x - cropRect.value.x, dy: p.y - cropRect.value.y }
+  addCropDragListeners()
+}
+
+function startResizeCrop(event: MouseEvent | TouchEvent, handle: 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw') {
+  if (!canvas.value || !cropRect.value) return
+  const rect = canvas.value.getBoundingClientRect()
+  const clientX = 'touches' in event ? event.touches[0].clientX : (event as MouseEvent).clientX
+  const clientY = 'touches' in event ? event.touches[0].clientY : (event as MouseEvent).clientY
+  const p = { x: clientX - rect.left, y: clientY - rect.top }
+  isCropping.value = true
+  cropDragMode.value = 'resize'
+  cropActiveHandle.value = handle
+  startPoint.value = p
+  cropDragStartRect.value = { ...cropRect.value }
+  addCropDragListeners()
+}
+
+function addCropDragListeners() {
+  window.addEventListener('mousemove', updateCrop as unknown as EventListener, { passive: false })
+  window.addEventListener('mouseup', endCrop as unknown as EventListener, { passive: false })
+  window.addEventListener('touchmove', updateCrop as unknown as EventListener, { passive: false })
+  window.addEventListener('touchend', endCrop as unknown as EventListener, { passive: false })
+}
+
+function removeCropDragListeners() {
+  window.removeEventListener('mousemove', updateCrop as unknown as EventListener)
+  window.removeEventListener('mouseup', endCrop as unknown as EventListener)
+  window.removeEventListener('touchmove', updateCrop as unknown as EventListener)
+  window.removeEventListener('touchend', endCrop as unknown as EventListener)
 }
 
 function confirmCrop() {
