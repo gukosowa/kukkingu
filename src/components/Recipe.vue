@@ -275,7 +275,9 @@
                 :src="recipe.image"
                 alt="Recipe image"
                 class="max-w-full h-auto rounded-lg shadow-md"
+                :class="{ 'cursor-pointer hover:opacity-90 transition-opacity': !recipe.edit }"
                 style="max-height: 300px;"
+                @click="!recipe.edit ? openImageZoomModal() : null"
               />
               <template v-if="recipe.edit">
                 <div class="absolute top-2 right-2 flex space-x-2">
@@ -353,6 +355,10 @@
       @confirm="confirmImportJson"
       @cancel="cancelImportJson"
     />
+    <ModalImageZoom
+      v-model="showImageZoomModal"
+      :imageSrc="recipe.image || ''"
+    />
   </template>
 
 <script lang="ts" setup>
@@ -370,6 +376,7 @@ import ModalAskGpt from './ModalAskGpt.vue'
 import ModalNotice from './ModalNotice.vue'
 import ModalPromptReady from './ModalPromptReady.vue'
 import ModalCropImage from './ModalCropImage.vue'
+import ModalImageZoom from './ModalImageZoom.vue'
 import ModalInput from './ModalInput.vue'
 import TagInput from './TagInput.vue'
 import { t, currentLocale } from '~src/i18n'
@@ -489,6 +496,9 @@ const showCropModal = ref(false)
 // ModalImportJson state
 const showImportJsonModal = ref(false)
 const importJsonText = ref('')
+
+// ModalImageZoom state
+const showImageZoomModal = ref(false)
 
 function openAskGpt() {
   showAskGpt.value = true
@@ -915,6 +925,12 @@ async function openCropModal() {
 function confirmCropImage(croppedImage: string) {
   updateRecipeImage(croppedImage)
   showCropModal.value = false
+}
+
+function openImageZoomModal() {
+  if (recipe.value?.image) {
+    showImageZoomModal.value = true
+  }
 }
 
 function openChatGPTTab() {

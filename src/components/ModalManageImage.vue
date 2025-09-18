@@ -264,10 +264,16 @@ function removeImage() {
 }
 
 function save() {
+  // If no background area is selected but showAsBackground is enabled,
+  // save the default full-area object for consistency
+  const finalBackgroundArea = showAsBackground.value && !backgroundArea.value
+    ? { xPct: 0, yPct: 0, wPct: 100, hPct: 100 }
+    : backgroundArea.value
+
   emit('save', {
     image: localRecipe.value?.image,
     showAsBackground: showAsBackground.value,
-    backgroundArea: backgroundArea.value || null
+    backgroundArea: finalBackgroundArea
   })
   showModal.value = false
 }

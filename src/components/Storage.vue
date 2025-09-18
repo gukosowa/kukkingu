@@ -92,8 +92,9 @@
           <!-- Background overlay for text readability -->
           <div
             v-if="item.showAsBackground && item.image"
-            class="absolute inset-0 bg-gray-900 bg-opacity-40 rounded-xl backdrop-blur-[4px]"
+            class="absolute inset-0 bg-gray-900 bg-opacity-50 rounded-xl"
           ></div>
+
           <div class="flex-grow pr-2 relative z-10">
             <template v-if="item.rename">
               <SInput
@@ -141,7 +142,7 @@
             </template>
             <template v-else>
               <Button color="text-only" @click="() => initRename(index)">
-                <Icon icon="fal fa-pen" size="1rem" />
+                <Icon :icon="item.showAsBackground && item.image ? 'text-white/70 fal fa-pen' : 'fal fa-pen'" size="1rem" />
               </Button>
             </template>
           </div>
@@ -277,7 +278,16 @@ function saveImageSettings(data: { image?: string; showAsBackground: boolean; ba
     if (recipeIndex !== -1) {
       _recipes.value[recipeIndex].image = data.image
       _recipes.value[recipeIndex].showAsBackground = data.showAsBackground
-      _recipes.value[recipeIndex].backgroundArea = data.backgroundArea || null
+      // Only set backgroundArea if it's different from the default full area
+      const bgArea = data.backgroundArea
+      if (bgArea && (bgArea.xPct !== 0 || bgArea.yPct !== 0 || bgArea.wPct !== 100 || bgArea.hPct !== 100)) {
+        _recipes.value[recipeIndex].backgroundArea = bgArea
+      } else if (!bgArea) {
+        _recipes.value[recipeIndex].backgroundArea = null
+      } else {
+        // If it's the default full area, don't save it to keep data clean
+        _recipes.value[recipeIndex].backgroundArea = null
+      }
     }
   }
   showImageModal.value = false
@@ -287,23 +297,43 @@ function saveImageSettings(data: { image?: string; showAsBackground: boolean; ba
 function computeBackgroundStyle(item: any) {
   const base: any = {
     backgroundImage: `url(${item.image})`,
-    backgroundRepeat: 'no-repeat'
+    backgroundRepeat: 'no-repeat',
+    // We'll scale the image so that the selected area's width spans the full row width.
+    // Vertically, the image will behave similar to cover (top/bottom can crop depending on content height).
+    backgroundSize: ''
   }
-  const area = item.backgroundArea
-  if (area && typeof area.xPct === 'number') {
-    // Use background-position and background-size to show only selected rect
-    // Strategy: set background-size so that 100% corresponds to image natural size scaled to container width
-    // Then offset background-position to align selected x/y to container top-left, and size to cover selected area
-    // We approximate by setting backgroundSize to (100 / wPct * 100)%
-    const sizePct = area.wPct > 0 ? (100 / area.wPct) * 100 : 100
-    const posX = area.xPct > 0 ? `-${area.xPct}%` : '0%'
-    const posY = area.yPct > 0 ? `-${area.yPct}%` : '0%'
-    base.backgroundSize = `${sizePct}% auto`
-    base.backgroundPosition = `${posX} ${posY}`
-  } else {
-    base.backgroundSize = 'cover'
-    base.backgroundPosition = 'center'
+
+  // Always default to full image (0, 0, 100, 100) if backgroundArea is null/undefined or invalid
+  let area = { xPct: 0, yPct: 0, wPct: 100, hPct: 100 }
+
+  if (item.backgroundArea &&
+      typeof item.backgroundArea.xPct === 'number' &&
+      typeof item.backgroundArea.yPct === 'number' &&
+      typeof item.backgroundArea.wPct === 'number' &&
+      typeof item.backgroundArea.hPct === 'number') {
+    area = item.backgroundArea
   }
+
+  // Compute horizontal scaling so the selected area's width fills the row completely.
+  // Example: if selected width is 50% of the image, set background-size to 200% (image twice the row width).
+  const safeWidth = Math.max(1, Math.min(100, area.wPct))
+  const scaledWidthPercent = (10000 / safeWidth) // equals 100 / (wPct/100)
+  base.backgroundSize = `${scaledWidthPercent}% auto`
+
+  // Compute horizontal position so the selected area's left edge aligns to the row's left edge.
+  // Derivation: posX = x / (1 - w), where x and w are [0..1].
+  // Guard when w == 100% (no horizontal selection) -> center horizontally.
+  let posXPercent = 50
+  if (safeWidth < 100) {
+    const denom = 100 - safeWidth
+    posXPercent = Math.max(0, Math.min(100, (area.xPct / denom) * 100))
+  }
+
+  // Vertical position: use the selection's vertical center as the reference.
+  // Exact centering needs container/image height, which we don't have. Using percentage keeps it intuitive.
+  const centerY = Math.max(0, Math.min(100, area.yPct + area.hPct / 2))
+  base.backgroundPosition = `${posXPercent}% ${centerY}%`
+
   return base
 }
 
