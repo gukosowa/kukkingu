@@ -223,5 +223,7 @@
   "Export to file": "ファイルにエクスポート",
   "Load from file": "ファイルから読み込み",
   "German": "ドイツ語",
-  "Japanese": "日本語"
+  "Japanese": "日本語",
+  "Optimize Image": "画像を最適化",
+  "Optimizing...": "最適化中..."
 }

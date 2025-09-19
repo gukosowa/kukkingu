@@ -19,7 +19,8 @@
             <img
               :src="localRecipe.image"
               alt="Recipe image"
-              class="block max-w-full h-auto"
+              class="block max-w-full h-auto cursor-zoom-in"
+              @click="openZoomModal"
             />
             <div class="absolute top-2 right-2 flex space-x-2">
               <Button
@@ -62,10 +63,22 @@
             @input="handleContentEditableInput"
           ></div>
 
-          <Button @click="triggerFileInput" color="gray" class="!text-sm">
-            <Icon icon="fal fa-plus" class="mr-2" size="1rem" />
-            {{ localRecipe.image ? t('Replace Image') : t('Add Image') }}
-          </Button>
+          <div class="flex flex-wrap flex-row justify-center gap-2">
+            <Button @click="triggerFileInput" color="gray" class="!text-sm">
+              <Icon icon="fal fa-plus" class="mr-2" size="1rem" />
+              {{ localRecipe.image ? t('Replace Image') : t('Add Image') }}
+            </Button>
+            <Button
+              v-if="localRecipe.image"
+              @click="optimizeExistingImage"
+              color="gray"
+              class="!text-sm"
+              :disabled="isOptimizingImage"
+            >
+              <Icon icon="fal fa-compress" class="mr-2" size="1rem" />
+              {{ isOptimizingImage ? t('Optimizing...') : t('Optimize') }}
+            </Button>
+          </div>
         </div>
 
         <!-- Background Display Option -->
@@ -216,6 +229,11 @@
     :imageSrc="localRecipe.image || ''"
     @confirm="confirmCrop"
   />
+  <ModalImageZoom
+    v-if="localRecipe.image"
+    v-model="showZoomModal"
+    :imageSrc="localRecipe.image"
+  />
 </template>
 
 <script lang="ts" setup>
@@ -224,9 +242,10 @@ import BaseDialog from './BaseDialog.vue'
 import Button from './Button.vue'
 import Icon from './Icon.vue'
 import ModalCropImage from './ModalCropImage.vue'
+import ModalImageZoom from './ModalImageZoom.vue'
 import { t } from '~src/i18n'
 import { isValidImageFile, pasteImageFromClipboard } from '~src/services/indexeddb'
-import { optimizeImageFile } from '~src/services/imageOptimization'
+import { optimizeImageFile, optimizeImageBlob } from '~src/services/imageOptimization'
 
 interface Props {
   modelValue: boolean
@@ -257,7 +276,9 @@ const showModal = computed({
 const fileInput = ref<HTMLInputElement | null>(null)
 const pasteArea = ref<HTMLDivElement | null>(null)
 const showCropModal = ref(false)
+const showZoomModal = ref(false)
 const showAsBackground = ref(props.recipe?.showAsBackground || false)
+const isOptimizingImage = ref(false)
 
 // Image & selection for background area
 const imageEl = ref<HTMLImageElement | null>(null)
@@ -282,6 +303,7 @@ watch(() => props.recipe, (newRecipe) => {
     showAsBackground.value = newRecipe.showAsBackground || false
     backgroundArea.value = newRecipe.backgroundArea || null
     selectionRect.value = null
+    showZoomModal.value = false
   }
 }, { immediate: true, deep: true })
 
@@ -323,6 +345,11 @@ async function openCropModal() {
   }
 }
 
+function openZoomModal() {
+  if (!localRecipe.value?.image) return
+  showZoomModal.value = true
+}
+
 function confirmCrop(croppedImage: string) {
   localRecipe.value.image = croppedImage
   showCropModal.value = false
@@ -330,6 +357,7 @@ function confirmCrop(croppedImage: string) {
 
 function removeImage() {
   localRecipe.value.image = undefined
+  showZoomModal.value = false
 }
 
 function save() {
@@ -381,6 +409,21 @@ async function handlePaste(event: ClipboardEvent) {
     }
   } catch (error) {
     console.error('Failed to paste image:', error)
+  }
+}
+
+async function optimizeExistingImage() {
+  if (!localRecipe.value?.image || isOptimizingImage.value) return
+  try {
+    isOptimizingImage.value = true
+    const response = await fetch(localRecipe.value.image)
+    const blob = await response.blob()
+    const optimizedBase64 = await optimizeImageBlob(blob)
+    localRecipe.value.image = optimizedBase64
+  } catch (error) {
+    console.error('Failed to optimize existing image:', error)
+  } finally {
+    isOptimizingImage.value = false
   }
 }
 

@@ -32,7 +32,7 @@
 
     <button
           type="button"
-          class="ml-3 text-gray-600 hover:text-gray-800 text-right"
+          class="ml-3 text-gray-600 hover:text-gray-800 text-right my-2"
           v-if="allAvailableTags.length == 0"
           @click.stop.prevent="toggleBulkEditMode"
         >
@@ -535,7 +535,7 @@ function thumbButtonStyle(item: any) {
     backgroundRepeat: 'no-repeat',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    backgroundColor: 'rgba(17, 24, 39, 0.65)',
+    backgroundColor: 'white',
     opacity: src ? 1 : 0,
     pointerEvents: src ? 'auto' : 'none',
     transition: 'opacity 90ms ease-out'
