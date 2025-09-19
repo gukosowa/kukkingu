@@ -396,6 +396,7 @@ import { buildAskRecipePrompt } from '~src/services/prompt'
 import { normalizeAmountType } from '~src/services/units'
 import { isValidImageFile, pasteImageFromClipboard } from '~src/services/indexeddb'
 import { optimizeImageFile } from '~src/services/imageOptimization'
+import { handlePromptNoticeOk } from '~src/services/notice'
 // no auto-opening; we'll copy prompt and show CTA
 
 const route = useRoute()
@@ -853,7 +854,9 @@ function showPromptReady(message: string, aiService: 'chatgpt' | 'gemini' = 'cha
 
 function handleGoToAI() {
   if (promptReadyGotoUrl.value) {
-    window.open(promptReadyGotoUrl.value, '_blank')
+    handlePromptNoticeOk(promptReadyGotoUrl.value, openImportJson)
+  } else {
+    openImportJson()
   }
 }
 
