@@ -39,7 +39,7 @@
         </span>
         <button
           type="button"
-          class="ml-3 text-gray-600 hover:text-gray-800 underline decoration-dotted"
+          class="ml-3 text-gray-600 hover:text-gray-800"
           @click.stop.prevent="toggleBulkEditMode"
         >
           {{ isBulkEditMode ? t('View mode') : t('Edit mode') }}
@@ -82,6 +82,7 @@
       :recipe="selectedRecipe"
       @save="saveImageSettings"
     />
+    <ModalImageZoom v-model="showZoomModal" :imageSrc="zoomImageSrc" />
 
     <TransitionGroup :name="transitionName" tag="div" class="flex-grow" appear>
       <div
@@ -92,17 +93,26 @@
         class="ov-item"
       >
         <div
-          class="flex items-baseline rounded-xl px-2 py-2 my-1"
+          class="relative flex items-baseline rounded-xl px-2 py-2 my-1"
           :class="[
-            item.showAsBackground && item.image ? 'relative overflow-hidden' : 'bg-gray-300'
+            item.showAsBackground && item.image ? 'overflow-hidden' : 'bg-gray-300'
           ]"
           :style="item.showAsBackground && item.image ? computeBackgroundStyle(item) : {}"
         >
           <!-- Background overlay for text readability -->
           <div
             v-if="item.showAsBackground && item.image"
-            class="absolute inset-0 bg-gray-900 bg-opacity-50 rounded-xl"
+            class="absolute inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm rounded-xl"
           ></div>
+          <!-- Right-side non-blocking square thumbnail -->
+          <button
+            v-if="item.image"
+            type="button"
+            class="absolute right-2 top-1/2 -translate-y-1/2 w-14 h-14 rounded-lg overflow-hidden border border-white/40 shadow z-0"
+            :style="computeThumbStyle(item)"
+            @click.stop="openZoom(item)"
+            aria-label="Open image"
+          ></button>
 
           <div class="flex-grow pr-2 relative z-10">
             <template v-if="item.rename">
@@ -175,6 +185,7 @@ import Icon from './Icon.vue'
 import ModalConfirm from './ModalConfirm.vue'
 import ModalInput from './ModalInput.vue'
 import ModalManageImage from './ModalManageImage.vue'
+import ModalImageZoom from './ModalImageZoom.vue'
 
 const router = useRouter()
 const recipes = computed({
@@ -222,6 +233,8 @@ let toastMessage = ref('')
 let toastTimer: number | null = null
 const transitionName = ref('ov')
 const isBulkEditMode = ref(false)
+let showZoomModal = ref(false)
+let zoomImageSrc = ref('')
 
 const route = useRoute()
 
@@ -347,6 +360,44 @@ function computeBackgroundStyle(item: any) {
   base.backgroundPosition = `${posXPercent}% ${centerY}%`
 
   return base
+}
+
+function computeThumbStyle(item: any) {
+  const base: any = {
+    backgroundImage: `url(${item.image})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: '',
+    backgroundPosition: ''
+  }
+
+  let area = { xPct: 0, yPct: 0, wPct: 100, hPct: 100 }
+  if (
+    item.backgroundArea &&
+    typeof item.backgroundArea.xPct === 'number' &&
+    typeof item.backgroundArea.yPct === 'number' &&
+    typeof item.backgroundArea.wPct === 'number' &&
+    typeof item.backgroundArea.hPct === 'number'
+  ) {
+    area = item.backgroundArea
+  }
+
+  const safeWidth = Math.max(1, Math.min(100, area.wPct))
+  const safeHeight = Math.max(1, Math.min(100, area.hPct))
+  const limiting = Math.min(safeWidth, safeHeight)
+  const scaledPercent = 10000 / limiting
+  base.backgroundSize = `${scaledPercent}% auto`
+
+  const centerX = Math.max(0, Math.min(100, area.xPct + safeWidth / 2))
+  const centerY = Math.max(0, Math.min(100, area.yPct + safeHeight / 2))
+  base.backgroundPosition = `${centerX}% ${centerY}%`
+
+  return base
+}
+
+function openZoom(item: any) {
+  if (!item?.image) return
+  zoomImageSrc.value = item.image
+  showZoomModal.value = true
 }
 
 function isTagHighlighted(tag: string): boolean {
