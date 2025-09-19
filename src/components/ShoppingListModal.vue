@@ -9,13 +9,24 @@
             </div>
             <div class="text-sm text-gray-500 mt-1">{{ planName }}</div>
           </div>
-          <button
-            @click="denseMode = !denseMode"
-            class="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            :title="denseMode ? t('Normal view') : t('Compact view')"
-          >
-            <Icon :icon="denseMode ? 'fal fa-expand' : 'fal fa-compress'" size="1rem" class="text-gray-600" />
-          </button>
+          <div class="flex items-center gap-2">
+            <button
+              v-if="hasNotes"
+              @click="showNotes = !showNotes"
+              class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600"
+              :title="showNotes ? t('Hide notes') : t('Show notes')"
+            >
+              <Icon :icon="showNotes ? 'fal fa-eye-slash' : 'fal fa-eye'" size="0.9rem" class="mr-2" />
+              <span class="text-sm font-medium">{{ t('Notes') }}</span>
+            </button>
+            <button
+              @click="denseMode = !denseMode"
+              class="p-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center"
+              :title="denseMode ? t('Normal view') : t('Compact view')"
+            >
+              <Icon :icon="denseMode ? 'fal fa-expand' : 'fal fa-compress'" size="1rem" class="text-gray-600" />
+            </button>
+          </div>
         </div>
       </div>
     </template>
@@ -45,36 +56,48 @@
             ]"
             @click.stop="toggleItemChecked(item)"
           >
-          <Checkbox
-            v-model="item.checked"
-            @change="updateItemChecked(item)"
-            @click.stop
-            class="flex-shrink-0"
-          />
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <span class="font-medium text-white truncate">{{ item.name }}</span>
-              <span class="text-sm text-gray-300 flex-shrink-0">
-                <template v-if="unitBefore(item.amountType)">
-                  {{ unitLabel(item.amountType) }} {{ formatAmount(item.amount) }}
-                </template>
-                <template v-else>
-                  {{ formatAmount(item.amount) }} {{ unitLabel(item.amountType) }}
-                </template>
-              </span>
-              <button
-                v-if="item.recipes.length > 0"
-                @click.stop="showRecipeInfo(item)"
-                class="text-gray-400 hover:text-gray-200 p-1 rounded-full hover:bg-gray-600 transition-colors flex-shrink-0"
-                :title="t('Show recipes using this ingredient')"
+            <Checkbox
+              v-model="item.checked"
+              @change="updateItemChecked(item)"
+              @click.stop
+              class="flex-shrink-0"
+            />
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="font-medium text-white truncate">{{ item.name }}</span>
+                <span class="text-sm text-gray-300 flex-shrink-0">
+                  <template v-if="unitBefore(item.amountType)">
+                    {{ unitLabel(item.amountType) }} {{ formatAmount(item.amount) }}
+                  </template>
+                  <template v-else>
+                    {{ formatAmount(item.amount) }} {{ unitLabel(item.amountType) }}
+                  </template>
+                </span>
+                <button
+                  v-if="item.recipes.length > 0"
+                  @click.stop="showRecipeInfo(item)"
+                  class="text-gray-400 hover:text-gray-200 p-1 rounded-full hover:bg-gray-600 transition-colors flex-shrink-0"
+                  :title="t('Show recipes using this ingredient')"
+                >
+                  <Icon icon="fal fa-question-circle" size="0.8rem" />
+                </button>
+              </div>
+              <div v-if="item.recipes.length > 0 && !denseMode" class="text-xs text-gray-300 mt-1">
+                {{ t('Used in') }}: {{ getRecipeNames(item.recipes).join(', ') }}
+              </div>
+              <div
+                v-if="showNotes && getItemNotes(item).length > 0 && !denseMode"
+                class="text-xs text-gray-400 mt-1 space-y-1"
               >
-                <Icon icon="fal fa-question-circle" size="0.8rem" />
-              </button>
+                <div
+                  v-for="(note, noteIndex) in getItemNotes(item)"
+                  :key="noteIndex"
+                  class="leading-snug"
+                >
+                  {{ note }}
+                </div>
+              </div>
             </div>
-            <div v-if="item.recipes.length > 0 && !denseMode" class="text-xs text-gray-300 mt-1">
-              {{ t('Used in') }}: {{ getRecipeNames(item.recipes).join(', ') }}
-            </div>
-          </div>
           </div>
         </TransitionGroup>
       </div>
@@ -184,6 +207,7 @@ const currentRecipeList = ref<string[]>([])
 
 // Dense mode state (local to this modal)
 const denseMode = ref(false)
+const showNotes = ref(false)
 
 // Computed
 const checkedCount = computed(() =>
@@ -205,6 +229,18 @@ const sortedShoppingList = computed(() => {
   // Return unchecked items first, then checked items
   return [...unchecked, ...checked]
 })
+
+const hasNotes = computed(() =>
+  props.shoppingList.some(item => getItemNotes(item).length > 0)
+)
+
+watch(hasNotes, (value) => {
+  if (!value) {
+    showNotes.value = false
+  } else if (!showNotes.value) {
+    showNotes.value = true
+  }
+}, { immediate: true })
 
 // Functions
 function close() {
@@ -228,14 +264,13 @@ function toggleItemChecked(item: ShoppingListItem) {
 }
 
 function formatAmount(amount: number): string {
-  // Format amount with appropriate precision
+  if (!Number.isFinite(amount)) {
+    return '0'
+  }
   if (amount % 1 === 0) {
     return amount.toString()
-  } else if (amount < 0.1) {
-    return amount.toFixed(2)
-  } else {
-    return amount.toFixed(1)
   }
+  return Math.ceil(amount).toString()
 }
 
 function getRecipeNames(recipeIds: string[]): string[] {
@@ -243,6 +278,22 @@ function getRecipeNames(recipeIds: string[]): string[] {
     const recipe = recipes.value.find(r => r.id === recipeId)
     return recipe?.name || recipeId
   })
+}
+
+function getItemNotes(item: ShoppingListItem): string[] {
+  if (!item.notes) {
+    return []
+  }
+  const uniqueNotes = new Set<string>()
+  item.notes.forEach(note => {
+    if (typeof note === 'string') {
+      const trimmed = note.trim()
+      if (trimmed) {
+        uniqueNotes.add(trimmed)
+      }
+    }
+  })
+  return Array.from(uniqueNotes)
 }
 
 async function shareShoppingList() {
@@ -262,7 +313,7 @@ async function shareShoppingList() {
   const allRecipeIds = [...new Set(sortedItems.flatMap(item => item.recipes))]
   const allRecipeNames = getRecipeNames(allRecipeIds)
   const recipeList = allRecipeNames.join(', ')
-  let shareText = `${t('Shoppinglist for:')} ${recipeList}\n`
+  let shareText = `${t('Shoppinglist for:')} ${recipeList}\n\n`
 
   sortedItems.forEach(item => {
     const recipeNames = getRecipeNames(item.recipes)
