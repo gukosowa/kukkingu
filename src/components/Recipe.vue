@@ -382,7 +382,8 @@ import TagInput from './TagInput.vue'
 import { t, currentLocale } from '~src/i18n'
 import { buildAskRecipePrompt } from '~src/services/prompt'
 import { normalizeAmountType } from '~src/services/units'
-import { fileToBase64, isValidImageFile, pasteImageFromClipboard } from '~src/services/indexeddb'
+import { isValidImageFile, pasteImageFromClipboard } from '~src/services/indexeddb'
+import { optimizeImageFile } from '~src/services/imageOptimization'
 // no auto-opening; we'll copy prompt and show CTA
 
 const route = useRoute()
@@ -853,14 +854,14 @@ async function handleFileSelect(event: Event) {
   const file = target.files?.[0]
   if (file && isValidImageFile(file)) {
     try {
-      const base64 = await fileToBase64(file)
+      const base64 = await optimizeImageFile(file)
       updateRecipeImage(base64)
     } catch (error) {
       console.error('Failed to process image file:', error)
       showAppNotice(t('Error'), t('Failed to process image file'), 'fal fa-exclamation-triangle')
     }
   } else if (file) {
-    showAppNotice(t('Invalid file'), t('Please select a valid image file (JPEG, PNG, GIF, WebP) under 5MB'), 'fal fa-exclamation-triangle')
+    showAppNotice(t('Invalid file'), t('Please select a valid image file (JPEG, PNG, GIF, WebP) under 50MB'), 'fal fa-exclamation-triangle')
   }
   // Clear the input
   if (target) target.value = ''

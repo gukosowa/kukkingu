@@ -225,7 +225,8 @@ import Button from './Button.vue'
 import Icon from './Icon.vue'
 import ModalCropImage from './ModalCropImage.vue'
 import { t } from '~src/i18n'
-import { fileToBase64, isValidImageFile, pasteImageFromClipboard } from '~src/services/indexeddb'
+import { isValidImageFile, pasteImageFromClipboard } from '~src/services/indexeddb'
+import { optimizeImageFile } from '~src/services/imageOptimization'
 
 interface Props {
   modelValue: boolean
@@ -298,7 +299,7 @@ async function handleFileSelect(event: Event) {
   const file = target.files?.[0]
   if (file && isValidImageFile(file)) {
     try {
-      const base64 = await fileToBase64(file)
+      const base64 = await optimizeImageFile(file)
       // Update the recipe image temporarily for preview
       localRecipe.value.image = base64
     } catch (error) {

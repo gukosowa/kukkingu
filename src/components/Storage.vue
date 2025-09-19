@@ -27,9 +27,17 @@
           <Icon icon="fal fa-times-circle" size="1.1rem" />
         </button>
       </div>
-      <Button class="ml-2 flex-shrink" @click="toggleBulkEditMode">{{ isBulkEditMode ? t('View mode') : t('Edit mode') }}</Button>
       <Button class="ml-2 flex-shrink" @click="openCreateModal">{{ t('Create') }}</Button>
     </div>
+
+    <button
+          type="button"
+          class="ml-3 text-gray-600 hover:text-gray-800 text-right"
+          v-if="allAvailableTags.length == 0"
+          @click.stop.prevent="toggleBulkEditMode"
+        >
+          {{ isBulkEditMode ? t('View mode') : t('Edit mode') }}
+        </button>
 
     <!-- Tag Filter Details/Summary -->
     <details class="mb-3 mt-2 mx-2" v-if="allAvailableTags.length > 0">
@@ -364,6 +372,9 @@ function computeBackgroundStyle(item: any) {
 // Precise square thumbnail generation via offscreen canvas to avoid CSS % mapping issues
 const thumbSrcById = ref<Record<string, string>>({})
 const thumbKeyById = ref<Record<string, string>>({})
+const thumbLoadingKeys = new Set<string>()
+let thumbStorage: Storage | null | undefined
+const thumbStoragePrefix = 'storageThumb:'
 
 function getNormalizedArea(item: any) {
   const a = item?.backgroundArea
@@ -391,11 +402,48 @@ function getThumbCacheKey(item: any): string {
   return `${item?.id || 'no-id'}|${imgKey}|${area.xPct},${area.yPct},${area.wPct},${area.hPct}`
 }
 
+function getThumbStorageSafely(): Storage | null {
+  if (thumbStorage !== undefined) {
+    return thumbStorage
+  }
+  if (typeof window === 'undefined') {
+    thumbStorage = null
+    return thumbStorage
+  }
+  try {
+    thumbStorage = window.sessionStorage
+  } catch (err) {
+    thumbStorage = null
+  }
+  return thumbStorage
+}
+
+function isDefaultBackgroundArea(area: { xPct: number; yPct: number; wPct: number; hPct: number } | null | undefined): boolean {
+  if (!area) return true
+  const nearly = (value: number, target: number) => Math.abs((value ?? target) - target) < 0.001
+  return nearly(area.xPct ?? 0, 0) && nearly(area.yPct ?? 0, 0) && nearly(area.wPct ?? 100, 100) && nearly(area.hPct ?? 100, 100)
+}
+
 function generateThumb(item: any) {
   if (!item?.image) return
   const key = getThumbCacheKey(item)
-  const prev = thumbKeyById.value[item.id || 'no-id']
-  if (prev === key && thumbSrcById.value[item.id || 'no-id']) return
+  const id = item?.id || 'no-id'
+  const prev = thumbKeyById.value[id]
+  const existing = thumbSrcById.value[id]
+  if (prev === key && existing) return
+
+  const storage = getThumbStorageSafely()
+  if (!existing && storage) {
+    const stored = storage.getItem(`${thumbStoragePrefix}${key}`)
+    if (stored) {
+      thumbSrcById.value[id] = stored
+      thumbKeyById.value[id] = key
+      return
+    }
+  }
+
+  if (thumbLoadingKeys.has(key)) return
+  thumbLoadingKeys.add(key)
 
   const img = new Image()
   img.onload = () => {
@@ -403,25 +451,6 @@ function generateThumb(item: any) {
       const area = getNormalizedArea(item)
       const iw = img.naturalWidth || img.width
       const ih = img.naturalHeight || img.height
-
-      const srcX = Math.round((area.xPct / 100) * iw)
-      const srcY = Math.round((area.yPct / 100) * ih)
-      const srcW = Math.round((area.wPct / 100) * iw)
-      const srcH = Math.round((area.hPct / 100) * ih)
-
-      // Centered square inside the selected rectangle
-      const edge = Math.max(1, Math.min(srcW, srcH))
-      const centerX = srcX + srcW / 2
-      const centerY = srcY + srcH / 2
-      let sqX = Math.round(centerX - edge / 2)
-      let sqY = Math.round(centerY - edge / 2)
-
-      // Clamp to image bounds
-      if (sqX < 0) sqX = 0
-      if (sqY < 0) sqY = 0
-      if (sqX + edge > iw) sqX = Math.max(0, iw - edge)
-      if (sqY + edge > ih) sqY = Math.max(0, ih - edge)
-
       const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1))
       const targetCssSize = 56 // Tailwind w-14 = 3.5rem ≈ 56px at base 16px
       const size = targetCssSize * dpr
@@ -429,22 +458,64 @@ function generateThumb(item: any) {
       canvas.width = size
       canvas.height = size
       const ctx = canvas.getContext('2d')
-      if (!ctx) return
+      if (!ctx) throw new Error('no canvas context')
       ctx.imageSmoothingQuality = 'high'
-      ctx.drawImage(img, sqX, sqY, edge, edge, 0, 0, size, size)
+      ctx.clearRect(0, 0, size, size)
 
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
-      thumbSrcById.value[item.id || 'no-id'] = dataUrl
-      thumbKeyById.value[item.id || 'no-id'] = key
+      let dataUrl = ''
+
+      if (isDefaultBackgroundArea(item.backgroundArea)) {
+        const scale = Math.min(size / iw, size / ih)
+        const drawW = iw * scale
+        const drawH = ih * scale
+        const offsetX = (size - drawW) / 2
+        const offsetY = (size - drawH) / 2
+        ctx.drawImage(img, 0, 0, iw, ih, offsetX, offsetY, drawW, drawH)
+      } else {
+        const srcX = Math.round((area.xPct / 100) * iw)
+        const srcY = Math.round((area.yPct / 100) * ih)
+        const srcW = Math.round((area.wPct / 100) * iw)
+        const srcH = Math.round((area.hPct / 100) * ih)
+
+        // Centered square inside the selected rectangle
+        const edge = Math.max(1, Math.min(srcW, srcH))
+        const centerX = srcX + srcW / 2
+        const centerY = srcY + srcH / 2
+        let sqX = Math.round(centerX - edge / 2)
+        let sqY = Math.round(centerY - edge / 2)
+
+        // Clamp to image bounds
+        if (sqX < 0) sqX = 0
+        if (sqY < 0) sqY = 0
+        if (sqX + edge > iw) sqX = Math.max(0, iw - edge)
+        if (sqY + edge > ih) sqY = Math.max(0, ih - edge)
+
+        ctx.drawImage(img, sqX, sqY, edge, edge, 0, 0, size, size)
+      }
+
+      dataUrl = canvas.toDataURL('image/jpeg', 0.9)
+      thumbSrcById.value[id] = dataUrl
+      thumbKeyById.value[id] = key
+
+      if (storage) {
+        try {
+          storage.setItem(`${thumbStoragePrefix}${key}`, dataUrl)
+        } catch (err) {
+          // Best-effort cache; ignore quota errors
+        }
+      }
     } catch (e) {
       // Fallback to original image
-      thumbSrcById.value[item.id || 'no-id'] = item.image
-      thumbKeyById.value[item.id || 'no-id'] = key
+      thumbSrcById.value[id] = item.image
+      thumbKeyById.value[id] = key
+    } finally {
+      thumbLoadingKeys.delete(key)
     }
   }
   img.onerror = () => {
-    thumbSrcById.value[item.id || 'no-id'] = item.image
-    thumbKeyById.value[item.id || 'no-id'] = key
+    thumbSrcById.value[id] = item.image
+    thumbKeyById.value[id] = key
+    thumbLoadingKeys.delete(key)
   }
   // Ensure base64 data URLs render without taint issues
   img.crossOrigin = 'anonymous'
@@ -452,8 +523,7 @@ function generateThumb(item: any) {
 }
 
 function getThumbSrc(item: any): string {
-  const cached = thumbSrcById.value[item?.id || 'no-id']
-  return cached || item?.image || ''
+  return thumbSrcById.value[item?.id || 'no-id'] || ''
 }
 
 function thumbButtonStyle(item: any) {
@@ -464,7 +534,11 @@ function thumbButtonStyle(item: any) {
     backgroundImage: src ? `url(${src})` : 'none',
     backgroundRepeat: 'no-repeat',
     backgroundSize: 'cover',
-    backgroundPosition: 'center'
+    backgroundPosition: 'center',
+    backgroundColor: 'rgba(17, 24, 39, 0.65)',
+    opacity: src ? 1 : 0,
+    pointerEvents: src ? 'auto' : 'none',
+    transition: 'opacity 90ms ease-out'
   } as any
 }
 

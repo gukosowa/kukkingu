@@ -88,7 +88,7 @@
   "Error": "Fehler",
   "Failed to process image file": "Bilddatei konnte nicht verarbeitet werden",
   "Invalid file": "Ungültige Datei",
-  "Please select a valid image file (JPEG, PNG, GIF, WebP) under 5MB": "Bitte wähle eine gültige Bilddatei (JPEG, PNG, GIF, WebP) unter 5MB aus",
+  "Please select a valid image file (JPEG, PNG, GIF, WebP) under 50MB": "Bitte wähle eine gültige Bilddatei (JPEG, PNG, GIF, WebP) unter 50MB aus",
   "No image found": "Kein Bild gefunden",
   "No valid image found in clipboard": "Kein gültiges Bild in der Zwischenablage gefunden",
   "Failed to paste image from clipboard": "Bild aus Zwischenablage konnte nicht eingefügt werden",

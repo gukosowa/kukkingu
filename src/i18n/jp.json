@@ -89,7 +89,7 @@
   "Error": "エラー",
   "Failed to process image file": "画像ファイルの処理に失敗しました",
   "Invalid file": "無効なファイル",
-  "Please select a valid image file (JPEG, PNG, GIF, WebP) under 5MB": "5MB以下の有効な画像ファイル（JPEG、PNG、GIF、WebP）を選択してください",
+  "Please select a valid image file (JPEG, PNG, GIF, WebP) under 50MB": "50MB以下の有効な画像ファイル（JPEG、PNG、GIF、WebP）を選択してください",
   "No image found": "画像が見つかりません",
   "No valid image found in clipboard": "クリップボードに有効な画像が見つかりません",
   "Failed to paste image from clipboard": "クリップボードからの画像貼り付けに失敗しました",

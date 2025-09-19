@@ -88,7 +88,7 @@
   "Error": "Error",
   "Failed to process image file": "Failed to process image file",
   "Invalid file": "Invalid file",
-  "Please select a valid image file (JPEG, PNG, GIF, WebP) under 5MB": "Please select a valid image file (JPEG, PNG, GIF, WebP) under 5MB",
+  "Please select a valid image file (JPEG, PNG, GIF, WebP) under 50MB": "Please select a valid image file (JPEG, PNG, GIF, WebP) under 50MB",
   "No image found": "No image found",
   "No valid image found in clipboard": "No valid image found in clipboard",
   "Failed to paste image from clipboard": "Failed to paste image from clipboard",

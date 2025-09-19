@@ -1,4 +1,5 @@
 import { Recipe, WeeklyPlan, ShoppingListItem } from '~src/store/index'
+import { optimizeImageFile } from '~src/services/imageOptimization'
 
 // Utility function to create a deep clone without Vue reactivity
 function deepCloneSerializable(obj: any): any {
@@ -390,21 +391,9 @@ export const getShoppingList = (planId: string) => idbService.getShoppingList(pl
 export const saveShoppingList = (planId: string, items: ShoppingListItem[]) => idbService.saveShoppingList(planId, items)
 
 // Image utility functions
-export const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      const result = reader.result as string
-      resolve(result)
-    }
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
-
 export const isValidImageFile = (file: File): boolean => {
   const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
-  const maxSize = 5 * 1024 * 1024 // 5MB
+  const maxSize = 50 * 1024 * 1024 // 50MB
 
   return validTypes.includes(file.type) && file.size <= maxSize
 }
@@ -420,7 +409,7 @@ export const pasteImageFromClipboard = async (clipboardData?: DataTransfer): Pro
             const blob = await item.getType(type)
             const file = new File([blob], 'pasted-image.png', { type })
             if (isValidImageFile(file)) {
-              return await fileToBase64(file)
+              return await optimizeImageFile(file)
             }
           }
         }
@@ -439,7 +428,7 @@ export const pasteImageFromClipboard = async (clipboardData?: DataTransfer): Pro
         if (item.type.startsWith('image/')) {
           const file = item.getAsFile()
           if (file && isValidImageFile(file)) {
-            return await fileToBase64(file)
+            return await optimizeImageFile(file)
           }
         }
       }
