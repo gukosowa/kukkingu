@@ -43,7 +43,7 @@
         </div>
 
         <!-- Upload Section -->
-        <div class="flex flex-col items-center space-y-2">
+        <div class="flex flex-col items-center space-y-1">
           <input
             ref="fileInput"
             type="file"
@@ -57,7 +57,7 @@
             ref="pasteArea"
             contenteditable="true"
             :placeholder="t('Paste image here')"
-            class="w-full border focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md min-h-[40px] focus:outline-none bg-white"
+            class="w-full border focus:ring-indigo-500 text-black p-2 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md min-h-[40px] focus:outline-none bg-white hidden sm:inline-flex"
             @paste="handlePaste"
             @input="handleContentEditableInput"
           ></div>
@@ -66,31 +66,12 @@
             <Icon icon="fal fa-plus" class="mr-2" size="1rem" />
             {{ localRecipe.image ? t('Replace Image') : t('Add Image') }}
           </Button>
-
-          <div class="text-xs text-gray-500 text-center">
-            {{ t('Supported formats: JPEG, PNG, GIF, WebP (max 5MB)') }}
-          </div>
         </div>
 
         <!-- Background Display Option -->
         <div class="border-t pt-4">
-          <div class="flex items-center space-x-3">
-            <input
-              id="showAsBackground"
-              type="checkbox"
-              v-model="showAsBackground"
-              class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <label for="showAsBackground" class="text-sm text-gray-700">
-              {{ t('Show image as background in recipe list') }}
-            </label>
-          </div>
-          <div class="text-xs text-gray-500 mt-1">
-            {{ t('The image will be displayed as a subtle background behind the recipe entry') }}
-          </div>
-
           <!-- Background area selector -->
-          <div v-if="showAsBackground && localRecipe.image" class="mt-4">
+          <div v-if="localRecipe.image" class="mt-4">
             <div class="text-sm text-gray-700 mb-2">{{ t('Select the area to show as background') }}</div>
             <div
               ref="imageContainer"
@@ -196,6 +177,21 @@
                 {{ t('Reset area') }}
               </Button>
             </div>
+          </div>
+
+          <div class="mt-4 flex items-center space-x-3">
+            <input
+              id="showAsBackground"
+              type="checkbox"
+              v-model="showAsBackground"
+              class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label for="showAsBackground" class="text-sm text-gray-700">
+              {{ t('Show image as background in recipe list') }}
+            </label>
+          </div>
+          <div class="text-xs text-gray-500 mt-1">
+            {{ t('The image will be displayed as a subtle background behind the recipe entry') }}
           </div>
         </div>
 
