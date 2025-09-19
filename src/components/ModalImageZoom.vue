@@ -104,6 +104,15 @@ const zoomingTimeout = ref<number | null>(null)
 const lastMouseX = ref(0)
 const lastMouseY = ref(0)
 
+// Momentum tracking for inertial panning
+type MovementSample = { t: number, dx: number, dy: number, dt: number }
+const movementSamples = ref<MovementSample[]>([])
+const lastMovementTime = ref(0)
+const isInertiaAnimating = ref(false)
+const inertiaRafId = ref<number | null>(null)
+const sampleWindowMs = 120
+const maxSamples = 10
+
 // Double-tap detection state
 const lastTapTime = ref(0)
 const lastTapX = ref(0)
@@ -127,7 +136,7 @@ const zoomStep = 1
 
 const imageStyle = computed(() => ({
   transform: `translate(${panX.value}px, ${panY.value}px) scale(${zoomLevel.value})`,
-  transition: isPanning.value || isZooming.value
+  transition: isPanning.value || isZooming.value || isInertiaAnimating.value
     ? 'none'
     : animateNextTransform.value
       ? `transform ${animatedZoomDurationMs}ms ease-out`
@@ -151,6 +160,7 @@ const safeBottomLeftStyle = computed<CSSProperties>(() => ({
 }))
 
 function startZooming() {
+  cancelInertia()
   isZooming.value = true
   if (zoomingTimeout.value) window.clearTimeout(zoomingTimeout.value)
   zoomingTimeout.value = window.setTimeout(() => {
@@ -159,6 +169,7 @@ function startZooming() {
 }
 
 function zoomIn() {
+  cancelInertia()
   const rect = imageContainer.value?.getBoundingClientRect()
   const centerX = rect ? rect.left + rect.width / 2 : 0
   const centerY = rect ? rect.top + rect.height / 2 : 0
@@ -166,6 +177,7 @@ function zoomIn() {
 }
 
 function zoomOut() {
+  cancelInertia()
   const rect = imageContainer.value?.getBoundingClientRect()
   const centerX = rect ? rect.left + rect.width / 2 : 0
   const centerY = rect ? rect.top + rect.height / 2 : 0
@@ -173,6 +185,7 @@ function zoomOut() {
 }
 
 function resetZoom() {
+  cancelInertia()
   zoomLevel.value = 1
   panX.value = 0
   panY.value = 0
@@ -186,9 +199,13 @@ function handleWheel(event: WheelEvent) {
 }
 
 function startPan(event: MouseEvent) {
+  cancelInertia()
   isPanning.value = true
   lastMouseX.value = event.clientX
   lastMouseY.value = event.clientY
+  // reset momentum samples
+  movementSamples.value = []
+  lastMovementTime.value = performance.now()
   event.preventDefault()
 }
 
@@ -204,11 +221,26 @@ function updatePan(event: MouseEvent) {
   lastMouseX.value = event.clientX
   lastMouseY.value = event.clientY
 
+  // record movement sample for inertia
+  const now = performance.now()
+  const dt = now - lastMovementTime.value
+  if (dt > 0) {
+    movementSamples.value.push({ t: now, dx: deltaX, dy: deltaY, dt })
+    // prune old samples and cap length
+    const cutoff = now - sampleWindowMs
+    while (movementSamples.value.length && (movementSamples.value[0].t < cutoff || movementSamples.value.length > maxSamples)) {
+      movementSamples.value.shift()
+    }
+  }
+  lastMovementTime.value = now
+
   constrainPan()
 }
 
 function endPan() {
+  if (!isPanning.value) return
   isPanning.value = false
+  startInertiaFromSamples()
 }
 
 function constrainPan() {
@@ -300,6 +332,7 @@ function getDistance(touch1: Touch, touch2: Touch): number {
 }
 
 function handleTouchStart(event: TouchEvent) {
+  cancelInertia()
   touches.value = Array.from(event.touches)
 
   // Check if touch is on a button - if so, don't prevent default
@@ -322,6 +355,8 @@ function handleTouchStart(event: TouchEvent) {
     isPanning.value = true
     lastMouseX.value = event.touches[0].clientX
     lastMouseY.value = event.touches[0].clientY
+    movementSamples.value = []
+    lastMovementTime.value = performance.now()
   }
 }
 
@@ -358,6 +393,18 @@ function handleTouchMove(event: TouchEvent) {
     lastMouseX.value = touch.clientX
     lastMouseY.value = touch.clientY
 
+    // record movement sample for inertia
+    const now = performance.now()
+    const dt = now - lastMovementTime.value
+    if (dt > 0) {
+      movementSamples.value.push({ t: now, dx: deltaX, dy: deltaY, dt })
+      const cutoff = now - sampleWindowMs
+      while (movementSamples.value.length && (movementSamples.value[0].t < cutoff || movementSamples.value.length > maxSamples)) {
+        movementSamples.value.shift()
+      }
+    }
+    lastMovementTime.value = now
+
     constrainPan()
   }
 }
@@ -384,22 +431,24 @@ function handleTouchEnd(event: TouchEvent) {
   const isButton = target.tagName === 'BUTTON' || target.closest('button')
 
   // Detect double-tap to zoom towards tap location
+  let didDoubleTap = false
   if (!isButton) {
     const changed = event.changedTouches && event.changedTouches[0]
     if (changed) {
-      const now = Date.now()
-      const dt = now - lastTapTime.value
-      const dx = changed.clientX - lastTapX.value
-      const dy = changed.clientY - lastTapY.value
-      const dist = Math.hypot(dx, dy)
+      const nowTs = Date.now()
+      const dtTap = nowTs - lastTapTime.value
+      const dxTap = changed.clientX - lastTapX.value
+      const dyTap = changed.clientY - lastTapY.value
+      const distTap = Math.hypot(dxTap, dyTap)
 
-      if (dt > 0 && dt <= DOUBLE_TAP_MAX_DELAY_MS && dist <= DOUBLE_TAP_MAX_DISTANCE_PX) {
+      if (dtTap > 0 && dtTap <= DOUBLE_TAP_MAX_DELAY_MS && distTap <= DOUBLE_TAP_MAX_DISTANCE_PX) {
         const nextZoom = Math.max(minZoom, Math.min(maxZoom, zoomLevel.value * doubleTapZoomFactor))
         zoomToAnimatedCentered(nextZoom, changed.clientX, changed.clientY)
+        didDoubleTap = true
         // Reset to avoid triple counting
         lastTapTime.value = 0
       } else {
-        lastTapTime.value = now
+        lastTapTime.value = nowTs
         lastTapX.value = changed.clientX
         lastTapY.value = changed.clientY
       }
@@ -409,6 +458,11 @@ function handleTouchEnd(event: TouchEvent) {
   if (!isButton) {
     // Prevent default behavior for non-button interactions
     event.preventDefault()
+  }
+
+  // Start inertia if finger lifted and not a double-tap zoom
+  if (event.touches.length === 0 && !didDoubleTap) {
+    startInertiaFromSamples()
   }
 }
 
@@ -457,7 +511,119 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
+  cancelInertia()
 })
+
+// Helpers for inertia
+function cancelInertia() {
+  if (inertiaRafId.value != null) {
+    cancelAnimationFrame(inertiaRafId.value)
+    inertiaRafId.value = null
+  }
+  isInertiaAnimating.value = false
+}
+
+function computeVelocityFromSamples() {
+  const samples = movementSamples.value
+  if (!samples.length) return { vx: 0, vy: 0 }
+  const now = performance.now()
+  // Exponential weighting by recency, proportional to sample dt
+  const tau = sampleWindowMs // ms
+  let sumW = 0
+  let vx = 0
+  let vy = 0
+  for (const s of samples) {
+    if (s.dt <= 0) continue
+    const instVx = s.dx / s.dt
+    const instVy = s.dy / s.dt
+    const age = Math.max(0, now - s.t)
+    const w = s.dt * Math.exp(-age / tau)
+    vx += instVx * w
+    vy += instVy * w
+    sumW += w
+  }
+  if (sumW <= 0) return { vx: 0, vy: 0 }
+  return { vx: vx / sumW, vy: vy / sumW }
+}
+
+function startInertiaFromSamples() {
+  const { vx, vy } = computeVelocityFromSamples()
+  movementSamples.value = []
+  startInertia(vx, vy)
+}
+
+function startInertia(initialVx: number, initialVy: number) {
+  // minimum vector speed to start inertia (px/ms)
+  const minSpeed = 0.02
+  const speed0 = Math.hypot(initialVx, initialVy)
+  if (speed0 < minSpeed) return
+
+  cancelInertia()
+  isInertiaAnimating.value = true
+
+  let vx = initialVx
+  let vy = initialVy
+  let lastTs = 0
+  // Fast-to-slow exponential decay (ease-out feel like Google Photos)
+  // Start with short half-life then transition to a longer one.
+  const HALF_LIFE_FAST_MS = 120
+  const HALF_LIFE_SLOW_MS = 100
+  const TRANSITION_MS = 180
+  const lambdaFast = Math.log(2) / HALF_LIFE_FAST_MS
+  const lambdaSlow = Math.log(2) / HALF_LIFE_SLOW_MS
+  let startTs = 0
+
+  const step = (ts: number) => {
+    if (!isInertiaAnimating.value || showModal.value === false) {
+      cancelInertia()
+      return
+    }
+    if (!lastTs) lastTs = ts
+    if (!startTs) startTs = ts
+    const dt = ts - lastTs
+    lastTs = ts
+
+    // Stop when speed is negligible
+    const speed = Math.hypot(vx, vy)
+    if (speed < minSpeed) {
+      cancelInertia()
+      return
+    }
+
+    // Proposed movement before constraints
+    const proposedX = panX.value + vx * dt
+    const proposedY = panY.value + vy * dt
+    const prevX = panX.value
+    const prevY = panY.value
+    panX.value = proposedX
+    panY.value = proposedY
+    constrainPan()
+
+    // If clamped at boundary on an axis, zero velocity on that axis
+    const clampedX = panX.value !== proposedX
+    const clampedY = panY.value !== proposedY
+    if (clampedX) vx = 0
+    if (clampedY) vy = 0
+
+    // Apply exponential decay to remaining velocity with time-varying lambda.
+    const elapsed = ts - startTs
+    const mix = Math.exp(-elapsed / TRANSITION_MS) // 1 -> 0 over time
+    const lambda = lambdaSlow + (lambdaFast - lambdaSlow) * mix
+    const decay = Math.exp(-lambda * dt)
+    vx *= decay
+    vy *= decay
+
+    // If nothing changed (fully clamped and zeroed), stop
+    if (panX.value === prevX && panY.value === prevY && Math.abs(vx) < minSpeed && Math.abs(vy) < minSpeed) {
+      cancelInertia()
+      return
+    }
+
+    inertiaRafId.value = requestAnimationFrame(step)
+  }
+
+  inertiaRafId.value = requestAnimationFrame(step)
+}
 </script>
 
 <style scoped>
