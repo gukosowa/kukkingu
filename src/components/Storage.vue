@@ -147,7 +147,7 @@
               </div>
             </template>
           </div>
-          <div class="flex-grow whitespace-nowrap text-right relative z-10">
+          <div class="flex-grow whitespace-nowrap text-right mr-14 relative z-10">
             <template v-if="item.rename">
               <Button color="blue" class="mr-2 p-4" @click="openImageModal(index)">
                 <Icon icon="fal fa-image" size="1.2rem" />

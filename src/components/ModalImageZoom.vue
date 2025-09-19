@@ -102,6 +102,18 @@ const zoomingTimeout = ref<number | null>(null)
 const lastMouseX = ref(0)
 const lastMouseY = ref(0)
 
+// Double-tap detection state
+const lastTapTime = ref(0)
+const lastTapX = ref(0)
+const lastTapY = ref(0)
+const DOUBLE_TAP_MAX_DELAY_MS = 300
+const DOUBLE_TAP_MAX_DISTANCE_PX = 24
+const doubleTapZoomFactor = 2
+
+// Animation toggle for smooth zoom/pan on double-tap
+const animateNextTransform = ref(false)
+const animatedZoomDurationMs = 220
+
 // Touch gesture state for pinch zoom
 const initialDistance = ref(0)
 const initialZoom = ref(1)
@@ -113,7 +125,11 @@ const zoomStep = 0.1
 
 const imageStyle = computed(() => ({
   transform: `translate(${panX.value}px, ${panY.value}px) scale(${zoomLevel.value})`,
-  transition: isPanning.value || isZooming.value ? 'none' : 'transform 0.2s ease-out',
+  transition: isPanning.value || isZooming.value
+    ? 'none'
+    : animateNextTransform.value
+      ? `transform ${animatedZoomDurationMs}ms ease-out`
+      : 'transform 0.2s ease-out',
   transformOrigin: 'center center'
 }))
 
@@ -229,6 +245,15 @@ function zoomTo(targetZoom: number, originClientX: number, originClientY: number
   constrainPan()
 }
 
+function zoomToAnimated(targetZoom: number, originClientX: number, originClientY: number) {
+  animateNextTransform.value = true
+  // Do not call startZooming() here to allow transitions
+  zoomTo(targetZoom, originClientX, originClientY)
+  window.setTimeout(() => {
+    animateNextTransform.value = false
+  }, animatedZoomDurationMs + 30)
+}
+
 // Touch gesture handlers for pinch zoom and single-touch drag
 function getDistance(touch1: Touch, touch2: Touch): number {
   const dx = touch1.clientX - touch2.clientX
@@ -319,6 +344,29 @@ function handleTouchEnd(event: TouchEvent) {
   // Check if touch is on a button - if so, don't prevent default
   const target = event.target as HTMLElement
   const isButton = target.tagName === 'BUTTON' || target.closest('button')
+
+  // Detect double-tap to zoom towards tap location
+  if (!isButton) {
+    const changed = event.changedTouches && event.changedTouches[0]
+    if (changed) {
+      const now = Date.now()
+      const dt = now - lastTapTime.value
+      const dx = changed.clientX - lastTapX.value
+      const dy = changed.clientY - lastTapY.value
+      const dist = Math.hypot(dx, dy)
+
+      if (dt > 0 && dt <= DOUBLE_TAP_MAX_DELAY_MS && dist <= DOUBLE_TAP_MAX_DISTANCE_PX) {
+        const nextZoom = Math.max(minZoom, Math.min(maxZoom, zoomLevel.value * doubleTapZoomFactor))
+        zoomToAnimated(nextZoom, changed.clientX, changed.clientY)
+        // Reset to avoid triple counting
+        lastTapTime.value = 0
+      } else {
+        lastTapTime.value = now
+        lastTapX.value = changed.clientX
+        lastTapY.value = changed.clientY
+      }
+    }
+  }
 
   if (!isButton) {
     // Prevent default behavior for non-button interactions
