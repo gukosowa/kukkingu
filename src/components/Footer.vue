@@ -16,6 +16,11 @@
     v-model:modelValue="showAskGptModal"
     @confirm="handleAskGptConfirm"
   />
+  <ModalPromptReady
+    v-model="showPromptReadyModal"
+    :gotoUrl="promptReadyGotoUrl"
+    @goToAI="handlePromptReadyGoToAI"
+  />
   <ModalInput
     v-model="showImportJsonModal"
     :value="importJsonText"
@@ -74,6 +79,7 @@ import ModalLocale from '~components/ModalLocale.vue'
 import ModalBackup from '~components/ModalBackup.vue'
 import ModalManageTags from '~components/ModalManageTags.vue'
 import ModalAskGptStorage from '~components/ModalAskGptStorage.vue'
+import ModalPromptReady from '~components/ModalPromptReady.vue'
 import ModalInput from '~components/ModalInput.vue'
 import ModalImportDiff from '~components/ModalImportDiff.vue'
 import { recipes } from '~src/store/index'
@@ -93,20 +99,25 @@ let showLocaleModal = ref(false)
 let showBackupModal = ref(false)
 let showManageTagsModal = ref(false)
 let showAskGptModal = ref(false)
+let showPromptReadyModal = ref(false)
 let showImportJsonModal = ref(false)
 let importJsonText = ref('')
 let showImportDiffModal = ref(false)
 let importDiff = ref<ImportDiff>({ updates: [], creates: [] })
 let parsedImportData: any = null
+const promptReadyGotoUrl = 'https://chat.openai.com'
 
 // Locale is now loaded asynchronously in i18n/index.ts
 
 function openAskGptModal() {
   showAskGptModal.value = true
 }
-function handleAskGptConfirm(question: string) {
-  // The modal already handles copying the prompt to clipboard
-  // We could show a notice here if needed
+function handleAskGptConfirm(_question: string) {
+  // The modal already copies the prompt; now guide the user with the prompt-ready dialog
+  showPromptReadyModal.value = true
+}
+function handlePromptReadyGoToAI() {
+  window.open(promptReadyGotoUrl, '_blank', 'noopener')
 }
 function openManageTagsModal() {
   showManageTagsModal.value = true

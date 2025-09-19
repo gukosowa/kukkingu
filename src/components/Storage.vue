@@ -27,6 +27,7 @@
           <Icon icon="fal fa-times-circle" size="1.1rem" />
         </button>
       </div>
+      <Button class="ml-2 flex-shrink" @click="toggleBulkEditMode">{{ isBulkEditMode ? t('View mode') : t('Edit mode') }}</Button>
       <Button class="ml-2 flex-shrink" @click="openCreateModal">{{ t('Create') }}</Button>
     </div>
 
@@ -109,17 +110,17 @@
             v-if="item.image"
             type="button"
             class="absolute right-0 top-1/2 -translate-y-1/2 w-14 h-14 rounded-lg overflow-hidden border border-white/40 shadow z-0"
-            :class="{'right-2': !item.rename}"
-            :style="computeThumbStyle(item)"
-            @click.stop="!item.rename ? openZoom(item) : openImageModal(index)"
+            :class="{'right-2': !isBulkEditMode}"
+            :style="thumbButtonStyle(item)"
+            @click.stop="!isBulkEditMode ? openZoom(item) : openImageModal(index)"
             aria-label="Open image"
           ></button>
 
           <div class="flex-grow pr-2 relative z-10">
-            <template v-if="item.rename">
+            <template v-if="isBulkEditMode">
               <SInput
                 @enter="() => handleNameEnter(index)"
-                :autofocus="!isBulkEditMode"
+                :autofocus="false"
                 :modelValue="item.name"
                 @update="(v:any) => changeName(v, index)"
               />
@@ -149,7 +150,7 @@
             </template>
           </div>
           <div class="flex-grow whitespace-nowrap text-right mr-12 relative z-10">
-            <template v-if="item.rename">
+            <template v-if="isBulkEditMode">
               <Button color="red" class="mr-2" :tone="300" @click="() => initRemove(index, item.name)">
                 <Icon icon="fal fa-trash-alt" size="1.2rem" />
               </Button>
@@ -360,36 +361,111 @@ function computeBackgroundStyle(item: any) {
   return base
 }
 
-function computeThumbStyle(item: any) {
-  const base: any = {
-    backgroundImage: `url(${item.image})`,
-    backgroundRepeat: 'no-repeat',
-    backgroundSize: '',
-    backgroundPosition: ''
-  }
+// Precise square thumbnail generation via offscreen canvas to avoid CSS % mapping issues
+const thumbSrcById = ref<Record<string, string>>({})
+const thumbKeyById = ref<Record<string, string>>({})
 
-  let area = { xPct: 0, yPct: 0, wPct: 100, hPct: 100 }
+function getNormalizedArea(item: any) {
+  const a = item?.backgroundArea
   if (
-    item.backgroundArea &&
-    typeof item.backgroundArea.xPct === 'number' &&
-    typeof item.backgroundArea.yPct === 'number' &&
-    typeof item.backgroundArea.wPct === 'number' &&
-    typeof item.backgroundArea.hPct === 'number'
+    a &&
+    typeof a.xPct === 'number' &&
+    typeof a.yPct === 'number' &&
+    typeof a.wPct === 'number' &&
+    typeof a.hPct === 'number'
   ) {
-    area = item.backgroundArea
+    return {
+      xPct: Math.max(0, Math.min(100, a.xPct)),
+      yPct: Math.max(0, Math.min(100, a.yPct)),
+      wPct: Math.max(1, Math.min(100, a.wPct)),
+      hPct: Math.max(1, Math.min(100, a.hPct))
+    }
   }
+  return { xPct: 0, yPct: 0, wPct: 100, hPct: 100 }
+}
 
-  const safeWidth = Math.max(1, Math.min(100, area.wPct))
-  const safeHeight = Math.max(1, Math.min(100, area.hPct))
-  const limiting = Math.min(safeWidth, safeHeight)
-  const scaledPercent = 10000 / limiting
-  base.backgroundSize = `${scaledPercent}% auto`
+function getThumbCacheKey(item: any): string {
+  const area = getNormalizedArea(item)
+  // Use image length as a cheap content hash surrogate
+  const imgKey = item?.image ? String(item.image.length) : '0'
+  return `${item?.id || 'no-id'}|${imgKey}|${area.xPct},${area.yPct},${area.wPct},${area.hPct}`
+}
 
-  const centerX = Math.max(0, Math.min(100, area.xPct + safeWidth / 2))
-  const centerY = Math.max(0, Math.min(100, area.yPct + safeHeight / 2))
-  base.backgroundPosition = `${centerX}% ${centerY}%`
+function generateThumb(item: any) {
+  if (!item?.image) return
+  const key = getThumbCacheKey(item)
+  const prev = thumbKeyById.value[item.id || 'no-id']
+  if (prev === key && thumbSrcById.value[item.id || 'no-id']) return
 
-  return base
+  const img = new Image()
+  img.onload = () => {
+    try {
+      const area = getNormalizedArea(item)
+      const iw = img.naturalWidth || img.width
+      const ih = img.naturalHeight || img.height
+
+      const srcX = Math.round((area.xPct / 100) * iw)
+      const srcY = Math.round((area.yPct / 100) * ih)
+      const srcW = Math.round((area.wPct / 100) * iw)
+      const srcH = Math.round((area.hPct / 100) * ih)
+
+      // Centered square inside the selected rectangle
+      const edge = Math.max(1, Math.min(srcW, srcH))
+      const centerX = srcX + srcW / 2
+      const centerY = srcY + srcH / 2
+      let sqX = Math.round(centerX - edge / 2)
+      let sqY = Math.round(centerY - edge / 2)
+
+      // Clamp to image bounds
+      if (sqX < 0) sqX = 0
+      if (sqY < 0) sqY = 0
+      if (sqX + edge > iw) sqX = Math.max(0, iw - edge)
+      if (sqY + edge > ih) sqY = Math.max(0, ih - edge)
+
+      const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1))
+      const targetCssSize = 56 // Tailwind w-14 = 3.5rem ≈ 56px at base 16px
+      const size = targetCssSize * dpr
+      const canvas = document.createElement('canvas')
+      canvas.width = size
+      canvas.height = size
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      ctx.imageSmoothingQuality = 'high'
+      ctx.drawImage(img, sqX, sqY, edge, edge, 0, 0, size, size)
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
+      thumbSrcById.value[item.id || 'no-id'] = dataUrl
+      thumbKeyById.value[item.id || 'no-id'] = key
+    } catch (e) {
+      // Fallback to original image
+      thumbSrcById.value[item.id || 'no-id'] = item.image
+      thumbKeyById.value[item.id || 'no-id'] = key
+    }
+  }
+  img.onerror = () => {
+    thumbSrcById.value[item.id || 'no-id'] = item.image
+    thumbKeyById.value[item.id || 'no-id'] = key
+  }
+  // Ensure base64 data URLs render without taint issues
+  img.crossOrigin = 'anonymous'
+  img.src = item.image
+}
+
+function getThumbSrc(item: any): string {
+  const cached = thumbSrcById.value[item?.id || 'no-id']
+  return cached || item?.image || ''
+}
+
+function thumbButtonStyle(item: any) {
+  // Generate on demand with caching; cheap on subsequent calls
+  generateThumb(item)
+  const src = getThumbSrc(item)
+  return {
+    backgroundImage: src ? `url(${src})` : 'none',
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center'
+  } as any
 }
 
 function openZoom(item: any) {
@@ -463,27 +539,11 @@ function changeName(value: any, index: number) {
   ;(copy[index] as any).name = value || ''
   recipes.value = copy
 }
-function rename(index: number) {
-  const copy = [...recipes.value]
-  if (!(copy[index] as any).name) {
-    ;(copy[index] as any).name = '-'
-  }
-  delete (copy[index] as any).rename
-  recipes.value = copy
-}
 function handleNameEnter(index: number) {
-  if (isBulkEditMode.value) return
-  rename(index)
+  return
 }
 function toggleBulkEditMode() {
   isBulkEditMode.value = !isBulkEditMode.value
-  const copy = [...recipes.value]
-  if (isBulkEditMode.value) {
-    for (const r of copy as any[]) (r as any).rename = true
-  } else {
-    for (const r of copy as any[]) delete (r as any).rename
-  }
-  recipes.value = copy
 }
 function initRemove(index: number, removeName: string) {
   showDeleteConfirm.value = true

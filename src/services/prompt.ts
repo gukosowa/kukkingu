@@ -5,6 +5,34 @@ import { getAllTags } from '~src/store/index'
 
 export type LocaleText = 'English' | 'Japanese' | 'German'
 
+export const PROMPT_RECIPE_OMIT_FIELDS = [
+  'image',
+  'edit',
+  'rename',
+  'checklist',
+  'exportedAt',
+  'original',
+  'desired',
+  'backgroundArea',
+  'showAsBackground',
+] as const
+
+const promptRecipeOmitFieldSet = new Set<string>(PROMPT_RECIPE_OMIT_FIELDS)
+
+export function sanitizeRecipeForPrompt<T extends Record<string, any>>(recipe: T | null | undefined): Partial<T> {
+  if (!recipe || typeof recipe !== 'object') return {}
+
+  const sanitized: Record<string, any> = { ...recipe }
+
+  for (const field of promptRecipeOmitFieldSet) {
+    if (field in sanitized) {
+      delete sanitized[field]
+    }
+  }
+
+  return sanitized
+}
+
 export function buildImportRecipePrompt(
   input: { url?: string; text?: string; locale: LocaleText; fromPicture?: boolean; additionalInstruction?: string }
 ): string {
@@ -105,9 +133,8 @@ export function buildImportRecipePrompt(
 }
 
 export function buildAskRecipePrompt(recipe: any, question: string, locale: LocaleText): string {
-  // Create a copy of the recipe without the image field to avoid including it in prompts
-  const { image, ...recipeWithoutImage } = recipe
-  const recipeJson = JSON.stringify(recipeWithoutImage, null, 2)
+  const recipePromptPayload = sanitizeRecipeForPrompt(recipe)
+  const recipeJson = JSON.stringify(recipePromptPayload, null, 2)
 
   // Get existing tags from database and add suggested tags
   const existingTags = getAllTags()
@@ -206,16 +233,16 @@ JSON structure for recipe changes: ${jsonSchema}
 export function buildAskGptStoragePrompt(recipes: any[], question: string, locale: LocaleText): string {
   // Create a compact representation of all recipes (without images)
   const compactRecipes = recipes.map(recipe => {
-    const { image, ...recipeWithoutImage } = recipe
+    const sanitizedRecipe = sanitizeRecipeForPrompt(recipe)
     return {
-      ...recipeWithoutImage,
+      ...sanitizedRecipe,
       // Make ingredients more compact: join name, amount, and unit with separator
       ingredients: recipe.ingredients?.map((ing: any) =>
         `${ing.name || ''} ${ing.amount || 0}${ing.amountType || ''}`.trim() +
         (ing.note ? ` (${ing.note})` : '')
       ) || [],
       // Make tags more compact: join with separator
-      tags: recipe.tags?.join(', ') || ''
+      tags: Array.isArray(recipe.tags) ? recipe.tags.join(', ') : ''
     }
   })
 

@@ -17,7 +17,7 @@
         </button>
 
         <!-- Zoom controls -->
-        <div class="absolute top-4 left-4 z-10 flex space-x-2">
+        <div class="absolute bottom-4 right-4 z-10 flex flex-col items-center space-y-2">
           <button
             @click="zoomIn"
             class="bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 transition-all"
@@ -108,7 +108,7 @@ const lastTapX = ref(0)
 const lastTapY = ref(0)
 const DOUBLE_TAP_MAX_DELAY_MS = 300
 const DOUBLE_TAP_MAX_DISTANCE_PX = 24
-const doubleTapZoomFactor = 2
+const doubleTapZoomFactor = 3
 
 // Animation toggle for smooth zoom/pan on double-tap
 const animateNextTransform = ref(false)
@@ -121,7 +121,7 @@ const touches = ref<Touch[]>([])
 
 const minZoom = 0.7
 const maxZoom = 5
-const zoomStep = 0.1
+const zoomStep = 1
 
 const imageStyle = computed(() => ({
   transform: `translate(${panX.value}px, ${panY.value}px) scale(${zoomLevel.value})`,
@@ -145,16 +145,14 @@ function zoomIn() {
   const rect = imageContainer.value?.getBoundingClientRect()
   const centerX = rect ? rect.left + rect.width / 2 : 0
   const centerY = rect ? rect.top + rect.height / 2 : 0
-  startZooming()
-  zoomTo(zoomLevel.value + zoomStep, centerX, centerY)
+  zoomToAnimated(zoomLevel.value + zoomStep, centerX, centerY)
 }
 
 function zoomOut() {
   const rect = imageContainer.value?.getBoundingClientRect()
   const centerX = rect ? rect.left + rect.width / 2 : 0
   const centerY = rect ? rect.top + rect.height / 2 : 0
-  startZooming()
-  zoomTo(zoomLevel.value - zoomStep, centerX, centerY)
+  zoomToAnimated(zoomLevel.value - zoomStep, centerX, centerY)
 }
 
 function resetZoom() {

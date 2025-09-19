@@ -19,4 +19,8 @@ export default defineConfig({
     },
   },
   build: { sourcemap: true },
+  server: {
+    // allows access from your local network (0.0.0.0)
+    host: true,
+  },
 })
