@@ -14,6 +14,9 @@
   />
   <ModalAskGptStorage
     v-model:modelValue="showAskGptModal"
+    :recipes="askGptRecipes"
+    :filter-query="filterQueryText"
+    :is-filter-active="isFilterActive"
     @confirm="handleAskGptConfirm"
   />
   <ModalPromptReady
@@ -74,7 +77,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import ModalLocale from '~components/ModalLocale.vue'
 import ModalBackup from '~components/ModalBackup.vue'
 import ModalManageTags from '~components/ModalManageTags.vue'
@@ -82,7 +85,7 @@ import ModalAskGptStorage from '~components/ModalAskGptStorage.vue'
 import ModalPromptReady from '~components/ModalPromptReady.vue'
 import ModalInput from '~components/ModalInput.vue'
 import ModalImportDiff from '~components/ModalImportDiff.vue'
-import { recipes } from '~src/store/index'
+import { modalStates, recipes } from '~src/store/index'
 import { currentLocale as _current, defaultLocale, setLocale, t } from '~src/i18n'
 import { mergeChatGPTRecipe, mergeRecipesByExportedAt, analyzeImportDiff, type ImportDiff } from '~src/services/importExport'
 import { uuidv4 } from '~src/store/index'
@@ -93,6 +96,22 @@ interface Emits {
 }
 
 const emit = defineEmits<Emits>()
+
+interface Props {
+  filteredRecipes?: any[]
+  filterQuery?: string | null
+}
+
+const props = defineProps<Props>()
+
+const filterQueryText = computed(() => (props.filterQuery || '').trim())
+const isFilterActive = computed(() => filterQueryText.value.length > 0)
+const askGptRecipes = computed(() => {
+  if (isFilterActive.value) {
+    return props.filteredRecipes ?? []
+  }
+  return recipes.value
+})
 
 const currentLocale = computed(() => _current.value)
 let showLocaleModal = ref(false)
@@ -106,6 +125,15 @@ let showImportDiffModal = ref(false)
 let importDiff = ref<ImportDiff>({ updates: [], creates: [] })
 let parsedImportData: any = null
 const promptReadyGotoUrl = 'https://chat.openai.com'
+
+watch(
+  () => modalStates.value.showImportJson,
+  (shouldOpen) => {
+    if (shouldOpen) {
+      openImportJsonModal()
+    }
+  }
+)
 
 // Locale is now loaded asynchronously in i18n/index.ts
 
@@ -142,10 +170,12 @@ async function confirmLocale(locale: string) {
 function openImportJsonModal() {
   importJsonText.value = ''
   showImportJsonModal.value = true
+  modalStates.value.showImportJson = false
 }
 
 function confirmImportJson(json: string) {
   showImportJsonModal.value = false
+  modalStates.value.showImportJson = false
   try {
     const parsed = parsePastedJson(json)
     if (!parsed) throw new Error('No JSON found')
@@ -180,6 +210,7 @@ function confirmImportJson(json: string) {
 function cancelImportJson() {
   importJsonText.value = ''
   showImportJsonModal.value = false
+  modalStates.value.showImportJson = false
   parsedImportData = null
   importDiff.value = { updates: [], creates: [] }
 }
@@ -293,6 +324,7 @@ function handleAddAsNew() {
 function handleCancelImport() {
   parsedImportData = null
   importDiff.value = { updates: [], creates: [] }
+  modalStates.value.showImportJson = false
 }
 
 function showToast(msg: string) {
