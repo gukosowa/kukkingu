@@ -10,14 +10,15 @@
         <!-- Close button -->
         <button
           @click="close"
-          class="absolute top-4 right-4 z-10 bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 transition-all"
+          class="fixed z-50 bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 transition-all pointer-events-auto"
+          :style="safeTopRightStyle"
           aria-label="Close"
         >
           <i class="fal fa-times" />
         </button>
 
         <!-- Zoom controls -->
-        <div class="absolute bottom-4 right-4 z-10 flex flex-col items-center space-y-2">
+        <div class="fixed z-50 flex flex-col items-center space-y-2 pointer-events-auto" :style="safeBottomRightStyle">
           <button
             @click="zoomIn"
             class="bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 transition-all"
@@ -42,7 +43,7 @@
         </div>
 
         <!-- Zoom level indicator -->
-        <div class="absolute bottom-4 left-4 z-10 bg-black bg-opacity-50 text-white px-3 py-1 rounded text-sm">
+        <div class="fixed z-50 bg-black bg-opacity-50 text-white px-3 py-1 rounded text-sm pointer-events-none" :style="safeBottomLeftStyle">
           {{ Math.round(zoomLevel * 100) }}%
         </div>
 
@@ -72,6 +73,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import type { CSSProperties } from 'vue'
 import BaseDialog from './BaseDialog.vue'
 import { vibrate } from '~src/services/vibrate'
 
@@ -131,6 +133,21 @@ const imageStyle = computed(() => ({
       ? `transform ${animatedZoomDurationMs}ms ease-out`
       : 'transform 0.2s ease-out',
   transformOrigin: 'center center'
+}))
+
+// Safe-area aware fixed positions for UI controls so they never overflow
+const controlOffsetPx = 16
+const safeTopRightStyle = computed<CSSProperties>(() => ({
+  top: `calc(env(safe-area-inset-top, 0px) + ${controlOffsetPx}px)`,
+  right: `calc(env(safe-area-inset-right, 0px) + ${controlOffsetPx}px)`
+}))
+const safeBottomRightStyle = computed<CSSProperties>(() => ({
+  bottom: `calc(env(safe-area-inset-bottom, 0px) + ${controlOffsetPx}px)`,
+  right: `calc(env(safe-area-inset-right, 0px) + ${controlOffsetPx}px)`
+}))
+const safeBottomLeftStyle = computed<CSSProperties>(() => ({
+  bottom: `calc(env(safe-area-inset-bottom, 0px) + ${controlOffsetPx}px)`,
+  left: `calc(env(safe-area-inset-left, 0px) + ${controlOffsetPx}px)`
 }))
 
 function startZooming() {
