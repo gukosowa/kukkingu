@@ -41,6 +41,9 @@
               </Button>
             </div>
           </div>
+          <div v-if="imageSizeLabel" class="text-xs text-gray-500">
+            {{ imageSizeLabel }}
+          </div>
         </div>
 
         <!-- Upload Section -->
@@ -295,6 +298,24 @@ const backgroundArea = ref<BackgroundArea | null>(props.recipe?.backgroundArea |
 
 // Create a reactive local copy of the recipe
 const localRecipe = ref(props.recipe ? { ...props.recipe } : {})
+
+const imageSizeLabel = computed(() => {
+  const image = localRecipe.value?.image
+  if (!image) return null
+  const base64 = image.split(',')[1] || ''
+  if (!base64) return null
+  const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0
+  const bytes = base64.length * 0.75 - padding
+  if (!Number.isFinite(bytes) || bytes <= 0) return null
+  const kilobytes = bytes / 1024
+  if (kilobytes < 1024) {
+    const precision = kilobytes >= 100 ? 0 : 1
+    return `${kilobytes.toFixed(precision)} KB`
+  }
+  const megabytes = kilobytes / 1024
+  const precision = megabytes >= 10 ? 1 : 2
+  return `${megabytes.toFixed(precision)} MB`
+})
 
 // Watch for changes to the recipe prop to update local copy
 watch(() => props.recipe, (newRecipe) => {
