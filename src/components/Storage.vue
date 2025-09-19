@@ -108,9 +108,10 @@
           <button
             v-if="item.image"
             type="button"
-            class="absolute right-2 top-1/2 -translate-y-1/2 w-14 h-14 rounded-lg overflow-hidden border border-white/40 shadow z-0"
+            class="absolute right-0 top-1/2 -translate-y-1/2 w-14 h-14 rounded-lg overflow-hidden border border-white/40 shadow z-0"
+            :class="{'right-2': !item.rename}"
             :style="computeThumbStyle(item)"
-            @click.stop="openZoom(item)"
+            @click.stop="!item.rename ? openZoom(item) : openImageModal(index)"
             aria-label="Open image"
           ></button>
 
@@ -147,11 +148,8 @@
               </div>
             </template>
           </div>
-          <div class="flex-grow whitespace-nowrap text-right mr-14 relative z-10">
+          <div class="flex-grow whitespace-nowrap text-right mr-12 relative z-10">
             <template v-if="item.rename">
-              <Button color="blue" class="mr-2 p-4" @click="openImageModal(index)">
-                <Icon icon="fal fa-image" size="1.2rem" />
-              </Button>
               <Button color="red" class="mr-2" :tone="300" @click="() => initRemove(index, item.name)">
                 <Icon icon="fal fa-trash-alt" size="1.2rem" />
               </Button>
