@@ -55,6 +55,14 @@
             class="hidden"
             @change="handleFileSelect"
           />
+          <input
+            ref="cameraInput"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            class="hidden"
+            @change="handleCameraCapture"
+          />
 
           <!-- Paste Area -->
           <div
@@ -69,7 +77,11 @@
           <div class="flex flex-wrap flex-row justify-center gap-2">
             <Button @click="triggerFileInput" color="gray" class="!text-sm">
               <Icon icon="fal fa-plus" class="mr-2" size="1rem" />
-              {{ localRecipe.image ? t('Replace Image') : t('Add Image') }}
+              {{ t('Browse Image') }}
+            </Button>
+            <Button @click="triggerCameraInput" color="gray" class="!text-sm">
+              <Icon icon="fal fa-camera" class="mr-2" size="1rem" />
+              {{ t('Take Photo') }}
             </Button>
             <Button
               v-if="localRecipe.image"
@@ -277,6 +289,7 @@ const showModal = computed({
 
 
 const fileInput = ref<HTMLInputElement | null>(null)
+const cameraInput = ref<HTMLInputElement | null>(null)
 const pasteArea = ref<HTMLDivElement | null>(null)
 const showCropModal = ref(false)
 const showZoomModal = ref(false)
@@ -337,10 +350,13 @@ function triggerFileInput() {
   fileInput.value?.click()
 }
 
-async function handleFileSelect(event: Event) {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (file && isValidImageFile(file)) {
+function triggerCameraInput() {
+  cameraInput.value?.click()
+}
+
+async function processSelectedFile(file?: File | null) {
+  if (!file) return
+  if (isValidImageFile(file)) {
     try {
       const base64 = await optimizeImageFile(file)
       // Update the recipe image temporarily for preview
@@ -349,10 +365,22 @@ async function handleFileSelect(event: Event) {
       console.error('Failed to process image file:', error)
       // Could show a notice here
     }
-  } else if (file) {
-    // Could show a notice about invalid file
+  } else {
+    console.warn('Invalid image file selected')
   }
-  // Clear the input
+}
+
+async function handleFileSelect(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  await processSelectedFile(file)
+  if (target) target.value = ''
+}
+
+async function handleCameraCapture(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  await processSelectedFile(file)
   if (target) target.value = ''
 }
 

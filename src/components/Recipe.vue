@@ -247,7 +247,7 @@
         <div class="flex flex-col mt-4">
           <label v-if="recipe.image" class="text-sm font-medium text-gray-700 mb-2">{{ t('Image') }}</label>
           <template v-if="recipe.edit">
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
               <div
                 ref="pasteArea"
                 contenteditable="true"
@@ -263,9 +263,21 @@
                 class="hidden"
                 @change="handleFileSelect"
               />
-              <Button @click="triggerFileInput" color="gray">
+              <input
+                ref="cameraInput"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                class="hidden"
+                @change="handleCameraCapture"
+              />
+              <Button @click="triggerFileInput" color="gray" class="shrink-0">
                 <Icon icon="fal fa-plus" class="mr-1" size="0.8rem" />
-                {{ t('Add') }}
+                {{ t('Browse Image') }}
+              </Button>
+              <Button @click="triggerCameraInput" color="gray" class="shrink-0">
+                <Icon icon="fal fa-camera" class="mr-1" size="0.8rem" />
+                {{ t('Take Photo') }}
               </Button>
             </div>
           </template>
@@ -390,6 +402,7 @@ const route = useRoute()
 const router = useRouter()
 const pasteArea = ref<HTMLDivElement | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
+const cameraInput = ref<HTMLInputElement | null>(null)
 
 // Use global settings for dense mode and show notes
 const showNotes = computed({
@@ -849,21 +862,36 @@ function triggerFileInput() {
   fileInput.value?.click()
 }
 
+function triggerCameraInput() {
+  cameraInput.value?.click()
+}
+
+async function processSelectedFile(file?: File | null) {
+  if (!file) return
+  if (!isValidImageFile(file)) {
+    showAppNotice(t('Invalid file'), t('Please select a valid image file (JPEG, PNG, GIF, WebP) under 50MB'), 'fal fa-exclamation-triangle')
+    return
+  }
+  try {
+    const base64 = await optimizeImageFile(file)
+    updateRecipeImage(base64)
+  } catch (error) {
+    console.error('Failed to process image file:', error)
+    showAppNotice(t('Error'), t('Failed to process image file'), 'fal fa-exclamation-triangle')
+  }
+}
+
 async function handleFileSelect(event: Event) {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  if (file && isValidImageFile(file)) {
-    try {
-      const base64 = await optimizeImageFile(file)
-      updateRecipeImage(base64)
-    } catch (error) {
-      console.error('Failed to process image file:', error)
-      showAppNotice(t('Error'), t('Failed to process image file'), 'fal fa-exclamation-triangle')
-    }
-  } else if (file) {
-    showAppNotice(t('Invalid file'), t('Please select a valid image file (JPEG, PNG, GIF, WebP) under 50MB'), 'fal fa-exclamation-triangle')
-  }
-  // Clear the input
+  await processSelectedFile(file)
+  if (target) target.value = ''
+}
+
+async function handleCameraCapture(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  await processSelectedFile(file)
   if (target) target.value = ''
 }
 

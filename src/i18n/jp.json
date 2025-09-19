@@ -86,6 +86,8 @@
   "Privacy Policy": "プライバシーポリシー",
   "Image": "画像",
   "Paste image here": "ここに画像を貼り付ける",
+  "Browse Image": "画像を選択",
+  "Take Photo": "写真を撮影",
   "Error": "エラー",
   "Failed to process image file": "画像ファイルの処理に失敗しました",
   "Invalid file": "無効なファイル",
