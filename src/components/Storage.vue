@@ -32,9 +32,18 @@
 
     <!-- Tag Filter Details/Summary -->
     <details class="mb-3 mt-2 mx-2" v-if="allAvailableTags.length > 0">
-      <summary class="cursor-pointer text-sm text-gray-600 hover:text-gray-800 select-none">
-        <Icon icon="fal fa-tags" size="0.9rem" class="mr-1" />
-        {{ t('Available tags') }} ({{ allAvailableTags.length }})
+      <summary class="cursor-pointer text-sm text-gray-600 hover:text-gray-800 select-none flex items-center justify-between">
+        <span class="flex items-center">
+          <Icon icon="fal fa-tags" size="0.9rem" class="mr-1" />
+          {{ t('Available tags') }} ({{ allAvailableTags.length }})
+        </span>
+        <button
+          type="button"
+          class="ml-3 text-gray-600 hover:text-gray-800 underline decoration-dotted"
+          @click.stop.prevent="toggleBulkEditMode"
+        >
+          {{ isBulkEditMode ? t('View mode') : t('Edit mode') }}
+        </button>
       </summary>
       <div class="mt-2 flex flex-wrap gap-2">
         <span
@@ -98,8 +107,8 @@
           <div class="flex-grow pr-2 relative z-10">
             <template v-if="item.rename">
               <SInput
-                @enter="() => rename(index)"
-                :autofocus="true"
+                @enter="() => handleNameEnter(index)"
+                :autofocus="!isBulkEditMode"
                 :modelValue="item.name"
                 @update="(v:any) => changeName(v, index)"
               />
@@ -135,14 +144,6 @@
               </Button>
               <Button color="red" class="mr-2" :tone="300" @click="() => initRemove(index, item.name)">
                 <Icon icon="fal fa-trash-alt" size="1.2rem" />
-              </Button>
-              <Button color="green" :tone="400" @click="() => rename(index)">
-                <Icon icon="fal fa-check" size="1.2rem" />
-              </Button>
-            </template>
-            <template v-else>
-              <Button color="text-only" @click="() => initRename(index)">
-                <Icon :icon="item.showAsBackground && item.image ? 'text-white/70 fal fa-pen' : 'fal fa-pen'" size="1rem" />
               </Button>
             </template>
           </div>
@@ -220,6 +221,7 @@ let selectedRecipe = ref<any>(null)
 let toastMessage = ref('')
 let toastTimer: number | null = null
 const transitionName = ref('ov')
+const isBulkEditMode = ref(false)
 
 const route = useRoute()
 
@@ -407,11 +409,6 @@ function open(index: number) {
     router.push('/recipe/' + index)
   }
 }
-function initRename(index: number) {
-  const copy = [...recipes.value]
-  ;(copy[index] as any).rename = true
-  recipes.value = copy
-}
 function changeName(value: any, index: number) {
   const copy = [...recipes.value]
   ;(copy[index] as any).name = value || ''
@@ -423,6 +420,20 @@ function rename(index: number) {
     ;(copy[index] as any).name = '-'
   }
   delete (copy[index] as any).rename
+  recipes.value = copy
+}
+function handleNameEnter(index: number) {
+  if (isBulkEditMode.value) return
+  rename(index)
+}
+function toggleBulkEditMode() {
+  isBulkEditMode.value = !isBulkEditMode.value
+  const copy = [...recipes.value]
+  if (isBulkEditMode.value) {
+    for (const r of copy as any[]) (r as any).rename = true
+  } else {
+    for (const r of copy as any[]) delete (r as any).rename
+  }
   recipes.value = copy
 }
 function initRemove(index: number, removeName: string) {
