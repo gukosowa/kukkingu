@@ -35,22 +35,35 @@ export function generateShoppingList(plan: WeeklyPlan): ShoppingListItem[] {
         const multiplier = recipePlan.servings / recipeServings
 
         recipe.ingredients.forEach(ingredient => {
-
           const key = `${ingredient.name.toLowerCase()}-${ingredient.amountType}`
+          const parsedAmount = typeof ingredient.amount === 'number'
+            ? ingredient.amount
+            : parseFloat(ingredient.amount as string) || 0
+          const amountToAdd = parsedAmount * multiplier
+          const trimmedNote = typeof ingredient.note === 'string' ? ingredient.note.trim() : ''
 
           if (ingredientMap.has(key)) {
             const existing = ingredientMap.get(key)!
-            existing.amount += (typeof ingredient.amount === 'number' ? ingredient.amount : parseFloat(ingredient.amount as string) || 0) * multiplier
+            existing.amount += amountToAdd
             if (!existing.recipes.includes(recipe.id!)) {
               existing.recipes.push(recipe.id!)
+            }
+            if (trimmedNote) {
+              if (!existing.notes) {
+                existing.notes = []
+              }
+              if (!existing.notes.includes(trimmedNote)) {
+                existing.notes.push(trimmedNote)
+              }
             }
           } else {
             ingredientMap.set(key, {
               name: ingredient.name,
-              amount: (typeof ingredient.amount === 'number' ? ingredient.amount : parseFloat(ingredient.amount as string) || 0) * multiplier,
+              amount: amountToAdd,
               amountType: ingredient.amountType,
               checked: false,
-              recipes: [recipe.id!]
+              recipes: [recipe.id!],
+              notes: trimmedNote ? [trimmedNote] : []
             })
           }
         })

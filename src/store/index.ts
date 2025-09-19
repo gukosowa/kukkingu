@@ -59,6 +59,7 @@ export type ShoppingListItem = {
   amountType: string
   checked?: boolean
   recipes: string[] // recipe IDs that use this ingredient
+  notes?: string[]
 }
 
 // Initialize recipes from IndexedDB
