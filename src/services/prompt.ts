@@ -19,6 +19,24 @@ export const PROMPT_RECIPE_OMIT_FIELDS = [
 
 const promptRecipeOmitFieldSet = new Set<string>(PROMPT_RECIPE_OMIT_FIELDS)
 
+const NOTE_SECTION_HEADINGS: Record<LocaleText, { preparation: string; tips: string; serving: string }> = {
+  English: {
+    preparation: '#### Preparation Steps',
+    tips: '#### Tips & Variations',
+    serving: '#### Serving Suggestion',
+  },
+  German: {
+    preparation: '#### Zubereitungsschritte',
+    tips: '#### Tipps & Variationen',
+    serving: '#### Serviervorschlag',
+  },
+  Japanese: {
+    preparation: '#### 調理手順',
+    tips: '#### コツとアレンジ',
+    serving: '#### 盛り付けの提案',
+  },
+}
+
 export function sanitizeRecipeForPrompt<T extends Record<string, any>>(recipe: T | null | undefined): Partial<T> {
   if (!recipe || typeof recipe !== 'object') return {}
 
@@ -43,6 +61,7 @@ export function buildImportRecipePrompt(
     Japanese: '了解です。何でも書いてください。JSONに変換してみます。',
   } as const
   const acknowledge = ackMap[locale]
+  const noteHeadings = NOTE_SECTION_HEADINGS[locale] ?? NOTE_SECTION_HEADINGS.English
   const unitRules = [
     'Allowed units (choose only from these and use these exact keys in ingredient.amountType): g, ml, tbl (tablespoon), tea (teaspoon), p (piece), pinch.',
   ].join(' ')
@@ -64,18 +83,18 @@ export function buildImportRecipePrompt(
     `Write the note in ${locale} using a structured format with headings. Use Markdown headings starting at #### (no single # or ##).`,
     'Structure the note with these sections using appropriate localized headings:',
     '',
-    '#### Preparation Steps',
+    noteHeadings.preparation,
     '* Numbered list with clear, short sentences.',
     '* Each step contains exactly one main action.',
     '* Use of basic techniques (cutting, searing, simmering, serving).',
     '* Indications of time, temperatures, and special details go directly into the respective step.',
     '',
-    '## Tips & Variations',
+    noteHeadings.tips,
     '* Pro tricks that refine the dish (e.g. "Deglaze with white wine for more depth").',
     '* Variations for special diets (child-friendly, vegetarian, but not vegan!).',
     '* Small extras that turn the recipe into a highlight.',
     '',
-    '#### Serving Suggestion',
+    noteHeadings.serving,
     '* Ideas on how the dish can be presented or combined (e.g. side dishes, drinks, dips).',
     '* Notes on seasonal variations.',
     '',
@@ -92,7 +111,8 @@ export function buildImportRecipePrompt(
     `Available tags: ${allAvailableTags.join(', ')}`,
     'Prefer existing tags that match the recipe characteristics (meal type, cuisine, ingredients, cooking method, etc.).',
     'You may add new tags if none of the available tags fit well, but try to stay within the available list when possible.',
-    'Tags should be lowercase and relevant to the recipe (e.g., meal time, main ingredients, cuisine type, cooking style).',
+    'Ensure tags are relevant to the recipe (e.g., meal time, main ingredients, cuisine type, cooking style).',
+    'Reuse tags exactly as written; never create duplicates that only differ by casing.',
     'Include 2-5 most relevant tags per recipe.',
     'If the recipe clearly fits multiple categories (e.g., "pasta" and "fast"), include both.',
     `Write tag names in ${locale} when the locale has specific terms for them.`,
@@ -140,6 +160,7 @@ export function buildAskRecipePrompt(recipe: any, question: string, locale: Loca
   const existingTags = getAllTags()
   const suggestedTags = ['breakfast', 'main', 'dinner', 'pasta', 'rice', 'vegi', 'sweet', 'fast']
   const allAvailableTags = Array.from(new Set([...existingTags, ...suggestedTags])).sort((a, b) => a.localeCompare(b, 'ja'))
+  const noteHeadings = NOTE_SECTION_HEADINGS[locale] ?? NOTE_SECTION_HEADINGS.English
 
   // Base rules from import prompt
   const unitRules = [
@@ -163,18 +184,18 @@ export function buildAskRecipePrompt(recipe: any, question: string, locale: Loca
     `Write the note in ${locale} using a structured format with headings. Use Markdown headings starting at #### (no single # or ##).`,
     'Structure the note with these sections using appropriate localized headings:',
     '',
-    '#### Preparation Steps',
+    noteHeadings.preparation,
     '* Numbered list with clear, short sentences.',
     '* Each step contains exactly one main action.',
     '* Use of basic techniques (cutting, searing, simmering, serving).',
     '* Indications of time, temperatures, and special details go directly into the respective step.',
     '',
-    '## Tips & Variations',
+    noteHeadings.tips,
     '* Pro tricks that refine the dish (e.g. "Deglaze with white wine for more depth").',
     '* Variations for special diets (child-friendly, vegetarian, but not vegan!).',
     '* Small extras that turn the recipe into a highlight.',
     '',
-    '#### Serving Suggestion',
+    noteHeadings.serving,
     '* Ideas on how the dish can be presented or combined (e.g. side dishes, drinks, dips).',
     '* Notes on seasonal variations.',
     '',
@@ -186,7 +207,8 @@ export function buildAskRecipePrompt(recipe: any, question: string, locale: Loca
     `Available tags: ${allAvailableTags.join(', ')}`,
     'Prefer existing tags that match the recipe characteristics (meal type, cuisine, ingredients, cooking method, etc.).',
     'You may add new tags if none of the available tags fit well, but try to stay within the available list when possible.',
-    'Tags should be lowercase and relevant to the recipe (e.g., meal time, main ingredients, cuisine type, cooking style).',
+    'Ensure tags are relevant to the recipe (e.g., meal time, main ingredients, cuisine type, cooking style).',
+    'Reuse tags exactly as written; never create duplicates that only differ by casing.',
     'Include 2-5 most relevant tags per recipe.',
     'If the recipe clearly fits multiple categories (e.g., "pasta" and "fast"), include both.',
     `Write tag names in ${locale} when the locale has specific terms for them.`,
