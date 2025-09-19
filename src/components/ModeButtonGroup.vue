@@ -28,6 +28,7 @@
 
     <!-- Checklist Button -->
     <button
+      v-if="props.showChecklist"
       @click="setMode('checklist')"
       class="relative z-10 flex items-center justify-center px-2 py-1.5 rounded-md transition-colors duration-200 whitespace-nowrap"
       :class="mode === 'checklist' ? 'text-white' : 'text-blue-300 hover:text-blue-500'"
@@ -46,14 +47,23 @@ import { vibrate } from '~src/services/vibrate'
 
 interface Props {
   mode: 'view' | 'edit' | 'checklist'
+  showChecklist?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  showChecklist: true,
+})
 const emit = defineEmits<{
   (e: 'mode-change', mode: 'view' | 'edit' | 'checklist'): void
 }>()
 
 const highlightClass = computed(() => {
+  if (!props.showChecklist) {
+    // Two-position slider (view/edit)
+    if (props.mode === 'edit') return 'left-[50%] right-1'
+    return 'left-1 right-[50%]'
+  }
+  // Three-position slider (view/edit/checklist)
   switch (props.mode) {
     case 'view':
       return 'left-1 right-[66.5%]'

@@ -30,14 +30,6 @@
       <Button class="ml-2 flex-shrink" @click="openCreateModal">{{ t('Create') }}</Button>
     </div>
 
-    <button
-          type="button"
-          class="ml-3 text-gray-600 hover:text-gray-800 text-right my-2"
-          v-if="allAvailableTags.length == 0"
-          @click.stop.prevent="toggleBulkEditMode"
-        >
-          {{ isBulkEditMode ? t('View mode') : t('Edit mode') }}
-        </button>
 
     <!-- Tag Filter Details/Summary -->
     <details class="mb-3 mt-2 mx-2" v-if="allAvailableTags.length > 0">
@@ -46,13 +38,6 @@
           <Icon icon="fal fa-tags" size="0.9rem" class="mr-1" />
           {{ t('Available tags') }} ({{ allAvailableTags.length }})
         </span>
-        <button
-          type="button"
-          class="ml-3 text-gray-600 hover:text-gray-800"
-          @click.stop.prevent="toggleBulkEditMode"
-        >
-          {{ isBulkEditMode ? t('View mode') : t('Edit mode') }}
-        </button>
       </summary>
       <div class="mt-2 flex flex-wrap gap-2">
         <span
@@ -193,6 +178,7 @@ import ModalConfirm from './ModalConfirm.vue'
 import ModalInput from './ModalInput.vue'
 import ModalManageImage from './ModalManageImage.vue'
 import ModalImageZoom from './ModalImageZoom.vue'
+import { storageEditMode } from '~src/store/index'
 
 const router = useRouter()
 const recipes = computed({
@@ -239,7 +225,10 @@ let selectedRecipe = ref<any>(null)
 let toastMessage = ref('')
 let toastTimer: number | null = null
 const transitionName = ref('ov')
-const isBulkEditMode = ref(false)
+const isBulkEditMode = computed({
+  get: () => storageEditMode.value,
+  set: (v) => (storageEditMode.value = v)
+})
 let showZoomModal = ref(false)
 let zoomImageSrc = ref('')
 
@@ -616,9 +605,7 @@ function changeName(value: any, index: number) {
 function handleNameEnter(index: number) {
   return
 }
-function toggleBulkEditMode() {
-  isBulkEditMode.value = !isBulkEditMode.value
-}
+// Mode iscontrolled in Header via storageEditMode
 function initRemove(index: number, removeName: string) {
   showDeleteConfirm.value = true
   deleteConfirmName.value = removeName

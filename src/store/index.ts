@@ -151,6 +151,9 @@ export const modalStates = ref({
 // Global search state for cross-component search functionality
 export const globalSearchFilter = ref('')
 
+// Overview (Storage) edit mode toggle, controlled from header
+export const storageEditMode = ref(false)
+
 // Recipe view settings stored globally in IndexedDB
 export const recipeViewSettings = ref({
   denseMode: false,

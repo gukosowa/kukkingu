@@ -49,6 +49,12 @@
         />
       </template>
       <template v-else>
+        <ModeButtonGroup
+          class="mr-2"
+          :mode="storageEditMode ? 'edit' : 'view'"
+          :showChecklist="false"
+          @mode-change="onStorageModeChange"
+        />
         <Button @click="openPlanner" class="mr-2">
           <Icon icon="fal fa-calendar-week mr-2" size="1rem" />
           {{ t('Planner') }}
@@ -86,7 +92,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { recipes, modalStates } from '~src/store/index'
+import { recipes, modalStates, storageEditMode } from '~src/store/index'
 import { t, currentLocale } from '~src/i18n'
 import SInput from '~components/Input.vue'
 import Icon from './Icon.vue'
@@ -194,6 +200,10 @@ function goToOverview() {
 
 function openPlanner() {
   router.push('/planner')
+}
+
+function onStorageModeChange(newMode: 'view' | 'edit' | 'checklist') {
+  storageEditMode.value = newMode === 'edit'
 }
 
 // GPT functionality functions
