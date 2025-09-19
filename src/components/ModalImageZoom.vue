@@ -252,6 +252,29 @@ function zoomToAnimated(targetZoom: number, originClientX: number, originClientY
   }, animatedZoomDurationMs + 30)
 }
 
+function centerOnPoint(clientX: number, clientY: number) {
+  if (!imageContainer.value) return
+
+  const rect = imageContainer.value.getBoundingClientRect()
+  const centerX = rect.left + rect.width / 2
+  const centerY = rect.top + rect.height / 2
+
+  panX.value -= clientX - centerX
+  panY.value -= clientY - centerY
+
+  constrainPan()
+}
+
+function zoomToAnimatedCentered(targetZoom: number, originClientX: number, originClientY: number) {
+  animateNextTransform.value = true
+  // Keep the tap location stable during the zoom, then slide it to the center.
+  zoomTo(targetZoom, originClientX, originClientY)
+  centerOnPoint(originClientX, originClientY)
+  window.setTimeout(() => {
+    animateNextTransform.value = false
+  }, animatedZoomDurationMs + 30)
+}
+
 // Touch gesture handlers for pinch zoom and single-touch drag
 function getDistance(touch1: Touch, touch2: Touch): number {
   const dx = touch1.clientX - touch2.clientX
@@ -355,7 +378,7 @@ function handleTouchEnd(event: TouchEvent) {
 
       if (dt > 0 && dt <= DOUBLE_TAP_MAX_DELAY_MS && dist <= DOUBLE_TAP_MAX_DISTANCE_PX) {
         const nextZoom = Math.max(minZoom, Math.min(maxZoom, zoomLevel.value * doubleTapZoomFactor))
-        zoomToAnimated(nextZoom, changed.clientX, changed.clientY)
+        zoomToAnimatedCentered(nextZoom, changed.clientX, changed.clientY)
         // Reset to avoid triple counting
         lastTapTime.value = 0
       } else {
