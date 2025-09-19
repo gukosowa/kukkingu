@@ -2,7 +2,29 @@
   <BaseDialog v-model:modelValue="show" :title="t('Ask GPT about Recipes')" @backdrop="close">
     <div class="space-y-4">
       <div class="text-sm text-gray-600">
-        {{ t('Ask questions about your recipes. All recipes will be included in the prompt.') }}
+        {{ infoMessage }}
+      </div>
+
+      <div
+        v-if="filterActive"
+        class="rounded-lg border border-yellow-300 bg-yellow-50 px-3 py-2 text-sm text-yellow-800"
+      >
+        <div class="font-medium">{{ t('Filter applied') }}</div>
+        <div class="mt-1">
+          {{ filteredCount }} / {{ totalCount }} {{ t('recipes') }}
+        </div>
+        <div
+          v-if="filterQueryDisplay"
+          class="mt-1 text-xs text-yellow-700"
+        >
+          {{ t('Filter query') }}: "{{ filterQueryDisplay }}"
+        </div>
+        <div
+          v-if="!hasFilteredResults"
+          class="mt-2 text-xs text-yellow-700"
+        >
+          {{ t('No recipes match the current filter. The prompt will be empty.') }}
+        </div>
       </div>
 
       <textarea
@@ -72,16 +94,18 @@
 <script lang="ts" setup>
 import { ref, computed, nextTick } from 'vue'
 import BaseDialog from './BaseDialog.vue'
-import Button from './Button.vue'
 import Icon from './Icon.vue'
 import { t } from '~src/i18n'
-import { recipes } from '~src/store/index'
+import { recipes as allRecipes } from '~src/store/index'
 import { buildAskGptStoragePrompt } from '~src/services/prompt'
 import { legacyCopyToClipboard } from '~src/services/chatgpt'
 import { currentLocale } from '~src/i18n'
 
 interface Props {
   modelValue: boolean
+  recipes?: any[]
+  filterQuery?: string | null
+  isFilterActive?: boolean
 }
 
 interface Emits {
@@ -96,6 +120,23 @@ const show = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value)
 })
+
+const trimmedFilterQuery = computed(() => (props.filterQuery || '').trim())
+const filterActive = computed(() =>
+  props.isFilterActive !== undefined
+    ? !!props.isFilterActive
+    : trimmedFilterQuery.value.length > 0
+)
+const filterQueryDisplay = computed(() => trimmedFilterQuery.value)
+const resolvedRecipes = computed(() => (props.recipes ? props.recipes : allRecipes.value))
+const totalCount = computed(() => allRecipes.value.length)
+const filteredCount = computed(() => resolvedRecipes.value.length)
+const hasFilteredResults = computed(() => filteredCount.value > 0)
+const infoMessage = computed(() =>
+  filterActive.value
+    ? t('Ask questions about your recipes. Only filtered recipes will be included in the prompt.')
+    : t('Ask questions about your recipes. All recipes will be included in the prompt.')
+)
 
 const question = ref('')
 const questionTextarea = ref<HTMLTextAreaElement | null>(null)
@@ -116,7 +157,7 @@ async function confirm() {
     ? 'German'
     : 'English'
 
-  const prompt = buildAskGptStoragePrompt(recipes.value, question.value.trim(), locale as any)
+  const prompt = buildAskGptStoragePrompt(resolvedRecipes.value, question.value.trim(), locale as any)
 
   try {
     if (navigator.clipboard && navigator.clipboard.writeText) {

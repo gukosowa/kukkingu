@@ -160,7 +160,7 @@
     >
       {{ toastMessage }}
     </div>
-    <Footer />
+    <Footer :filtered-recipes="filteredRecipes" :filter-query="filterQuery" />
   </div>
 </template>
 
@@ -187,11 +187,12 @@ const recipes = computed({
 })
 let filterQuery = ref(globalSearchFilter.value)
 
+const filteredRecipes = computed(() => recipes.value.filter(filterMatch))
+
 // Get available tags from currently filtered recipes, sorted alphabetically
 const allAvailableTags = computed(() => {
-  const filteredRecipes = recipes.value.filter(filterMatch)
   const tagSet = new Set<string>()
-  filteredRecipes.forEach(recipe => {
+  filteredRecipes.value.forEach(recipe => {
     if (recipe.tags) {
       recipe.tags.forEach((tag: string) => tagSet.add(tag))
     }
@@ -202,9 +203,8 @@ const allAvailableTags = computed(() => {
 // Get tag counts from currently filtered recipes
 const tagCounts = computed(() => {
   const counts: Record<string, number> = {}
-  const filteredRecipes = recipes.value.filter(filterMatch)
 
-  filteredRecipes.forEach(recipe => {
+  filteredRecipes.value.forEach(recipe => {
     if (recipe.tags) {
       recipe.tags.forEach((tag: string) => {
         counts[tag] = (counts[tag] || 0) + 1
