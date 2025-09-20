@@ -21,7 +21,11 @@
     </div>
 
     <!-- Clear Checklist Button (below button group) -->
-    <div v-if="recipe.checklist" class="flex justify-end mb-2 mt-3">
+    <div v-if="recipe.checklist" class="flex justify-end mb-2 mt-3 gap-2">
+      <Button @click="shareChecklist" color="gray">
+        <Icon icon="fal fa-share" class="mr-1" size="0.8rem" />
+        {{ t('Share') }}
+      </Button>
       <Button @click="clearCheck" color="gray">
         <Icon icon="fal fa-broom" class="mr-1" size="0.8rem" />
         {{ t('Clear checklist') }}
@@ -747,6 +751,114 @@ function clearCheck() {
   copy[recipeIndex.value].ingredients.forEach((i: any) => (i.checked = false))
   _recipes.value = copy
 }
+
+function formatIngredientForShare(item: any): string {
+  if (!item) {
+    return `- ${t('Ingredient')}`
+  }
+
+  const rawName = typeof item.name === 'string' ? item.name.trim() : ''
+  const name = rawName || t('Ingredient')
+  const note = typeof item.note === 'string' ? item.note.trim() : ''
+
+  const amountValue = amount(item)
+  const amountText = amountValue == null ? '' : String(amountValue).trim()
+  const hasAmount = amountText !== '' && amountText !== '0' && amountText !== '0.00'
+
+  const normalizedType = norm(item.amountType || '')
+  let unitText = unitLabel(item.amountType as any) || ''
+  unitText = unitText.trim()
+  if (unitText.startsWith('full_')) {
+    unitText = normalizedType
+  }
+  unitText = unitText.trim()
+  const hasUnit = unitText !== '' && unitText !== '0'
+
+  let measurement = ''
+  if (hasAmount && hasUnit) {
+    measurement = unitBefore(item.amountType || '') ? `${unitText} ${amountText}` : `${amountText} ${unitText}`
+  } else if (hasAmount) {
+    measurement = amountText
+  } else if (hasUnit) {
+    measurement = unitText
+  }
+
+  const parts = [measurement, name].filter(part => part && part.trim().length > 0)
+  let line = `- ${parts.join(' ').replace(/\s+/g, ' ').trim()}`
+  if (note) {
+    line += ` (${note})`
+  }
+  return line
+}
+
+async function copyChecklistToClipboard(text: string) {
+  const copyLegacy = () => {
+    legacyCopyToClipboard(text)
+    showAppNotice(t('Copied to clipboard'), t('Recipe checklist copied to clipboard'), 'fal fa-check-circle')
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(text)
+      showAppNotice(t('Copied to clipboard'), t('Recipe checklist copied to clipboard'), 'fal fa-check-circle')
+      return
+    } catch (_) {
+      try {
+        copyLegacy()
+        return
+      } catch (legacyError) {
+        throw legacyError
+      }
+    }
+  }
+
+  try {
+    copyLegacy()
+  } catch (legacyError) {
+    throw legacyError
+  }
+}
+
+async function shareChecklist() {
+  const currentRecipe = recipe.value
+  const ingredients = currentRecipe?.ingredients || []
+
+  if (!currentRecipe || ingredients.length === 0) {
+    showAppNotice(t('No ingredients to share'), t('This recipe has no ingredients to share'), 'fal fa-info-circle')
+    return
+  }
+
+  const lines = ingredients
+    .map((item: any) => formatIngredientForShare(item))
+    .filter(line => line && line.trim().length > 0)
+
+  if (lines.length === 0) {
+    showAppNotice(t('No ingredients to share'), t('This recipe has no ingredients to share'), 'fal fa-info-circle')
+    return
+  }
+  const title = currentRecipe.name?.trim() || t('Recipe')
+  const shareText = `${title}\n\n${lines.join('\n')}`.trim()
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title,
+        text: shareText
+      })
+      return
+    } catch (error) {
+      console.warn('navigator.share failed, falling back to clipboard', error)
+    }
+  }
+
+  try {
+    await copyChecklistToClipboard(shareText)
+  } catch (error) {
+    console.error('Failed to share recipe checklist:', error)
+    showAppNotice(t('Share failed'), t('Unable to share recipe checklist'), 'fal fa-exclamation-triangle')
+  }
+}
+
 function clearNote(index: number) {
   const copy = [..._recipes.value]
   copy[recipeIndex.value].ingredients[index].note = ''
