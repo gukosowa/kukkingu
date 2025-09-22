@@ -70,6 +70,7 @@ export type ShoppingListItem = {
 
 // Initialize recipes from IndexedDB
 export const recipes: Ref<Recipe[]> = ref([])
+export const recipesInitialized = ref(false)
 
 // Load recipes from IndexedDB on initialization, but wait for migration first
 async function initializeRecipes() {
@@ -104,6 +105,8 @@ async function initializeRecipes() {
     console.error('Failed to load recipes from IndexedDB:', error)
     // Fallback to empty array
     recipes.value = []
+  } finally {
+    recipesInitialized.value = true
   }
 }
 
