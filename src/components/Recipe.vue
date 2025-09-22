@@ -317,6 +317,9 @@
           </template>
         </div>
 
+        <!-- Cooked history -->
+        <Cooked :recipe="recipe" :edit-mode="!!recipe.edit" />
+
         <!-- Tags Section (Edit Mode - below image) -->
         <div v-if="recipe.edit" class="mt-4">
           <TagInput v-model="recipe.tags" @update:modelValue="saveChange" />
@@ -395,6 +398,7 @@ import ModalCropImage from './ModalCropImage.vue'
 import ModalImageZoom from './ModalImageZoom.vue'
 import ModalInput from './ModalInput.vue'
 import TagInput from './TagInput.vue'
+import Cooked from './Cooked.vue'
 import { t, currentLocale } from '~src/i18n'
 import { buildAskRecipePrompt } from '~src/services/prompt'
 import { normalizeAmountType } from '~src/services/units'

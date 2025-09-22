@@ -11,6 +11,11 @@ export type Ingredient = {
   checked?: boolean
 }
 
+export type CookedEntry = {
+  cookedAt: string
+  note?: string
+}
+
 export type Recipe = {
   id?: string
   name: string
@@ -29,6 +34,7 @@ export type Recipe = {
   backgroundArea?: { xPct: number; yPct: number; wPct: number; hPct: number } | null
   tags?: string[]
   ingredients: Ingredient[]
+  cooked?: CookedEntry[]
 }
 
 export type DayPlan = {
@@ -78,6 +84,19 @@ async function initializeRecipes() {
       if (migrated.servings === undefined) {
         migrated.servings = 2 // Default to 2 servings
       }
+      if (!Array.isArray(migrated.cooked)) {
+        migrated.cooked = []
+      } else {
+        migrated.cooked = migrated.cooked
+          .filter((entry: any) => entry && typeof entry.cookedAt === 'string')
+          .map((entry: any) => {
+            const cookedEntry: CookedEntry = { cookedAt: entry.cookedAt }
+            if (typeof entry.note === 'string' && entry.note.trim()) {
+              cookedEntry.note = entry.note
+            }
+            return cookedEntry
+          })
+      }
       return migrated
     })
     recipes.value = migratedRecipes
@@ -98,26 +117,45 @@ watch(recipes, async (val) => {
 
 // Keep IndexedDB in sync whenever recipes changes
 export async function updateRecipesToStore(value: Recipe[]) {
-  value = value.map((r) => {
-    if (r.ingredients) {
-      r.ingredients.forEach((i: any) => {
-        delete (i as any)._inputAmountType
-        // Normalize units before persisting
-        i.amountType = normalizeAmountType(i.amountType)
+  const sanitized = value.map((recipe) => {
+    const cleaned: Recipe = { ...recipe }
+
+    if (Array.isArray(cleaned.ingredients)) {
+      cleaned.ingredients = cleaned.ingredients.map((ingredient: any) => {
+        const normalizedIngredient = { ...ingredient }
+        delete (normalizedIngredient as any)._inputAmountType
+        normalizedIngredient.amountType = normalizeAmountType(normalizedIngredient.amountType)
+        return normalizedIngredient
       })
-      if (!r.id) {
-        r.id = uuidv4()
-      }
     }
-    // Ensure servings field exists with default value
-    if (r.servings === undefined) {
-      r.servings = 2
+
+    if (!cleaned.id) {
+      cleaned.id = uuidv4()
     }
-    return r
+
+    if (!Array.isArray(cleaned.cooked)) {
+      cleaned.cooked = []
+    } else {
+      cleaned.cooked = cleaned.cooked
+        .filter((entry: any) => entry && typeof entry.cookedAt === 'string')
+        .map((entry: any) => {
+          const cookedEntry: CookedEntry = { cookedAt: entry.cookedAt }
+          if (typeof entry.note === 'string' && entry.note.trim()) {
+            cookedEntry.note = entry.note
+          }
+          return cookedEntry
+        })
+    }
+
+    if (cleaned.servings === undefined) {
+      cleaned.servings = 2
+    }
+
+    return cleaned
   })
 
   try {
-    await saveRecipes(value)
+    await saveRecipes(sanitized)
   } catch (error) {
     console.error('Failed to save recipes to IndexedDB:', error)
   }

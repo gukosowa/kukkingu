@@ -23,6 +23,7 @@ export const newRecipe = async (name) => {
     desired: 100,
     note: '',
     url: '',
+    cooked: [],
     ingredients: [newIngredient('', '', 'g')],
   }
 
