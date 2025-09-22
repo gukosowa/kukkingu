@@ -1,14 +1,22 @@
 // Service worker with Workbox; updates caches using Stale-While-Revalidate
 
 const cacheName = 'stale-with-revalidate'
+const htmlCacheName = 'network-first-html'
+const allowedCacheNames = new Set([cacheName, htmlCacheName])
 
 // import workbox 
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js')
 const { routing, strategies } = workbox
 
-// implements staleWhileRevalidate to all routes
+// serve navigations with NetworkFirst so updated HTML references fresh assets
 routing.registerRoute(
-  () => true,
+  ({ request }) => request.mode === 'navigate',
+  new strategies.NetworkFirst({ cacheName: htmlCacheName }),
+)
+
+// implements staleWhileRevalidate for non-navigation requests
+routing.registerRoute(
+  ({ request }) => request.mode !== 'navigate',
   new strategies.StaleWhileRevalidate({ cacheName }),
 )
 
@@ -29,11 +37,10 @@ self.addEventListener('fetch', (event) => {
 })
 
 
-// removes all caches not named <cacheName>
+// removes all caches not tracked in allowedCacheNames
 const invalidateOldCache = async () => {
   const keys = await caches.keys()
-  const isOldCache = (key) => key !== cacheName
-  const oldKeys = keys.filter(isOldCache)
+  const oldKeys = keys.filter((key) => !allowedCacheNames.has(key))
 
   return Promise.all(oldKeys.map((key) => caches.delete(key)))
 }
