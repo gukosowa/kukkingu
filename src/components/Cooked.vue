@@ -52,7 +52,7 @@
     <BaseDialog v-model="showNoteModal" size="sm" @close="closeNoteModal">
       <template #header>
         <div class="px-4 py-2">
-          <div class="text-base font-semibold text-gray-200">
+          <div class="text-base font-semibold text-white">
             {{ t('Cooked note') }}
           </div>
         </div>
@@ -62,6 +62,14 @@
           <p class="text-xs leading-snug text-gray-400">
             {{ t('Note can be how you cooked this time, what you changed or you would change next time.') }}
           </p>
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-gray-500">{{ t('Cooked at') }}</label>
+            <input
+              v-model="noteDatetimeDraft"
+              type="datetime-local"
+              class="w-full rounded-md border border-gray-300 p-2 text-sm text-black focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
           <textarea
             ref="noteTextarea"
             v-model="noteDraft"
@@ -72,7 +80,15 @@
         </div>
       </template>
       <template #footer>
-        <div class="flex gap-2 px-3 py-2">
+        <div class="flex flex-wrap gap-2 px-3 py-2">
+          <button
+            v-if="selectedIndex >= 0"
+            type="button"
+            class="flex-1 rounded-lg border border-red-500 py-2 text-sm text-red-500 transition-colors hover:bg-red-500 hover:text-white"
+            @click="deleteFromModal"
+          >
+            {{ t('Delete') }}
+          </button>
           <button
             type="button"
             class="flex-1 rounded-lg bg-gray-500 py-2 text-sm text-white transition-colors hover:bg-gray-600"
@@ -119,6 +135,7 @@ const entries = computed((): CookedEntry[] => props.recipe?.cooked ?? [])
 
 const showNoteModal = ref(false)
 const noteDraft = ref('')
+const noteDatetimeDraft = ref('')
 const selectedIndex = ref(-1)
 const noteTextarea = ref<HTMLTextAreaElement | null>(null)
 
@@ -198,6 +215,7 @@ function openNoteModal(index: number) {
   if (!entry) return
   selectedIndex.value = index
   noteDraft.value = entry.note || ''
+  noteDatetimeDraft.value = formatDatetimeForInput(entry.cookedAt)
   showNoteModal.value = true
 }
 
@@ -205,6 +223,7 @@ function closeNoteModal() {
   showNoteModal.value = false
   selectedIndex.value = -1
   noteDraft.value = ''
+  noteDatetimeDraft.value = ''
 }
 
 function saveNote() {
@@ -219,7 +238,7 @@ function saveNote() {
     if (!target) {
       return
     }
-    const nextEntry: CookedEntry = { cookedAt: target.cookedAt }
+    const nextEntry: CookedEntry = { cookedAt: parseInputDatetime(noteDatetimeDraft.value, target.cookedAt) }
     if (trimmed) {
       nextEntry.note = trimmed
     }
@@ -244,11 +263,55 @@ function deleteEntry() {
     if (!recipe.cooked) return
     recipe.cooked.splice(pendingDeleteIndex.value, 1)
   })
+  closeNoteModal()
   cancelDelete()
 }
 
 function cancelDelete() {
   showDeleteConfirm.value = false
   pendingDeleteIndex.value = -1
+}
+
+function deleteFromModal() {
+  if (selectedIndex.value < 0) return
+  requestDelete(selectedIndex.value)
+}
+
+function formatDatetimeForInput(value: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
+function parseInputDatetime(value: string, fallback: string): string {
+  if (!value) {
+    return fallback
+  }
+  const [datePart, timePart] = value.split('T')
+  if (!datePart || !timePart) {
+    return fallback
+  }
+  const [yearStr, monthStr, dayStr] = datePart.split('-')
+  const [hourStr, minuteStr] = timePart.split(':')
+  const year = Number(yearStr)
+  const month = Number(monthStr)
+  const day = Number(dayStr)
+  const hour = Number(hourStr)
+  const minute = Number(minuteStr)
+  if ([year, month, day, hour, minute].some((part) => Number.isNaN(part))) {
+    return fallback
+  }
+  const date = new Date(year, month - 1, day, hour, minute)
+  if (Number.isNaN(date.getTime())) {
+    return fallback
+  }
+  return date.toISOString()
 }
 </script>

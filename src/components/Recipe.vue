@@ -317,13 +317,13 @@
           </template>
         </div>
 
-        <!-- Cooked history -->
-        <Cooked :recipe="recipe" :edit-mode="!!recipe.edit" />
-
         <!-- Tags Section (Edit Mode - below image) -->
         <div v-if="recipe.edit" class="mt-4">
           <TagInput v-model="recipe.tags" @update:modelValue="saveChange" />
         </div>
+
+        <!-- Cooked history -->
+        <Cooked :recipe="recipe" :edit-mode="!!recipe.edit" />
       </div>
     </div>
 
