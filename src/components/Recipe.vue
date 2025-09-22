@@ -381,11 +381,11 @@
   </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch, nextTick } from 'vue'
+import { computed, ref, watch, watchEffect, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as marked from 'marked'
 import Footer from '~components/Footer.vue'
-import { recipes as _recipes, globalSearchFilter, recipeViewSettings } from '~src/store/index'
+import { recipes as _recipes, globalSearchFilter, recipeViewSettings, recipesInitialized } from '~src/store/index'
 import Button from './Button.vue'
 import SInput from './Input.vue'
 import Icon from './Icon.vue'
@@ -443,9 +443,12 @@ const recipe = computed<any>({
   },
 })
 
-if (!_recipes.value || _recipes.value.length === 0) {
-  router.push('/')
-}
+watchEffect(() => {
+  if (!recipesInitialized.value) return
+  if (!recipe.value) {
+    router.replace('/')
+  }
+})
 
 // Ensure view mode when opening a recipe: if currently in edit mode, switch to view
 watch(
