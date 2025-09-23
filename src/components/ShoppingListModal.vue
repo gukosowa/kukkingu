@@ -172,7 +172,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { t } from '~src/i18n'
-import { ShoppingListItem, recipes } from '~src/store/index'
+import { recipes } from '~src/store/index'
+import type { ShoppingListItem } from '~src/store/index'
 import { updateShoppingListItem } from '~src/store/index'
 import { normalizeAmountType } from '~src/services/units'
 import Button from './Button.vue'

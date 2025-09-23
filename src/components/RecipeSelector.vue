@@ -51,7 +51,8 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { t } from '~src/i18n'
-import { recipes, Recipe } from '~src/store/index'
+import { recipes } from '~src/store/index'
+import type { Recipe } from '~src/store/index'
 import Icon from './Icon.vue'
 import Button from './Button.vue'
 import SInput from './Input.vue'

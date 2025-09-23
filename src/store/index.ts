@@ -1,7 +1,8 @@
-import { ref, Ref, watch } from 'vue'
-import { migrateRecipeUnits, normalizeAmountType } from '~src/services/units'
+import { ref, watch } from 'vue'
+import type { Ref } from 'vue'
+import { migrateRecipeUnits, normalizeAmountType } from '../services/units'
 import { currentLocale } from '~src/i18n'
-import { getRecipes, saveRecipes, getSetting, setSetting, migrateFromLocalStorage, getDailyPlans, saveDailyPlan, deleteDailyPlan, getShoppingList, saveShoppingList } from '~src/services/indexeddb'
+import { getRecipes, saveRecipes, getSetting, setSetting, migrateFromLocalStorage, getDailyPlans, saveDailyPlan, deleteDailyPlan, getShoppingList, saveShoppingList } from '../services/indexeddb'
 
 export type Ingredient = {
   name: string

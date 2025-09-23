@@ -1,4 +1,4 @@
-import { WeeklyPlan, ShoppingListItem, Recipe, Ingredient, DayPlan } from '~src/store/index'
+import type { WeeklyPlan, ShoppingListItem, Recipe, Ingredient, DayPlan } from '~src/store/index'
 import { recipes } from '~src/store/index'
 import { buildImportRecipePrompt } from './prompt'
 import { openChatGPT } from './chatgpt'

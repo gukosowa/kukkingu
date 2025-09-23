@@ -1,7 +1,7 @@
 // Utility to build the ChatGPT import prompt for a recipe URL
 // Uses template literals for readability and maintainability
 
-import { getAllTags } from '~src/store/index'
+import { getAllTags } from '../store/index'
 
 export type LocaleText = 'English' | 'Japanese' | 'German'
 
@@ -37,10 +37,10 @@ const NOTE_SECTION_HEADINGS: Record<LocaleText, { preparation: string; tips: str
   },
 }
 
-export function sanitizeRecipeForPrompt<T extends Record<string, any>>(recipe: T | null | undefined): Partial<T> {
+export function sanitizeRecipeForPrompt<T extends Record<string, unknown>>(recipe: T | null | undefined): Partial<T> {
   if (!recipe || typeof recipe !== 'object') return {}
 
-  const sanitized: Record<string, any> = { ...recipe }
+  const sanitized: any = { ...recipe }
 
   for (const field of promptRecipeOmitFieldSet) {
     if (field in sanitized) {
@@ -48,7 +48,7 @@ export function sanitizeRecipeForPrompt<T extends Record<string, any>>(recipe: T
     }
   }
 
-  return sanitized
+  return sanitized as Partial<T>
 }
 
 export function buildImportRecipePrompt(
