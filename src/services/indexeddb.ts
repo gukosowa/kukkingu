@@ -1,4 +1,4 @@
-import { Recipe, WeeklyPlan, ShoppingListItem } from '~src/store/index'
+import type { Recipe, WeeklyPlan, ShoppingListItem } from '~src/store/index'
 import { optimizeImageFile } from '~src/services/imageOptimization'
 
 // Utility function to create a deep clone without Vue reactivity
