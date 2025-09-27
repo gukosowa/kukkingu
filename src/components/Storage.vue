@@ -164,15 +164,18 @@
         <div
           v-for="f in friends"
           :key="f.token"
-          class="flex items-center justify-between bg-gray-100 rounded-lg px-3 py-2"
+          class="flex items-center justify-between bg-gray-100 rounded-lg px-3 py-2 relative"
         >
-          <span class="text-gray-800 truncate">{{ f.name || t('Unnamed friend') }}</span>
+          <div>
+            <span class="text-gray-800 truncate">{{ f.name || t('Unnamed friend') }}</span>
+            <div v-if="f.updated_at" class="text-xs text-gray-500">{{ formatFriendDate(f.updated_at) }}</div>
+
+          </div>
           <template v-if="isBulkEditMode">
             <Button color="red" :tone="300" @click="removeFriend(f.token)">{{ t('Remove') }}</Button>
           </template>
           <template v-else>
             <div class="flex items-center gap-2">
-              <span v-if="f.updated_at" class="text-xs text-gray-500">{{ formatFriendDate(f.updated_at) }}</span>
               <Button @click="showFriend(f)">{{ t('Show') }}</Button>
             </div>
           </template>
@@ -286,6 +289,42 @@ async function loadFriends() {
     friends.value = []
   }
 }
+
+// Fetch remote metadata for all stored friend tokens and update local IDB
+async function syncFriendsFromServer() {
+  try {
+    const stored = await getFriends()
+    const tokens = (stored || []).map(f => f.token).filter(Boolean)
+    if (!tokens.length) return
+
+    const res = await fetch('/api/friends', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ tokens }),
+    })
+    if (!res.ok) return
+    const data = await res.json().catch(() => ({}))
+    const map = (data && data.friends) || {}
+
+    const updates = []
+    for (const token of tokens) {
+      const entry = map[token]
+      if (entry) {
+        const name = (typeof entry.name === 'string' && entry.name.trim().length > 0) ? entry.name : t('unknown')
+        const created_at = entry.created_at || undefined
+        const updated_at = entry.updated_at || undefined
+        updates.push(setFriend(token, { name, created_at, updated_at }))
+      }
+    }
+    if (updates.length) {
+      await Promise.allSettled(updates)
+      await loadFriends()
+    }
+  } catch (_) {
+    // Silent failure; do not block UI
+  }
+}
+
 async function removeFriend(token: string) {
   try {
     await deleteFriendFromDB(token)
@@ -578,6 +617,8 @@ const route = useRoute()
 onMounted(() => {
   // Upload all local data to share endpoint when arriving at Storage
   uploadAllColumns()
+  // Also refresh friends metadata from server in the background
+  syncFriendsFromServer()
 })
 
 function openCreateModal() {
