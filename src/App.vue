@@ -9,7 +9,7 @@
     <!-- View Mode chip -->
     <Transition name="chip" appear v-if="isViewingFriend">
       <div class="fixed bottom-3 left-3 z-50">
-        <div class="flex items-center gap-2 bg-orange-600 text-white px-3 py-1.5 rounded-full shadow-lg">
+        <div class="flex items-center gap-2 bg-orange-600/60 backdrop-blur text-white px-3 py-1.5 rounded-full shadow-lg">
           <span class="text-sm font-medium">{{ t('Friend view') }}</span>
           <button
             type="button"

@@ -1,5 +1,5 @@
 <template>
-  <header class="z-20 px-2 text-white h-16 bg-blue-600 fixed flex w-full items-center shadow-md border-b border-blue-700">
+  <header class="z-20 px-2 text-white h-16 bg-blue-700/70 backdrop-blur fixed flex w-full items-center shadow-md border-b border-blue-700">
     <div class="w-full flex items-center">
       <template v-if="!recipe">
         <div class="flex-grow flex items-center">
