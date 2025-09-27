@@ -1,0 +1,1 @@
+ALTER TABLE "recipes" ADD COLUMN "name" varchar(255);

@@ -15,6 +15,13 @@
       "when": 1758966508062,
       "tag": "0001_busy_susan_delgado",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1758967199891,
+      "tag": "0002_tense_chameleon",
+      "breakpoints": true
     }
   ]
 }

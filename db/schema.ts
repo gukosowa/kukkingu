@@ -3,6 +3,7 @@ import { integer, pgTable, varchar, jsonb, uniqueIndex } from 'drizzle-orm/pg-co
 export const recipes = pgTable('recipes', {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   share_token: varchar({ length: 255 }).notNull(),
+  name: varchar({ length: 255 }),
   recipes: jsonb().notNull().$type<Record<string, any>>().default({}),
   shoppingLists: jsonb().notNull().$type<Record<string, any>>().default({}),
   dailyPlans: jsonb().notNull().$type<Record<string, any>>().default({}),

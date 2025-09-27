@@ -168,6 +168,10 @@
           <p class="text-gray-700">
             {{ t("Send this to someone you want to show your recipe list. They can't change your recipes, it is read only") }}
           </p>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('Your name') }}</label>
+            <SInput v-model="shareName" :placeholder="t('Your name')" />
+          </div>
           <pre class="bg-gray-100 rounded-lg p-4 overflow-x-auto text-sm">
 <code class="select-all break-all">{{ shareToken }}</code>
           </pre>
@@ -207,11 +211,16 @@ import ModalManageImage from './ModalManageImage.vue'
 import ModalImageZoom from './ModalImageZoom.vue'
 import { storageEditMode } from '~src/store/index'
 import BaseDialog from '~components/BaseDialog.vue'
-import { getSetting, setSetting } from '~src/services/indexeddb'
+import { getSetting, setSetting, getDailyPlans, getShoppingList } from '~src/services/indexeddb'
 
 // Share online modal state
 const showShareModal = ref(false)
 const shareToken = ref('')
+const shareName = ref('')
+
+watch(shareName, async (val) => {
+  try { await setSetting('shareName', (val || '').toString()) } catch (_) {}
+})
 
 function generateSecureHash(): string {
   try {
@@ -234,14 +243,79 @@ async function openShareModal() {
       shareToken.value = token
       await setSetting('shareToken', token)
     }
+
+    // Load stored name (optional)
+    const existingName = await getSetting('shareName', '')
+    shareName.value = typeof existingName === 'string' ? existingName : ''
   } catch (e) {
     // If IndexedDB is unavailable, fall back to generating a token each time
     shareToken.value = generateSecureHash()
   }
   showShareModal.value = true
 }
-function closeShareModal() {
+async function closeShareModal() {
   showShareModal.value = false
+  try {
+    await uploadAllColumns()
+  } catch (e) {
+    // Silent failure; do not block UI on sync errors
+  }
+}
+
+async function ensureShareToken(): Promise<string> {
+  try {
+    const existing = await getSetting('shareToken', '')
+    if (existing && typeof existing === 'string' && existing.length > 0) {
+      return existing
+    }
+    const token = generateSecureHash()
+    await setSetting('shareToken', token)
+    return token
+  } catch (e) {
+    // If IndexedDB fails, generate ephemeral token
+    return generateSecureHash()
+  }
+}
+
+async function uploadAllColumns() {
+  try {
+    const token = await ensureShareToken()
+
+    // Collect local data
+    const plans = await getDailyPlans()
+    const shoppingLists: Record<string, any> = {}
+    for (const plan of plans) {
+      try {
+        const items = await getShoppingList((plan as any).id)
+        shoppingLists[(plan as any).id] = items
+      } catch (_) {}
+    }
+
+    // Include optional user name if available
+    let name = ''
+    try {
+      const storedName = await getSetting('shareName', '')
+      if (typeof storedName === 'string') name = storedName.trim()
+    } catch (_) {}
+
+    const payload = {
+      share_token: token,
+      name: name || undefined,
+      recipes: _recipes.value,
+      shoppingLists,
+      dailyPlans: plans,
+    }
+
+    await fetch('/api/recipes', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    // Do not show UI changes; silent sync
+  } catch (e) {
+    // Silent failure; optionally log
+    console.warn('Share upload failed', e)
+  }
 }
 
 const router = useRouter()
@@ -297,6 +371,11 @@ let showZoomModal = ref(false)
 let zoomImageSrc = ref('')
 
 const route = useRoute()
+
+onMounted(() => {
+  // Upload all local data to share endpoint when arriving at Storage
+  uploadAllColumns()
+})
 
 function openCreateModal() {
   createName.value = ''
@@ -739,6 +818,15 @@ watch(filterQuery, (newValue) => {
 watch(globalSearchFilter, (newValue) => {
   if (filterQuery.value !== newValue) {
     filterQuery.value = newValue
+  }
+})
+
+// Persist shareName to IndexedDB as user types (best-effort)
+watch(shareName, async (newValue) => {
+  try {
+    await setSetting('shareName', newValue || '')
+  } catch (e) {
+    // ignore persistence errors
   }
 })
 
