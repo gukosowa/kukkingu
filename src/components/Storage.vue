@@ -154,8 +154,10 @@
     </TransitionGroup>
 
     <div class='mt-8'>
-      <Button @click="openShareModal">{{t('Share online')}}</Button>
-      <Button class="ml-2" @click="openFriendModal">{{ t('Add friend') }}</Button>
+      <div class='gap-2 flex flex-wrap'>
+        <Button @click="openShareModal">{{t('Share online')}}</Button>
+        <Button color='green' @click="openFriendModal">{{ t('Add friend') }}</Button>
+      </div>
 
       <!-- Friends list -->
       <div v-if="friends.length" class="mt-4 space-y-2">
@@ -169,7 +171,10 @@
             <Button color="red" :tone="300" @click="removeFriend(f.token)">{{ t('Remove') }}</Button>
           </template>
           <template v-else>
-            <Button @click="showFriend(f)">{{ t('Show') }}</Button>
+            <div class="flex items-center gap-2">
+              <span v-if="f.updated_at" class="text-xs text-gray-500">{{ formatFriendDate(f.updated_at) }}</span>
+              <Button @click="showFriend(f)">{{ t('Show') }}</Button>
+            </div>
           </template>
         </div>
       </div>
@@ -226,7 +231,7 @@
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('Friend token') }}</label>
-            <SInput v-model="friendToken" :placeholder="t('Paste friends token')" />
+            <SInput v-model="friendToken" :placeholder="t('Paste friends token')" :autofocus="true" />
           </div>
         </div>
       </template>
@@ -252,7 +257,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { t } from '~src/i18n'
+import { t, currentLocale } from '~src/i18n'
 import Footer from '~components/Footer.vue'
 import { recipes as _recipes, modalStates, globalSearchFilter, getAllTags, sortJapaneseText, uuidv4 } from '~src/store/index'
 import Button from './Button.vue'
@@ -273,7 +278,7 @@ const shareToken = ref('')
 const shareName = ref('')
 
 // Friends state
-const friends = ref<Array<{ token: string; name: string }>>([])
+const friends = ref<Array<{ token: string; name: string; created_at?: string; updated_at?: string }>>([])
 async function loadFriends() {
   try {
     friends.value = await getFriends()
@@ -312,24 +317,26 @@ async function confirmViewFriend() {
     return
   }
   try {
-    // Check token existence in DB and get only that row
-    const res = await fetch(`/api/recipes?token=${encodeURIComponent(token)}`)
-    if (!res.ok) throw new Error('Failed to query')
-    const payload = await res.json().catch(() => ({}))
-    const row = payload?.recipe || null
-    if (!row) {
+    // Verify via friend endpoint and retrieve minimal profile
+    const res = await fetch('/api/friend', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(token)
+    })
+
+    if (res.status === 404) {
       showToast('Token not found')
       return
     }
-    const name = (row?.name && typeof row.name === 'string' && row.name.trim().length > 0) ? row.name : t('unknown')
+    if (!res.ok) throw new Error('Failed to query')
 
-    // Avoid duplicates: update if exists, else create
-    const existing = await getFriendFromDB(token)
-    if (existing) {
-      await setFriend(token, { name })
-    } else {
-      await setFriend(token, { name })
-    }
+    const data = await res.json().catch(() => ({}))
+    const name = (data?.name && typeof data.name === 'string' && data.name.trim().length > 0) ? data.name : t('unknown')
+    const created_at = data?.created_at || undefined
+    const updated_at = data?.updated_at || undefined
+
+    // Save/Update friend locally with dates
+    await setFriend(token, { name, created_at, updated_at })
 
     showFriendModal.value = false
     await loadFriends()
@@ -337,6 +344,27 @@ async function confirmViewFriend() {
     // On error, keep modal open to let user retry
     console.error(e)
     showToast('Failed to add friend')
+  }
+}
+
+function formatFriendDate(dateStr: string): string {
+  if (!dateStr) return ''
+  try {
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return ''
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      // no seconds
+    };
+
+    return d.toLocaleString(currentLocale.value || 'en', options);
+
+  } catch (_) {
+    return ''
   }
 }
 

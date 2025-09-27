@@ -335,7 +335,7 @@ class IndexedDBService {
   }
 
   // Friends operations
-  async getFriend(token: string): Promise<{ token: string; name: string } | undefined> {
+  async getFriend(token: string): Promise<{ token: string; name: string; created_at?: string; updated_at?: string } | undefined> {
     const db = await this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([FRIENDS_STORE], 'readonly')
@@ -344,7 +344,7 @@ class IndexedDBService {
 
       request.onsuccess = () => {
         if (request.result) {
-          resolve(request.result as { token: string; name: string })
+          resolve(request.result as { token: string; name: string; created_at?: string; updated_at?: string })
         } else {
           resolve(undefined)
         }
@@ -356,12 +356,19 @@ class IndexedDBService {
     })
   }
 
-  async setFriend(token: string, value: { name: string }): Promise<void> {
+  async setFriend(token: string, value: { name: string; created_at?: string; updated_at?: string }): Promise<void> {
+    const existing = await this.getFriend(token)
     const db = await this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([FRIENDS_STORE], 'readwrite')
       const store = transaction.objectStore(FRIENDS_STORE)
-      const request = store.put({ token, name: value.name })
+      const toSave = {
+        token,
+        name: value.name,
+        created_at: value.created_at ?? existing?.created_at,
+        updated_at: value.updated_at ?? existing?.updated_at,
+      }
+      const request = store.put(toSave)
 
       request.onsuccess = () => {
         resolve()
@@ -373,7 +380,7 @@ class IndexedDBService {
     })
   }
 
-  async getAllFriends(): Promise<Array<{ token: string; name: string }>> {
+  async getAllFriends(): Promise<Array<{ token: string; name: string; created_at?: string; updated_at?: string }>> {
     const db = await this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([FRIENDS_STORE], 'readonly')
@@ -381,7 +388,7 @@ class IndexedDBService {
       const request = store.getAll()
 
       request.onsuccess = () => {
-        resolve((request.result || []) as Array<{ token: string; name: string }>)
+        resolve((request.result || []) as Array<{ token: string; name: string; created_at?: string; updated_at?: string }>)
       }
 
       request.onerror = () => {
@@ -462,7 +469,7 @@ export const saveShoppingList = (planId: string, items: ShoppingListItem[]) => i
 
 // Friends helper functions
 export const getFriend = (token: string) => idbService.getFriend(token)
-export const setFriend = (token: string, value: { name: string }) => idbService.setFriend(token, value)
+export const setFriend = (token: string, value: { name: string; created_at?: string; updated_at?: string }) => idbService.setFriend(token, value)
 export const getFriends = () => idbService.getAllFriends()
 export const deleteFriend = (token: string) => idbService.deleteFriend(token)
 
