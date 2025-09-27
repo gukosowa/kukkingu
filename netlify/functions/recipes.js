@@ -11,6 +11,24 @@ export default async (request) => {
 
     const method = request?.method || 'GET';
 
+    // Token-targeted lookup: GET /api/recipes?token=...
+    if (method === 'GET') {
+      try {
+        const url = new URL(request.url);
+        const token = url.searchParams.get('token');
+        if (token) {
+          const rows = await db.select().from(recipes).where(eq(recipes.share_token, token)).limit(1);
+          const row = rows[0] || null;
+          return new Response(
+            JSON.stringify({ exists: !!row, recipe: row }),
+            { headers: { 'content-type': 'application/json' }, status: 200 }
+          );
+        }
+      } catch (_) {
+        // fall through to default GET handler
+      }
+    }
+
     if (method === 'POST') {
       const payload = await request.json().catch(() => ({}));
       const { share_token, name = null, recipes: rec = {}, shoppingLists = {}, dailyPlans = {} } = payload || {};

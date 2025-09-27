@@ -209,11 +209,17 @@
   "Number of servings": "人数",
   "Default number of servings per recipe": "レシピごとのデフォルト人数",
   "Meal Types": "食事の種類",
+  "Remove": "削除",
+  "Show": "表示",
+  "Unnamed friend": "名前なしの友だち",
   "Select which meals to include in the plan": "プランに含める食事を選択してください",
   "Additional Preferences": "追加の好み",
   "Describe any additional preferences or requirements for the meal plan": "食事プランの追加の好みや要件を説明してください",
   "e.g., low carb, vegetarian options, quick recipes, budget-friendly, etc.": "例: 低炭水化物、ベジタリアン向け、簡単レシピ、予算重視など",
   "Plan Details": "プランの詳細",
+  "Add friend": "友だちを追加",
+  "Friend token": "友だちトークン",
+  "Paste friends token": "友だちのトークンを貼り付け",
   "Days": "日数",
   "Recipes Available": "利用可能なレシピ",
   "Rename": "名前変更",
@@ -242,5 +248,7 @@
   "Optimize Image": "画像を最適化",
   "Optimizing...": "最適化中...",
   "Share online": "オンラインで共有",
-  "Send this to someone you want to show your recipe list. They can't change your recipes, it is read only": "レシピ一覧を見せたい相手にこれを送ってください。相手はレシピを変更できず、閲覧のみです。"
+  "Send this to someone you want to show your recipe list. They can't change your recipes, it is read only": "レシピ一覧を見せたい相手にこれを送ってください。相手はレシピを変更できず、閲覧のみです。",
+  "Here is my share token. Add me in Kukkingu!": "これが私の共有トークンです。Kukkingu に追加してください！",
+  "unknown": "不明"
 }

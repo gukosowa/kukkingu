@@ -265,7 +265,7 @@ import ModalManageImage from './ModalManageImage.vue'
 import ModalImageZoom from './ModalImageZoom.vue'
 import { storageEditMode } from '~src/store/index'
 import BaseDialog from '~components/BaseDialog.vue'
-import { getSetting, setSetting, getDailyPlans, getShoppingList, setFriend, getFriends, deleteFriend as deleteFriendFromDB } from '~src/services/indexeddb'
+import { getSetting, setSetting, getDailyPlans, getShoppingList, setFriend, getFriends, getFriend as getFriendFromDB, deleteFriend as deleteFriendFromDB } from '~src/services/indexeddb'
 
 // Share online modal state
 const showShareModal = ref(false)
@@ -288,6 +288,11 @@ async function removeFriend(token: string) {
   await loadFriends()
 }
 
+function showFriend(f: { token: string; name: string }) {
+  // Placeholder: future implementation may navigate to a friend's shared recipes view
+  showToast(t('Coming Soon'))
+}
+
 // View friends recipe modal state
 const showFriendModal = ref(false)
 const friendToken = ref('')
@@ -307,12 +312,32 @@ async function confirmViewFriend() {
     return
   }
   try {
-    await setFriend(token, { name: 'to be done' })
+    // Check token existence in DB and get only that row
+    const res = await fetch(`/api/recipes?token=${encodeURIComponent(token)}`)
+    if (!res.ok) throw new Error('Failed to query')
+    const payload = await res.json().catch(() => ({}))
+    const row = payload?.recipe || null
+    if (!row) {
+      showToast('Token not found')
+      return
+    }
+    const name = (row?.name && typeof row.name === 'string' && row.name.trim().length > 0) ? row.name : t('unknown')
+
+    // Avoid duplicates: update if exists, else create
+    const existing = await getFriendFromDB(token)
+    if (existing) {
+      await setFriend(token, { name })
+    } else {
+      await setFriend(token, { name })
+    }
+
+    showFriendModal.value = false
+    await loadFriends()
   } catch (e) {
-    // ignore errors per minimal requirement
+    // On error, keep modal open to let user retry
+    console.error(e)
+    showToast('Failed to add friend')
   }
-  showFriendModal.value = false
-  await loadFriends()
 }
 
 onMounted(() => { loadFriends() })
@@ -408,9 +433,7 @@ async function shareNative() {
   // Ensure we have a token and a short message
   const token = (shareToken.value || '').toString() || await ensureShareToken()
   // Keep text short as requested
-  const shortText = shareName.value
-    ? `${shareName.value}: ${t('Here is my share token')}: ${token}`
-    : `${t('Here is my share token')}: ${token}`
+  const shortText = `${t('Here is my share token. Add me in Kukkingu!')}: ${token}`
 
   try {
     if ((navigator as any).share) {

@@ -209,11 +209,17 @@
   "Number of servings": "Anzahl der Portionen",
   "Default number of servings per recipe": "Standardanzahl der Portionen pro Rezept",
   "Meal Types": "Mahlzeiten-Typen",
+  "Remove": "Entfernen",
+  "Show": "Anzeigen",
+  "Unnamed friend": "Unbenannter Freund",
   "Select which meals to include in the plan": "Wähle aus, welche Mahlzeiten in den Plan einbezogen werden sollen",
   "Additional Preferences": "Zusätzliche Vorlieben",
   "Describe any additional preferences or requirements for the meal plan": "Beschreibe alle zusätzlichen Vorlieben oder Anforderungen für den Essensplan",
   "e.g., low carb, vegetarian options, quick recipes, budget-friendly, etc.": "z.B. kohlenhydratarm, vegetarische Optionen, schnelle Rezepte, budgetfreundlich, etc.",
   "Plan Details": "Plandetails",
+  "Add friend": "Freund hinzufügen",
+  "Friend token": "Freund-Token",
+  "Paste friends token": "Freundes-Token einfügen",
   "Days": "Tage",
   "Recipes Available": "Verfügbare Rezepte",
   "Rename": "Umbenennen",
@@ -242,5 +248,7 @@
   "Optimize Image": "Bild optimieren",
   "Optimizing...": "Wird optimiert...",
   "Share online": "Online teilen",
-  "Send this to someone you want to show your recipe list. They can't change your recipes, it is read only": "Sende dies an jemanden, dem du deine Rezeptliste zeigen möchtest. Er kann deine Rezepte nicht ändern, sie sind nur lesbar."
+  "Send this to someone you want to show your recipe list. They can't change your recipes, it is read only": "Sende dies an jemanden, dem du deine Rezeptliste zeigen möchtest. Er kann deine Rezepte nicht ändern, sie sind nur lesbar.",
+  "Here is my share token. Add me in Kukkingu!": "Hier ist mein Share-Token. Füge mich in Kukkingu hinzu!",
+  "unknown": "unbekannt"
 }
