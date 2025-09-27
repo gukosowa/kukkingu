@@ -12,7 +12,7 @@
       class="fixed bottom-3 left-3 z-50"
     >
       <div class="flex items-center gap-2 bg-orange-600 text-white px-3 py-1.5 rounded-full shadow-lg">
-        <span class="text-sm font-medium">View Mode</span>
+        <span class="text-sm font-medium">{{ t('Friend view') }}</span>
         <button
           type="button"
           class="text-white/90 hover:text-white focus:outline-none"
@@ -31,6 +31,7 @@
 <script lang="ts" setup>
 import Header from '~components/Header.vue'
 import { isViewingFriend, exitViewMode } from '~src/services/viewMode'
+import { t } from '~src/i18n'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()

@@ -18,6 +18,7 @@
 
     <!-- Edit Button -->
     <button
+      v-if="props.showEdit"
       @click="setMode('edit')"
       class="relative z-10 flex items-center justify-center px-2 py-1.5 rounded-md transition-colors duration-200 whitespace-nowrap"
       :class="mode === 'edit' ? 'text-white' : 'text-blue-300 hover:text-blue-500'"
@@ -48,21 +49,34 @@ import { vibrate } from '~src/services/vibrate'
 interface Props {
   mode: 'view' | 'edit' | 'checklist'
   showChecklist?: boolean
+  showEdit?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showChecklist: true,
+  showEdit: true,
 })
 const emit = defineEmits<{
   (e: 'mode-change', mode: 'view' | 'edit' | 'checklist'): void
 }>()
 
 const highlightClass = computed(() => {
-  if (!props.showChecklist) {
-    // Two-position slider (view/edit)
-    if (props.mode === 'edit') return 'left-[50%] right-1'
-    return 'left-1 right-[50%]'
+  const hasEdit = !!props.showEdit
+  const hasChecklist = !!props.showChecklist
+
+  // Only view
+  if (!hasEdit && !hasChecklist) return 'left-1 right-1'
+
+  // Two-position sliders
+  if (hasEdit && !hasChecklist) {
+    // view <-> edit
+    return props.mode === 'edit' ? 'left-[50%] right-1' : 'left-1 right-[50%]'
   }
+  if (!hasEdit && hasChecklist) {
+    // view <-> checklist
+    return props.mode === 'checklist' ? 'left-[50%] right-1' : 'left-1 right-[50%]'
+  }
+
   // Three-position slider (view/edit/checklist)
   switch (props.mode) {
     case 'view':

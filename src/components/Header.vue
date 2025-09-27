@@ -23,6 +23,7 @@
       <template v-if="recipe">
         <ModeButtonGroup
           :mode="currentMode"
+          :showEdit="!isViewingFriend"
           @mode-change="handleModeChange"
           class="mr-2"
         />
@@ -53,6 +54,7 @@
           class="mr-2"
           :mode="isViewingFriend ? 'view' : (storageEditMode ? 'edit' : 'view')"
           :showChecklist="false"
+          :showEdit="!isViewingFriend"
           @mode-change="onStorageModeChange"
         />
         <Button @click="openPlanner" class="mr-2">
