@@ -1,36 +1,12 @@
-import { drizzle } from 'drizzle-orm/neon-http';
-import { neon } from '@netlify/neon';
-import { asc } from 'drizzle-orm';
-import { posts } from '../../db/schema.ts';
-
-// List posts using Drizzle ORM; schema is managed via migrations.
+// Deprecated endpoint. The "posts" API has been removed.
 export default async () => {
-  try {
-    const client = neon();
-    const db = drizzle({ client });
-
-    // Seed a sample post if table is empty (keep for endpoint testing)
-    const existing = await db.select().from(posts).limit(1);
-    if (existing.length === 0) {
-      await db.insert(posts).values({ title: 'Hello Netlify DB', content: 'Your database is ready!' });
-    }
-
-    const rows = await db.select().from(posts).orderBy(asc(posts.id));
-
-    return new Response(JSON.stringify({ posts: rows }), {
+  return new Response(
+    JSON.stringify({ error: 'Gone', message: 'This endpoint has been removed. Use /api/recipes instead.' }),
+    {
       headers: { 'content-type': 'application/json' },
-      status: 200,
-    });
-  } catch (e) {
-    console.error('DB function error:', e);
-    return new Response(
-      JSON.stringify({ error: 'Failed to load posts', details: String(e?.message || e) }),
-      {
-        headers: { 'content-type': 'application/json' },
-        status: 500,
-      }
-    );
-  }
+      status: 410,
+    }
+  );
 };
 
 export const config = {

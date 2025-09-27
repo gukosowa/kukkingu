@@ -8,6 +8,13 @@
       "when": 1758965013804,
       "tag": "0000_handy_white_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1758966508062,
+      "tag": "0001_busy_susan_delgado",
+      "breakpoints": true
     }
   ]
 }

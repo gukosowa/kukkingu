@@ -22,8 +22,8 @@ netlify init   # or netlify link if the site already exists
 # Start local dev with Netlify DB emulation
 netlify dev
 
-# Visit the posts API to verify the database is provisioned and seeded
-# http://localhost:8888/api/posts
+# Visit the recipes API to verify the database is provisioned and seeded
+# http://localhost:8888/api/recipes
 
 netlify deploy
 netlify deploy --prod
