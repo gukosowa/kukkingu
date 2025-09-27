@@ -462,6 +462,7 @@ watchEffect(() => {
 watch(
   () => recipeIndex.value,
   (index) => {
+    if (isViewingFriend.value) return
     const list = _recipes.value
     if (!Array.isArray(list) || index < 0) return
     const current = list[index]
@@ -746,6 +747,7 @@ function handleAmountTypeChange(newType: string, index: number) {
 }
 
 function switchEdit() {
+  if (isViewingFriend.value) return
   const copy = [..._recipes.value]
   copy[recipeIndex.value].edit = !copy[recipeIndex.value].edit
   copy[recipeIndex.value].checklist = false
@@ -762,9 +764,10 @@ function switchCheck() {
   _recipes.value = copy
 }
 function clearCheck() {
-  const copy = [..._recipes.value]
+  const list = isViewingFriend.value ? _friendRecipes : _recipes
+  const copy = [...list.value]
   copy[recipeIndex.value].ingredients.forEach((i: any) => (i.checked = false))
-  _recipes.value = copy
+  list.value = copy as any
 }
 
 function formatIngredientForShare(item: any): string {
@@ -884,10 +887,11 @@ function doOriginal(index: number) {
   if (!item) return
   const amount = parseFloat(item.amount || '0')
   if (!amount) return
-  const copy = [..._recipes.value]
+  const list = isViewingFriend.value ? _friendRecipes : _recipes
+  const copy = [...list.value]
   copy[recipeIndex.value].original = amount
   copy[recipeIndex.value].desired = amount
-  _recipes.value = copy
+  list.value = copy as any
   setTimeout(() => {
     const input = document.getElementById('input-desired') as HTMLInputElement
     input?.focus()
@@ -906,10 +910,11 @@ function handleIngredientClick(index: number) {
 
 function setDesiredFromServings() {
   const servings = recipe.value?.servings || 2
-  const copy = [..._recipes.value]
+  const list = isViewingFriend.value ? _friendRecipes : _recipes
+  const copy = [...list.value]
   copy[recipeIndex.value].original = servings
   copy[recipeIndex.value].desired = servings
-  _recipes.value = copy
+  list.value = copy as any
   setTimeout(() => {
     const input = document.getElementById('input-desired') as HTMLInputElement
     input?.focus()
@@ -922,9 +927,10 @@ function setDesiredFromIngredient(index: number) {
   if (!item) return
   const amount = parseFloat(item.amount || '0')
   if (!amount) return
-  const copy = [..._recipes.value]
+  const list = isViewingFriend.value ? _friendRecipes : _recipes
+  const copy = [...list.value]
   copy[recipeIndex.value].desired = amount
-  _recipes.value = copy
+  list.value = copy as any
   setTimeout(() => {
     const input = document.getElementById('input-desired') as HTMLInputElement
     input?.focus()

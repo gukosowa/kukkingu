@@ -27,7 +27,7 @@
           <Icon icon="fal fa-times-circle" size="1.1rem" />
         </button>
       </div>
-      <Button class="ml-2 flex-shrink" @click="openCreateModal">{{ t('Create') }}</Button>
+      <Button v-if="!isViewingFriend" class="ml-2 flex-shrink" @click="openCreateModal">{{ t('Create') }}</Button>
     </div>
 
 
@@ -652,8 +652,14 @@ let toastMessage = ref('')
 let toastTimer: number | null = null
 const transitionName = ref('ov')
 const isBulkEditMode = computed({
-  get: () => storageEditMode.value,
-  set: (v) => (storageEditMode.value = v)
+  get: () => (!isViewingFriend.value && storageEditMode.value),
+  set: (v) => {
+    if (isViewingFriend.value) {
+      storageEditMode.value = false
+    } else {
+      storageEditMode.value = v as any
+    }
+  }
 })
 let showZoomModal = ref(false)
 let zoomImageSrc = ref('')

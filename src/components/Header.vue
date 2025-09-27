@@ -51,7 +51,7 @@
       <template v-else>
         <ModeButtonGroup
           class="mr-2"
-          :mode="storageEditMode ? 'edit' : 'view'"
+          :mode="isViewingFriend ? 'view' : (storageEditMode ? 'edit' : 'view')"
           :showChecklist="false"
           @mode-change="onStorageModeChange"
         />
@@ -92,7 +92,8 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { recipes, modalStates, storageEditMode } from '~src/store/index'
+import { recipes as _recipes, modalStates, storageEditMode } from '~src/store/index'
+import { isViewingFriend, friendRecipes as _friendRecipes } from '~src/services/viewMode'
 import { t, currentLocale } from '~src/i18n'
 import SInput from '~components/Input.vue'
 import Icon from './Icon.vue'
@@ -127,33 +128,50 @@ const recipeId = computed(() => {
 })
 
 const recipeIndex = computed(() => {
-  return recipeId.value ? recipes.value.findIndex(recipe => recipe.id === recipeId.value) : -1
+  if (!recipeId.value) return -1
+  const list = isViewingFriend.value ? _friendRecipes.value : _recipes.value
+  return list.findIndex(recipe => recipe.id === recipeId.value)
 })
 
 const recipe = computed<any>({
   get() {
-    return recipeIndex.value !== -1 ? recipes.value[recipeIndex.value] : null
+    if (recipeIndex.value === -1) return null
+    const list = isViewingFriend.value ? _friendRecipes.value : _recipes.value
+    return list[recipeIndex.value]
   },
   set(v) {
-    if (recipeIndex.value !== -1) {
-      const copy = [...recipes.value]
+    if (recipeIndex.value === -1) return
+    if (isViewingFriend.value) {
+      const copy = [..._friendRecipes.value]
       copy[recipeIndex.value] = v
-      recipes.value = copy
+      _friendRecipes.value = copy as any
+    } else {
+      const copy = [..._recipes.value]
+      copy[recipeIndex.value] = v
+      _recipes.value = copy as any
     }
   },
 })
 
 const currentMode = computed<'view' | 'edit' | 'checklist'>(() => {
+  if (isViewingFriend.value) {
+    return recipe.value?.checklist ? 'checklist' : 'view'
+  }
   if (recipe.value?.edit) return 'edit'
   if (recipe.value?.checklist) return 'checklist'
   return 'view'
 })
 
 function onchange() {
-  if (recipeIndex.value !== -1) {
-    const copy = [...recipes.value]
+  if (recipeIndex.value === -1 || !recipe.value) return
+  if (isViewingFriend.value) {
+    const copy = [..._friendRecipes.value]
     copy[recipeIndex.value] = recipe.value
-    recipes.value = copy
+    _friendRecipes.value = copy as any
+  } else {
+    const copy = [..._recipes.value]
+    copy[recipeIndex.value] = recipe.value
+    _recipes.value = copy as any
   }
 }
 
@@ -167,9 +185,11 @@ function blurInput(e: { el: HTMLInputElement | null }) {
 
 function handleModeChange(newMode: 'view' | 'edit' | 'checklist') {
   if (!recipe.value) return
+  if (isViewingFriend.value && newMode === 'edit') return
 
-  const copy = [...recipes.value]
-  const currentRecipe = copy[recipeIndex.value]
+  const list = isViewingFriend.value ? _friendRecipes : _recipes
+  const copy = [...list.value]
+  const currentRecipe = { ...copy[recipeIndex.value] }
 
   // Reset all mode flags first
   currentRecipe.edit = false
@@ -182,7 +202,8 @@ function handleModeChange(newMode: 'view' | 'edit' | 'checklist') {
     currentRecipe.checklist = true
   }
 
-  recipes.value = copy
+  copy[recipeIndex.value] = currentRecipe
+  list.value = copy as any
 }
 function home() {
   // Prefer history back so Vue Router restores saved scroll position
@@ -203,6 +224,10 @@ function openPlanner() {
 }
 
 function onStorageModeChange(newMode: 'view' | 'edit' | 'checklist') {
+  if (isViewingFriend.value) {
+    storageEditMode.value = false
+    return
+  }
   storageEditMode.value = newMode === 'edit'
 }
 
