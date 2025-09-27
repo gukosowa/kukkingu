@@ -249,8 +249,8 @@
 
         <!-- Image Section -->
         <div class="flex flex-col mt-4">
-          <label v-if="recipe.image" class="text-sm font-medium text-gray-700 mb-2">{{ t('Image') }}</label>
-          <template v-if="recipe.edit">
+          <label v-if="recipe?.image" class="text-sm font-medium text-gray-700 mb-2">{{ t('Image') }}</label>
+          <template v-if="recipe?.edit">
             <div class="flex flex-wrap gap-2">
               <div
                 ref="pasteArea"
@@ -285,17 +285,17 @@
               </Button>
             </div>
           </template>
-          <template v-if="recipe.image">
+          <template v-if="recipe?.image">
             <div class="mt-2 relative">
               <img
-                :src="recipe.image"
+                :src="recipe?.image"
                 alt="Recipe image"
                 class="max-w-full h-auto rounded-lg shadow-md"
-                :class="{ 'cursor-pointer hover:opacity-90 transition-opacity': !recipe.edit }"
+                :class="{ 'cursor-pointer hover:opacity-90 transition-opacity': !recipe?.edit }"
                 style="max-height: 300px;"
-                @click="!recipe.edit ? openImageZoomModal() : null"
+                @click="!recipe?.edit ? openImageZoomModal() : null"
               />
-              <template v-if="recipe.edit">
+              <template v-if="recipe?.edit">
                 <div class="absolute top-2 right-2 flex space-x-2">
                   <Button
                     @click="openCropModal"
@@ -318,17 +318,17 @@
         </div>
 
         <!-- Tags Section (Edit Mode - below image) -->
-        <div v-if="recipe.edit" class="mt-4">
+        <div v-if="recipe?.edit" class="mt-4">
           <TagInput v-model="recipe.tags" @update:modelValue="saveChange" />
         </div>
 
         <!-- Cooked history -->
-        <Cooked :recipe="recipe" :edit-mode="!!recipe.edit" />
+        <Cooked :recipe="recipe" :edit-mode="!!recipe?.edit" />
       </div>
     </div>
 
     <!-- JSON Import Button (Edit Mode Only) -->
-    <div v-if="recipe.edit" class="mt-4 mb-2">
+    <div v-if="recipe?.edit" class="mt-4 mb-2">
       <Button @click="openImportJson" color="gray" class="!text-xs">
         <Icon icon="fal fa-upload" class="mr-1" size="0.8rem" />
         {{ t('Import JSON') }}
@@ -361,7 +361,7 @@
     />
     <ModalCropImage
       v-model="showCropModal"
-      :imageSrc="recipe.image || ''"
+      :imageSrc="recipe?.image || ''"
       @confirm="confirmCropImage"
     />
     <ModalInput
@@ -376,7 +376,7 @@
     />
     <ModalImageZoom
       v-model="showImageZoomModal"
-      :imageSrc="recipe.image || ''"
+      :imageSrc="recipe?.image || ''"
     />
   </template>
 
