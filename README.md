@@ -13,12 +13,35 @@ Kukkingu is a lightweight recipe manager built with **Vue 3**, **Vite**,
 - Service worker caching for production builds
 
 ## Netlify
-`npm install -g netlify-cli`
+```
+npm install -g netlify-cli
+npm i @netlify/neon
+
+netlify init   # or netlify link if the site already exists
+
+# Start local dev with Netlify DB emulation
+netlify dev
+
+# Visit the posts API to verify the database is provisioned and seeded
+# http://localhost:8888/api/posts
+
+netlify deploy
+netlify deploy --prod
+```
 
 ## DB
-Run `npx netlify db init`
+- Initialize the Netlify DB once using `npx netlify db init` (requires a linked site).
+- You can also create/run migrations with Drizzle:
+  - `npm run db:generate`
+  - `npm run db:migrate`
+- Tables are created via Drizzle migrations (`npm run db:generate` then `npm run db:migrate`).
+- The `/api/posts` endpoint will insert a sample post if the table is empty, so it always returns data for quick checks.
 See https://app.netlify.com/extensions/neon
 
+```sh
+// test with
+curl -i http://localhost:8888/api/posts
+```
 
 
 ## Quick Start

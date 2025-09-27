@@ -12,6 +12,8 @@
     "db:studio": "netlify dev:exec drizzle-kit studio"
   },
   "dependencies": {
+    "@netlify/edge-functions": "^2.18.1",
+    "@netlify/neon": "^0.1.0",
     "@types/marked": "^5.0.2",
     "drizzle-orm": "^0.44.5",
     "github-markdown-css": "^5.1.0",
