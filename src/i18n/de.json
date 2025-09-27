@@ -250,5 +250,13 @@
   "Share online": "Online teilen",
   "Send this to someone you want to show your recipe list. They can't change your recipes, it is read only": "Sende dies an jemanden, dem du deine Rezeptliste zeigen möchtest. Er kann deine Rezepte nicht ändern, sie sind nur lesbar.",
   "Here is my share token. Add me in Kukkingu!": "Hier ist mein Share-Token. Füge mich in Kukkingu hinzu!",
-  "unknown": "unbekannt"
+  "unknown": "unbekannt",
+  "Your name": "Dein Name",
+  "Copy": "Kopieren",
+  "Share": "Teilen",
+  "Tip: Use the Share button on mobile to send this token via your apps.": "Tipp: Verwende auf dem Smartphone die Teilen-Funktion, um dieses Token über deine Apps zu teilen.",
+  "View": "Anzeigen",
+  "Loading": "Laden…",
+  "View Mode enabled": "Ansichtsmodus aktiviert",
+  "Share cancelled": "Teilen abgebrochen"
 }

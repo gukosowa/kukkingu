@@ -241,5 +241,22 @@
   "Optimize Image": "Optimize Image",
   "Optimizing...": "Optimizing...",
   "Here is my share token. Add me in Kukkingu!": "Here is my share token. Add me in Kukkingu!",
-  "unknown": "unknown"
+  "unknown": "unknown",
+  "Share online": "Share online",
+  "Send this to someone you want to show your recipe list. They can't change your recipes, it is read only": "Send this to someone you want to show your recipe list. They can't change your recipes, it is read only",
+  "Your name": "Your name",
+  "Copy": "Copy",
+  "Share": "Share",
+  "View": "View",
+  "Loading": "Loading…",
+  "View Mode enabled": "View Mode enabled",
+  "Share cancelled": "Share cancelled",
+  "Remove": "Remove",
+  "Add friend": "Add friend",
+  "Unnamed friend": "Unnamed friend",
+  "Not found": "Not found",
+  "Failed to load friend": "Failed to load friend",
+  "Tip: Use the Share button on mobile to send this token via your apps.": "Tip: Use the Share button on mobile to send this token via your apps.",
+  "Friend token": "Friend token",
+  "Paste friends token": "Paste friends token"
 }

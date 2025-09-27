@@ -2,6 +2,8 @@
 
 NEVER WRITE SQL MIGRATIONS, this is done with `npm run db:generate`!
 
+Always ensure all texts are translated correctly, see jp.json, de.json, en.json.
+
 ## Project Structure & Module Organization
 
 * `index.html`: Vite entry HTML.

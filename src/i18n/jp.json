@@ -250,5 +250,13 @@
   "Share online": "オンラインで共有",
   "Send this to someone you want to show your recipe list. They can't change your recipes, it is read only": "レシピ一覧を見せたい相手にこれを送ってください。相手はレシピを変更できず、閲覧のみです。",
   "Here is my share token. Add me in Kukkingu!": "これが私の共有トークンです。Kukkingu に追加してください！",
-  "unknown": "不明"
+  "unknown": "不明",
+  "Your name": "あなたの名前",
+  "Copy": "コピー",
+  "Share": "共有",
+  "Tip: Use the Share button on mobile to send this token via your apps.": "ヒント: モバイルでは「共有」ボタンを使うと、このトークンをお使いのアプリに送信できます。",
+  "View": "表示",
+  "Loading": "読み込み中…",
+  "View Mode enabled": "表示モードが有効になりました",
+  "Share cancelled": "共有をキャンセルしました"
 }

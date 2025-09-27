@@ -155,8 +155,8 @@
 
     <div class='mt-8'>
       <div class='gap-2 flex flex-wrap'>
-        <Button @click="openShareModal">{{t('Share online')}}</Button>
-        <Button color='green' @click="openFriendModal">{{ t('Add friend') }}</Button>
+        <Button :disabled="isFriendLoading" @click="openShareModal">{{t('Share online')}}</Button>
+        <Button :disabled="isFriendLoading" color="green" @click="openFriendModal">{{ t('Add friend') }}</Button>
       </div>
 
       <!-- Friends list -->
@@ -176,7 +176,15 @@
           </template>
           <template v-else>
             <div class="flex items-center gap-2">
-              <Button @click="showFriend(f)">{{ t('View') }}</Button>
+              <Button :disabled="isFriendLoading" @click="showFriend(f)">
+                <template v-if="isFriendLoading && loadingFriendToken === f.token">
+                  <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                  {{ t('Loading') }}
+                </template>
+                <template v-else>
+                  {{ t('View') }}
+                </template>
+              </Button>
             </div>
           </template>
         </div>
@@ -262,7 +270,7 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { t, currentLocale } from '~src/i18n'
 import Footer from '~components/Footer.vue'
-import { recipes as _recipes, modalStates, globalSearchFilter, getAllTags, sortJapaneseText, uuidv4 } from '~src/store/index'
+import { recipes as _recipes, recipesInitialized, modalStates, globalSearchFilter, getAllTags, sortJapaneseText, uuidv4 } from '~src/store/index'
 import Button from './Button.vue'
 import SInput from './Input.vue'
 import { newRecipe } from '~plugins/helper'
@@ -283,6 +291,9 @@ const shareName = ref('')
 
 // Friends state
 const friends = ref<Array<{ token: string; name: string; created_at?: string; updated_at?: string }>>([])
+// Loading state for viewing a friend's recipes
+const isFriendLoading = ref(false)
+const loadingFriendToken = ref<string | null>(null)
 async function loadFriends() {
   try {
     friends.value = await getFriends()
@@ -334,6 +345,9 @@ async function removeFriend(token: string) {
 }
 
 async function showFriend(f: { token: string; name: string }) {
+  if (isFriendLoading.value) return
+  isFriendLoading.value = true
+  loadingFriendToken.value = f.token
   try {
     const url = new URL('/api/recipes', window.location.origin)
     url.searchParams.set('token', f.token)
@@ -373,6 +387,9 @@ async function showFriend(f: { token: string; name: string }) {
   } catch (e) {
     console.warn('Failed to load friend', e)
     showToast(t('Failed to load friend'))
+  } finally {
+    isFriendLoading.value = false
+    loadingFriendToken.value = null
   }
 }
 
@@ -560,6 +577,14 @@ async function shareNative() {
 
 async function uploadAllColumns() {
   try {
+    // Ensure recipes have been loaded from IndexedDB before uploading
+    if (!recipesInitialized.value) {
+      await new Promise<void>((resolve) => {
+        const stop = watch(recipesInitialized, (v) => {
+          if (v) { stop(); resolve() }
+        })
+      })
+    }
     const token = await ensureShareToken()
 
     // Collect local data

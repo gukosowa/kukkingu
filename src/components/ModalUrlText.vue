@@ -55,13 +55,13 @@
           class="cursor-pointer py-3 flex-1 bg-gray-500 text-white rounded-lg drop-shadow hover:bg-gray-600 transition-colors"
           @click="close"
         >
-          {{ cancelText }}
+          {{ computedCancelText }}
         </button>
         <button
           class="cursor-pointer py-3 flex-1 bg-green-500 text-white rounded-lg drop-shadow hover:bg-green-600 transition-colors"
           @click="confirm"
         >
-          {{ confirmText }}
+          {{ computedConfirmText }}
         </button>
       </div>
     </template>
@@ -92,8 +92,6 @@ const props = withDefaults(
   {
     placeholderUrl: t('https://example.com'),
     placeholderText: '',
-    confirmText: t('OK'),
-    cancelText: t('Cancel'),
     url: '',
     text: '',
     fromPicture: false,
@@ -110,6 +108,9 @@ const showModal = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value)
 })
+
+const computedConfirmText = computed(() => props.confirmText ?? t('OK'))
+const computedCancelText = computed(() => props.cancelText ?? t('Cancel'))
 
 const localUrl = ref(props.url)
 const localText = ref(props.text)

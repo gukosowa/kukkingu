@@ -48,7 +48,7 @@ export function sanitizeRecipeForPrompt<T extends Record<string, any>>(recipe: T
     }
   }
 
-  return sanitized
+  return sanitized as Partial<T>
 }
 
 export function buildImportRecipePrompt(
