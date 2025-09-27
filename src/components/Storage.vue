@@ -281,8 +281,8 @@ import ModalManageImage from './ModalManageImage.vue'
 import ModalImageZoom from './ModalImageZoom.vue'
 import { storageEditMode } from '~src/store/index'
 import BaseDialog from '~components/BaseDialog.vue'
-import { getSetting, setSetting, getDailyPlans, getShoppingList, setFriend, getFriends, getFriend as getFriendFromDB, deleteFriend as deleteFriendFromDB } from '~src/services/indexeddb'
-import { isViewingFriend, friendRecipes as _friendRecipes, enterViewMode } from '~src/services/viewMode'
+import { getSetting, setSetting, getDailyPlans, getShoppingList, setFriend, getFriends, getFriend as getFriendFromDB, deleteFriend as deleteFriendFromDB, getFriendData, setFriendData, deleteFriendData } from '~src/services/indexeddb'
+import { isViewingFriend, friendRecipes as _friendRecipes, enterViewMode, setFriendFetchController, clearFriendFetchController } from '~src/services/viewMode'
 
 // Share online modal state
 const showShareModal = ref(false)
@@ -341,6 +341,9 @@ async function removeFriend(token: string) {
   try {
     await deleteFriendFromDB(token)
   } catch (_) {}
+  try {
+    await deleteFriendData(token)
+  } catch (_) {}
   await loadFriends()
 }
 
@@ -348,15 +351,36 @@ async function showFriend(f: { token: string; name: string }) {
   if (isFriendLoading.value) return
   isFriendLoading.value = true
   loadingFriendToken.value = f.token
+
+  // 1) Try cache first to provide instant UI
+  let showedFromCache = false
+  try {
+    const cached = await getFriendData(f.token)
+    if (cached && Array.isArray(cached.recipes) && cached.recipes.length >= 0) {
+      enterViewMode({
+        token: f.token,
+        name: cached.name || f.name,
+        recipes: cached.recipes || [],
+        dailyPlans: cached.dailyPlans || [],
+        shoppingLists: cached.shoppingLists || {},
+      })
+      showedFromCache = true
+    }
+  } catch (_) {}
+
+  // 2) Fetch fresh in background and update cache + UI
+  let controller: AbortController | null = null
   try {
     const url = new URL('/api/recipes', window.location.origin)
     url.searchParams.set('token', f.token)
-    const res = await fetch(url.toString(), { method: 'GET' })
+    controller = new AbortController()
+    setFriendFetchController(controller)
+    const res = await fetch(url.toString(), { method: 'GET', signal: controller!.signal })
     if (!res.ok) throw new Error('Request failed')
     const data = await res.json().catch(() => ({}))
     const row = data && (data.recipe || data.row || null)
     if (!row) {
-      showToast(t('Not found'))
+      if (!showedFromCache) showToast(t('Not found'))
       return
     }
 
@@ -383,11 +407,25 @@ async function showFriend(f: { token: string; name: string }) {
       shoppingLists: slists,
     })
 
-    showToast(t('View Mode enabled'))
-  } catch (e) {
-    console.warn('Failed to load friend', e)
-    showToast(t('Failed to load friend'))
+    // Persist fresh data to cache
+    try {
+      await setFriendData(f.token, {
+        name: row.name || f.name,
+        recipes: recs,
+        dailyPlans: plans,
+        shoppingLists: slists,
+      })
+    } catch (_) {}
+  } catch (e: any) {
+    if (e && (e.name === 'AbortError' || e.code === 20)) {
+      // Fetch was aborted (likely by exiting view mode). Stay silent.
+    } else {
+      console.warn('Failed to load friend', e)
+      if (!showedFromCache) showToast(t('Failed to load friend'))
+    }
   } finally {
+    // Clear controller reference if it's ours
+    try { clearFriendFetchController?.(controller as any) } catch (_) {}
     isFriendLoading.value = false
     loadingFriendToken.value = null
   }

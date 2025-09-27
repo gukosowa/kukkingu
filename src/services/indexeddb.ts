@@ -35,12 +35,13 @@ function deepCloneSerializable(obj: any): any {
 }
 
 const DB_NAME = 'KukkinguDB'
-const DB_VERSION = 7 // Bump to ensure friends store is created on upgrade
+const DB_VERSION = 10 // Force upgrade to ensure friend data cache store is created; also adds onblocked/versionchange handling
 const RECIPES_STORE = 'recipes'
 const SETTINGS_STORE = 'settings'
 const DAILY_PLANS_STORE = 'dailyPlans'
 const SHOPPING_LISTS_STORE = 'shoppingLists'
 const FRIENDS_STORE = 'friends'
+const FRIEND_DATA_STORE = 'friendData'
 
 // Database schema
 const STORES = {
@@ -48,7 +49,8 @@ const STORES = {
   [SETTINGS_STORE]: { keyPath: 'key', autoIncrement: false },
   [DAILY_PLANS_STORE]: { keyPath: 'id', autoIncrement: false },
   [SHOPPING_LISTS_STORE]: { keyPath: 'planId', autoIncrement: false },
-  [FRIENDS_STORE]: { keyPath: 'token', autoIncrement: false }
+  [FRIENDS_STORE]: { keyPath: 'token', autoIncrement: false },
+  [FRIEND_DATA_STORE]: { keyPath: 'token', autoIncrement: false },
 }
 
 class IndexedDBService {
@@ -72,8 +74,19 @@ class IndexedDBService {
         reject(request.error)
       }
 
+      request.onblocked = () => {
+        console.warn('IndexedDB upgrade is blocked, likely due to another tab holding a connection. Close other tabs with this app and reload.')
+      }
+
       request.onsuccess = () => {
         this.db = request.result
+        try {
+          // If another tab triggers an upgrade, close this connection to allow it
+          this.db.onversionchange = () => {
+            console.warn('IndexedDB versionchange detected — closing old connection to allow upgrade')
+            try { this.db?.close() } catch (_) {}
+          }
+        } catch (_) {}
         console.log('IndexedDB opened successfully, stores:', Array.from(this.db.objectStoreNames))
         resolve(request.result)
       }
@@ -409,6 +422,67 @@ class IndexedDBService {
     })
   }
 
+  // Friend data cache operations
+  async getFriendData(token: string): Promise<{
+    token: string
+    name?: string
+    recipes: Recipe[]
+    dailyPlans: WeeklyPlan[]
+    shoppingLists: Record<string, ShoppingListItem[]>
+    updatedAt?: string
+  } | undefined> {
+    const db = await this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([FRIEND_DATA_STORE], 'readonly')
+      const store = transaction.objectStore(FRIEND_DATA_STORE)
+      const request = store.get(token)
+
+      request.onsuccess = () => {
+        if (request.result) {
+          resolve(request.result as any)
+        } else {
+          resolve(undefined)
+        }
+      }
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  async setFriendData(token: string, value: {
+    name?: string
+    recipes: Recipe[]
+    dailyPlans: WeeklyPlan[]
+    shoppingLists: Record<string, ShoppingListItem[]>
+  }): Promise<void> {
+    const db = await this.getDB()
+    const payload = {
+      token,
+      name: value.name,
+      recipes: deepCloneSerializable(value.recipes || []),
+      dailyPlans: deepCloneSerializable(value.dailyPlans || []),
+      shoppingLists: deepCloneSerializable(value.shoppingLists || {}),
+      updatedAt: new Date().toISOString(),
+    }
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([FRIEND_DATA_STORE], 'readwrite')
+      const store = transaction.objectStore(FRIEND_DATA_STORE)
+      const request = store.put(payload)
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  async deleteFriendData(token: string): Promise<void> {
+    const db = await this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([FRIEND_DATA_STORE], 'readwrite')
+      const store = transaction.objectStore(FRIEND_DATA_STORE)
+      const request = store.delete(token)
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  }
+
   // Migration from localStorage
   async migrateFromLocalStorage(): Promise<void> {
     // Check if migration already happened
@@ -472,6 +546,14 @@ export const getFriend = (token: string) => idbService.getFriend(token)
 export const setFriend = (token: string, value: { name: string; created_at?: string; updated_at?: string }) => idbService.setFriend(token, value)
 export const getFriends = () => idbService.getAllFriends()
 export const deleteFriend = (token: string) => idbService.deleteFriend(token)
+
+// Friend data cache helpers
+export const getFriendData = (token: string) => idbService.getFriendData(token)
+export const setFriendData = (
+  token: string,
+  value: { name?: string; recipes: Recipe[]; dailyPlans: WeeklyPlan[]; shoppingLists: Record<string, ShoppingListItem[]> }
+) => idbService.setFriendData(token, value)
+export const deleteFriendData = (token: string) => idbService.deleteFriendData(token)
 
 // Image utility functions
 export const isValidImageFile = (file: File): boolean => {

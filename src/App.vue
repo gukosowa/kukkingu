@@ -7,23 +7,22 @@
     </div>
 
     <!-- View Mode chip -->
-    <div
-      v-if="isViewingFriend"
-      class="fixed bottom-3 left-3 z-50"
-    >
-      <div class="flex items-center gap-2 bg-orange-600 text-white px-3 py-1.5 rounded-full shadow-lg">
-        <span class="text-sm font-medium">{{ t('Friend view') }}</span>
-        <button
-          type="button"
-          class="text-white/90 hover:text-white focus:outline-none"
-          aria-label="Exit view mode"
-          title="Exit view mode"
-          @click="handleExitViewMode"
-        >
-          ×
-        </button>
+    <Transition name="chip" appear v-if="isViewingFriend">
+      <div class="fixed bottom-3 left-3 z-50">
+        <div class="flex items-center gap-2 bg-orange-600 text-white px-3 py-1.5 rounded-full shadow-lg">
+          <span class="text-sm font-medium">{{ t('Friend view') }}</span>
+          <button
+            type="button"
+            class="text-white/90 hover:text-white focus:outline-none"
+            aria-label="Exit view mode"
+            title="Exit view mode"
+            @click="handleExitViewMode"
+          >
+            ×
+          </button>
+        </div>
       </div>
-    </div>
+    </Transition>
   </div>
 
 </template>
@@ -44,5 +43,22 @@ function handleExitViewMode() {
 </script>
 
 <style scoped>
+/***** View Mode chip transition *****/
+.chip-enter-from,
+.chip-leave-to {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.chip-enter-active,
+.chip-leave-active {
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.chip-enter-to,
+.chip-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
 </style>
 
