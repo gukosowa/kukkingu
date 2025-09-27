@@ -386,6 +386,7 @@ import { useRoute, useRouter } from 'vue-router'
 import * as marked from 'marked'
 import Footer from '~components/Footer.vue'
 import { recipes as _recipes, globalSearchFilter, recipeViewSettings, recipesInitialized } from '~src/store/index'
+import { isViewingFriend, friendRecipes as _friendRecipes } from '~src/services/viewMode'
 import Button from './Button.vue'
 import SInput from './Input.vue'
 import Icon from './Icon.vue'
@@ -429,14 +430,17 @@ const recipeId = computed(() => {
 })
 
 const recipeIndex = computed(() => {
-  return _recipes.value.findIndex(recipe => recipe.id === recipeId.value)
+  const list = isViewingFriend.value ? _friendRecipes.value : _recipes.value
+  return list.findIndex(recipe => recipe.id === recipeId.value)
 })
 
 const recipe = computed<any>({
   get() {
-    return _recipes.value?.[recipeIndex.value]
+    const list = isViewingFriend.value ? _friendRecipes.value : _recipes.value
+    return list?.[recipeIndex.value]
   },
   set(v) {
+    if (isViewingFriend.value) return // read-only in view mode
     const copy = [..._recipes.value]
     copy[recipeIndex.value] = v
     _recipes.value = copy
@@ -444,6 +448,10 @@ const recipe = computed<any>({
 })
 
 watchEffect(() => {
+  if (isViewingFriend.value) {
+    if (!recipe.value) router.replace('/')
+    return
+  }
   if (!recipesInitialized.value) return
   if (!recipe.value) {
     router.replace('/')

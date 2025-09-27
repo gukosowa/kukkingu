@@ -176,7 +176,7 @@
           </template>
           <template v-else>
             <div class="flex items-center gap-2">
-              <Button @click="showFriend(f)">{{ t('Show') }}</Button>
+              <Button @click="showFriend(f)">{{ t('View') }}</Button>
             </div>
           </template>
         </div>
@@ -274,6 +274,7 @@ import ModalImageZoom from './ModalImageZoom.vue'
 import { storageEditMode } from '~src/store/index'
 import BaseDialog from '~components/BaseDialog.vue'
 import { getSetting, setSetting, getDailyPlans, getShoppingList, setFriend, getFriends, getFriend as getFriendFromDB, deleteFriend as deleteFriendFromDB } from '~src/services/indexeddb'
+import { isViewingFriend, friendRecipes as _friendRecipes, enterViewMode } from '~src/services/viewMode'
 
 // Share online modal state
 const showShareModal = ref(false)
@@ -332,9 +333,47 @@ async function removeFriend(token: string) {
   await loadFriends()
 }
 
-function showFriend(f: { token: string; name: string }) {
-  // Placeholder: future implementation may navigate to a friend's shared recipes view
-  showToast(t('Coming Soon'))
+async function showFriend(f: { token: string; name: string }) {
+  try {
+    const url = new URL('/api/recipes', window.location.origin)
+    url.searchParams.set('token', f.token)
+    const res = await fetch(url.toString(), { method: 'GET' })
+    if (!res.ok) throw new Error('Request failed')
+    const data = await res.json().catch(() => ({}))
+    const row = data && (data.recipe || data.row || null)
+    if (!row) {
+      showToast(t('Not found'))
+      return
+    }
+
+    // Normalize shapes from DB (can be array or object)
+    const recs = Array.isArray(row.recipes)
+      ? row.recipes
+      : (row.recipes && typeof row.recipes === 'object')
+        ? Object.values(row.recipes)
+        : []
+
+    const plans = Array.isArray(row.dailyPlans)
+      ? row.dailyPlans
+      : (row.dailyPlans && typeof row.dailyPlans === 'object')
+        ? Object.values(row.dailyPlans)
+        : []
+
+    const slists = (row.shoppingLists && typeof row.shoppingLists === 'object') ? row.shoppingLists : {}
+
+    enterViewMode({
+      token: f.token,
+      name: row.name || f.name,
+      recipes: recs,
+      dailyPlans: plans,
+      shoppingLists: slists,
+    })
+
+    showToast(t('View Mode enabled'))
+  } catch (e) {
+    console.warn('Failed to load friend', e)
+    showToast(t('Failed to load friend'))
+  }
 }
 
 // View friends recipe modal state
@@ -562,8 +601,15 @@ async function uploadAllColumns() {
 
 const router = useRouter()
 const recipes = computed({
-  get: () => [..._recipes.value].sort((a, b) => sortJapaneseText(a.name, b.name)),
-  set: (v) => (_recipes.value = v as any)
+  get: () => {
+    const list = isViewingFriend.value ? _friendRecipes.value : _recipes.value
+    return [...list].sort((a, b) => sortJapaneseText(a.name, b.name))
+  },
+  set: (v) => {
+    if (!isViewingFriend.value) {
+      _recipes.value = v as any
+    }
+  }
 })
 let filterQuery = ref(globalSearchFilter.value)
 
