@@ -153,6 +153,33 @@
       </div>
     </TransitionGroup>
 
+    <div class='mt-8'>
+      <Button @click="openShareModal">{{t('Share online')}}</Button>
+    </div>
+
+    <BaseDialog v-model="showShareModal" @close="closeShareModal" size="md">
+      <template #header>
+        <div class="px-6 py-4 text-lg font-semibold">
+          {{ t('Share online') }}
+        </div>
+      </template>
+      <template #content>
+        <div class="space-y-4">
+          <p class="text-gray-700">
+            {{ t("Send this to someone you want to show your recipe list. They can't change your recipes, it is read only") }}
+          </p>
+          <pre class="bg-gray-100 rounded-lg p-4 overflow-x-auto text-sm">
+<code class="select-all break-all">{{ shareToken }}</code>
+          </pre>
+        </div>
+      </template>
+      <template #footer>
+        <div class="px-6 py-4 flex justify-end">
+          <Button @click="closeShareModal">{{ t('Close') }}</Button>
+        </div>
+      </template>
+    </BaseDialog>
+
     <div
       v-if="toastMessage"
       class="fixed bottom-4 left-1/2 bg-black text-white text-sm px-3 py-2 rounded shadow-lg z-50"
@@ -179,6 +206,43 @@ import ModalInput from './ModalInput.vue'
 import ModalManageImage from './ModalManageImage.vue'
 import ModalImageZoom from './ModalImageZoom.vue'
 import { storageEditMode } from '~src/store/index'
+import BaseDialog from '~components/BaseDialog.vue'
+import { getSetting, setSetting } from '~src/services/indexeddb'
+
+// Share online modal state
+const showShareModal = ref(false)
+const shareToken = ref('')
+
+function generateSecureHash(): string {
+  try {
+    const bytes = new Uint8Array(32)
+    crypto.getRandomValues(bytes)
+    return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
+  } catch (e) {
+    // Fallback: concatenate a few UUIDs
+    return `${uuidv4().replace(/-/g,'')}${uuidv4().replace(/-/g,'')}`
+  }
+}
+
+async function openShareModal() {
+  try {
+    const existing = await getSetting('shareToken', '')
+    if (existing && typeof existing === 'string' && existing.length > 0) {
+      shareToken.value = existing
+    } else {
+      const token = generateSecureHash()
+      shareToken.value = token
+      await setSetting('shareToken', token)
+    }
+  } catch (e) {
+    // If IndexedDB is unavailable, fall back to generating a token each time
+    shareToken.value = generateSecureHash()
+  }
+  showShareModal.value = true
+}
+function closeShareModal() {
+  showShareModal.value = false
+}
 
 const router = useRouter()
 const recipes = computed({

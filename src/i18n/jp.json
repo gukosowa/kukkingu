@@ -240,5 +240,7 @@
   "German": "ドイツ語",
   "Japanese": "日本語",
   "Optimize Image": "画像を最適化",
-  "Optimizing...": "最適化中..."
+  "Optimizing...": "最適化中...",
+  "Share online": "オンラインで共有",
+  "Send this to someone you want to show your recipe list. They can't change your recipes, it is read only": "レシピ一覧を見せたい相手にこれを送ってください。相手はレシピを変更できず、閲覧のみです。"
 }
