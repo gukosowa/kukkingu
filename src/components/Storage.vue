@@ -165,7 +165,12 @@
           class="flex items-center justify-between bg-gray-100 rounded-lg px-3 py-2"
         >
           <span class="text-gray-800 truncate">{{ f.name || t('Unnamed friend') }}</span>
-          <Button color="red" :tone="300" @click="removeFriend(f.token)">{{ t('Remove') }}</Button>
+          <template v-if="isBulkEditMode">
+            <Button color="red" :tone="300" @click="removeFriend(f.token)">{{ t('Remove') }}</Button>
+          </template>
+          <template v-else>
+            <Button @click="showFriend(f)">{{ t('Show') }}</Button>
+          </template>
         </div>
       </div>
     </div>
