@@ -22,6 +22,13 @@
       "when": 1758967199891,
       "tag": "0002_tense_chameleon",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1758968238708,
+      "tag": "0003_gifted_the_hunter",
+      "breakpoints": true
     }
   ]
 }

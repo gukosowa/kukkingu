@@ -1,14 +1,16 @@
 # Repository Guidelines
 
+NEVER WRITE SQL MIGRATIONS, this is done with `npm run db:generate`!
+
 ## Project Structure & Module Organization
 
 * `index.html`: Vite entry HTML.
 * `src/`: app code (Vue 3 + TS, Tailwind).
 
-  * `components/`: UI components (prefer PascalCase, e.g., `Header.vue`).
-  * `router/`: Vue Router setup (`index.ts`).
-  * `assets/`: CSS, images; Tailwind under `~css/`.
-  * `i18n/`, `services/`, `store/`, `plugins/`: app modules.
+    * `components/`: UI components (prefer PascalCase, e.g., `Header.vue`).
+    * `router/`: Vue Router setup (`index.ts`).
+    * `assets/`: CSS, images; Tailwind under `~css/`.
+    * `i18n/`, `services/`, `store/`, `plugins/`: app modules.
 * `public/`: static files served as-is.
 * Aliases: `~components`, `~assets`, `~css`, `~router`, etc. Example:
   `import Header from '~components/Header.vue'`.
@@ -89,191 +91,191 @@
 ### src/components
 
 * `AmountTypeModal.vue`
-  * `clickType(type)` – apply new unit, emit updates, close menu.
-  * `focus()` – open selector if not disabled (exposed to parent).
-  * `norm(v)` – normalize units via `normalizeAmountType` for display.
+    * `clickType(type)` – apply new unit, emit updates, close menu.
+    * `focus()` – open selector if not disabled (exposed to parent).
+    * `norm(v)` – normalize units via `normalizeAmountType` for display.
 * `BaseDialog.vue`
-  * `handleBackdropClick()` – close dialog on backdrop tap with vibration (unless disabled).
+    * `handleBackdropClick()` – close dialog on backdrop tap with vibration (unless disabled).
 * `Button.vue`
-  * `handleClick(event)` – vibrate and re-emit click.
+    * `handleClick(event)` – vibrate and re-emit click.
 * `Checkbox.vue`
-  * `toggle()` – vibrate and flip bound boolean, emit both `update:modelValue` and legacy `input`.
+    * `toggle()` – vibrate and flip bound boolean, emit both `update:modelValue` and legacy `input`.
 * `Footer.vue`
-  * `initClearAll()` – show confirmation modal before clearing recipes.
-  * `clearAll()` – wipe recipe store.
-  * `cancelClearAll()` – hide confirmation.
-  * `openLocaleModal()` – show locale selector.
-  * `confirmLocale(locale)` – persist locale selection and close modal.
+    * `initClearAll()` – show confirmation modal before clearing recipes.
+    * `clearAll()` – wipe recipe store.
+    * `cancelClearAll()` – hide confirmation.
+    * `openLocaleModal()` – show locale selector.
+    * `confirmLocale(locale)` – persist locale selection and close modal.
 * `Header.vue`
-  * `onchange()` – persist desired/original edits back to recipes store.
-  * `focusNext()` – focus desired amount field.
-  * `blurInput({ el })` – blur on enter submission.
-  * `home()` – navigate back or push `/` to return to storage view.
-  * `goToOverview()` – push `/` explicitly.
-  * `openPlanner()` – navigate to planner route.
-  * `openImportUrl()` – reset GPT import fields and show modal.
-  * `confirmImportUrl(payload)` – build GPT prompt, launch ChatGPT/Gemini flows, copy prompt, and raise notice modal.
-  * `cancelImportUrl()` – reset GPT import modal values.
-  * `showAppNotice(title, message, icon?, okText?, okUrl?)` – configure and display notice modal.
-  * `handleNoticeOk()` – handle notice acknowledgement and trigger import JSON modal when appropriate.
-  * `legacyCopyToClipboard(text)` – fallback copy helper for browsers without async clipboard.
+    * `onchange()` – persist desired/original edits back to recipes store.
+    * `focusNext()` – focus desired amount field.
+    * `blurInput({ el })` – blur on enter submission.
+    * `home()` – navigate back or push `/` to return to storage view.
+    * `goToOverview()` – push `/` explicitly.
+    * `openPlanner()` – navigate to planner route.
+    * `openImportUrl()` – reset GPT import fields and show modal.
+    * `confirmImportUrl(payload)` – build GPT prompt, launch ChatGPT/Gemini flows, copy prompt, and raise notice modal.
+    * `cancelImportUrl()` – reset GPT import modal values.
+    * `showAppNotice(title, message, icon?, okText?, okUrl?)` – configure and display notice modal.
+    * `handleNoticeOk()` – handle notice acknowledgement and trigger import JSON modal when appropriate.
+    * `legacyCopyToClipboard(text)` – fallback copy helper for browsers without async clipboard.
 * `Input.vue`
-  * `handleInput(e)` – propagate value updates (cast numbers) through emitted events.
-  * `onKeyPress(e)` – emit `enter` payload when Return is pressed.
-  * `onClick()` – optionally select text when `selectOnClick` is true using a safe RAF workflow.
-  * Exposed helper `focus()` (from `defineExpose`) – focus underlying input when invoked.
+    * `handleInput(e)` – propagate value updates (cast numbers) through emitted events.
+    * `onKeyPress(e)` – emit `enter` payload when Return is pressed.
+    * `onClick()` – optionally select text when `selectOnClick` is true using a safe RAF workflow.
+    * Exposed helper `focus()` (from `defineExpose`) – focus underlying input when invoked.
 * `ModalAskGpt.vue`
-  * `addQuestion(question)` – append predefined prompt text and focus textarea.
-  * `confirm()` – vibrate and emit final question string.
-  * `close()` – vibrate, emit cancel, and close dialog.
+    * `addQuestion(question)` – append predefined prompt text and focus textarea.
+    * `confirm()` – vibrate and emit final question string.
+    * `close()` – vibrate, emit cancel, and close dialog.
 * `ModalAutoPlanPrompt.vue`
-  * `toggleMealType(mealType)` – adjust selected meal types and regenerate prompt.
-  * `sendToChatGPT()` – open ChatGPT with prompt and close on success.
-  * `copyPrompt()` – copy current prompt to clipboard with fallback textarea trick.
-  * `close()` – hide modal.
+    * `toggleMealType(mealType)` – adjust selected meal types and regenerate prompt.
+    * `sendToChatGPT()` – open ChatGPT with prompt and close on success.
+    * `copyPrompt()` – copy current prompt to clipboard with fallback textarea trick.
+    * `close()` – hide modal.
 * `ModalConfirm.vue`
-  * `clickYes()` – emit confirm and close.
-  * `clickNo()` – emit cancel and close.
+    * `clickYes()` – emit confirm and close.
+    * `clickNo()` – emit cancel and close.
 * `ModalImportDiff.vue`
-  * `handleUpdate()` – emit update-existing action and close.
-  * `handleCreateNew()` – emit create-new action and close.
-  * `handleAddAsNew()` – emit add-as-new action and close.
-  * `handleCancel()` – emit cancel action and close.
-  * `close()` – internal helper to hide modal before emitting events.
+    * `handleUpdate()` – emit update-existing action and close.
+    * `handleCreateNew()` – emit create-new action and close.
+    * `handleAddAsNew()` – emit add-as-new action and close.
+    * `handleCancel()` – emit cancel action and close.
+    * `close()` – internal helper to hide modal before emitting events.
 * `ModalInput.vue`
-  * `refocusTextarea()` – keep textarea focused when toggling modal visibility.
-  * `handleVisibility()` – reset internal textarea state when modal opens/closes.
-  * `confirm()` – emit confirmed text value and close modal.
-  * `close()` – hide modal without emitting data.
+    * `refocusTextarea()` – keep textarea focused when toggling modal visibility.
+    * `handleVisibility()` – reset internal textarea state when modal opens/closes.
+    * `confirm()` – emit confirmed text value and close modal.
+    * `close()` – hide modal without emitting data.
 * `ModalLocale.vue`
-  * `confirm(locale)` – emit chosen locale and close.
-  * `close()` – hide modal without emitting.
+    * `confirm(locale)` – emit chosen locale and close.
+    * `close()` – hide modal without emitting.
 * `ModalNotice.vue`
-  * `acknowledge()` – emit ok event.
-  * `close()` – close modal without triggering ok.
+    * `acknowledge()` – emit ok event.
+    * `close()` – close modal without triggering ok.
 * `ModalUrlText.vue`
-  * `autoResize()` – adjust textarea height to fit content.
-  * `confirm()` – emit confirm payload with URL/text/picture flags.
-  * `close()` – hide modal.
+    * `autoResize()` – adjust textarea height to fit content.
+    * `confirm()` – emit confirm payload with URL/text/picture flags.
+    * `close()` – hide modal.
 * `ModeButtonGroup.vue`
-  * `setMode(newMode)` – update active mode and emit `mode-change`.
+    * `setMode(newMode)` – update active mode and emit `mode-change`.
 * `Planner.vue`
-  * `openCreatePlan()` – open plan editor in create mode.
-  * `openEditPlan(plan)` – load existing plan into editor.
-  * `addDay()` – append empty day to editable plan.
-  * `removeDay(index)` – remove day by index.
-  * `savePlan()` – persist plan via store and close modal.
-  * `closePlanModal()` – dismiss create/edit modal and reset state.
-  * `generateAutoPlan()` – open auto-plan modal with collected options or handle errors.
-  * `importPlan(jsonString)` – parse JSON input and persist plan if valid.
-  * `deletePlan(planId)` – prompt removal and stage plan for deletion.
-  * `confirmDelete()` – run deletion against store, close confirmation.
-  * `cancelDelete()` – abort deletion flow.
-  * `togglePreference(tag)` – add/remove tag from preferred list for auto-planning.
-  * `toggleExclusion(tag)` – add/remove tag from exclusions.
-  * `closeAutoPlanModal()` – hide auto-plan prompt modal.
-  * `generateShoppingList(plan)` – build shopping list via service and open modal.
-  * `formatWeekRange(plan)` – compute formatted date range (if dates exist) for display.
-  * `getRecipeName(recipeId)` – resolve recipe name by id from store.
-  * `openRecipeSelector(dayIndex)` – open selector for given day.
-  * `closeRecipeSelector()` – hide selector.
-  * `addRecipeToDay(recipe)` – append selected recipe to active day with default servings.
-  * `removeRecipeFromDay(dayIndex, recipeId)` – remove planned recipe.
-  * `getExistingRecipeIdsForDay(dayIndex)` – helper for disabling already-chosen recipes.
-  * `openRecipeDetailsModal(dayIndex, recipeIndex)` – open per-recipe edit modal.
-  * `closeRecipeDetailsModal()` – hide detail modal.
-  * `saveRecipeDetails(data)` – persist servings/mealType updates for currently edited plan entry.
-  * `getRecipeDetailsForEditing()` – compute payload passed into details modal.
-  * `navigateToRecipe(recipeId)` – route to recipe detail view.
+    * `openCreatePlan()` – open plan editor in create mode.
+    * `openEditPlan(plan)` – load existing plan into editor.
+    * `addDay()` – append empty day to editable plan.
+    * `removeDay(index)` – remove day by index.
+    * `savePlan()` – persist plan via store and close modal.
+    * `closePlanModal()` – dismiss create/edit modal and reset state.
+    * `generateAutoPlan()` – open auto-plan modal with collected options or handle errors.
+    * `importPlan(jsonString)` – parse JSON input and persist plan if valid.
+    * `deletePlan(planId)` – prompt removal and stage plan for deletion.
+    * `confirmDelete()` – run deletion against store, close confirmation.
+    * `cancelDelete()` – abort deletion flow.
+    * `togglePreference(tag)` – add/remove tag from preferred list for auto-planning.
+    * `toggleExclusion(tag)` – add/remove tag from exclusions.
+    * `closeAutoPlanModal()` – hide auto-plan prompt modal.
+    * `generateShoppingList(plan)` – build shopping list via service and open modal.
+    * `formatWeekRange(plan)` – compute formatted date range (if dates exist) for display.
+    * `getRecipeName(recipeId)` – resolve recipe name by id from store.
+    * `openRecipeSelector(dayIndex)` – open selector for given day.
+    * `closeRecipeSelector()` – hide selector.
+    * `addRecipeToDay(recipe)` – append selected recipe to active day with default servings.
+    * `removeRecipeFromDay(dayIndex, recipeId)` – remove planned recipe.
+    * `getExistingRecipeIdsForDay(dayIndex)` – helper for disabling already-chosen recipes.
+    * `openRecipeDetailsModal(dayIndex, recipeIndex)` – open per-recipe edit modal.
+    * `closeRecipeDetailsModal()` – hide detail modal.
+    * `saveRecipeDetails(data)` – persist servings/mealType updates for currently edited plan entry.
+    * `getRecipeDetailsForEditing()` – compute payload passed into details modal.
+    * `navigateToRecipe(recipeId)` – route to recipe detail view.
 * `Recipe.vue`
-  * `openAskGpt()` – show GPT question modal.
-  * `confirmAskGpt(question)` – build ask prompt, open GPT, and show notice.
-  * `norm(type)` – normalize amount type for display.
-  * `amount(item)` – compute scaled ingredient amount respecting units and fraction formatting.
-  * `unitBefore(type)` – determine if unit label should precede amount.
-  * `unitLabel(type)` – translate full unit label via i18n.
-  * `clickName(index)` – focus or select ingredient name cell depending on mode.
-  * `clickAmount(index)` – focus/select amount cell.
-  * `clickAmountType(index)` – focus/select unit cell or open selector.
-  * `clickNote(index)` – focus/select note field.
-  * `focusNext(index)` – advance focus to next ingredient controls.
-  * `addIngredient()` – append blank ingredient row and enter edit mode.
-  * `handleAmountTypeChange(newType, index)` – update unit and persist edits.
-  * `handleModeChange(newMode)` – switch between view/edit/checklist states.
-  * `switchEdit()` – toggle recipe into edit mode.
-  * `switchCheck()` – toggle checklist mode.
-  * `clearCheck()` – reset all ingredient `checked` flags.
-  * `clearNote(index)` – clear individual ingredient note.
-  * `doOriginal(index)` – sync ingredient desired amount from original ratio.
-  * `handleIngredientClick(index)` – toggle checkmarks when in checklist mode.
-  * `setDesiredFromServings()` – copy servings value into desired amount.
-  * `setDesiredFromIngredient(index)` – adjust desired amount based on ingredient ratio.
-  * `array_move(array, sourceIndex, destinationIndex)` – reorder ingredients immutably.
-  * `moveUp(index)` / `moveDown(index)` – shift ingredient position.
-  * `deleteIngredient(index)` – remove ingredient from recipe.
-  * `saveChange()` – persist overall recipe edits back to store.
-  * `showAppNotice(title, message, icon?, okText?)` – show notice modal for GPT flows.
-  * `triggerFileInput()` – click hidden image file input.
-  * `handleFileSelect(event)` – load selected image, validate, and update recipe image.
-  * `handleContentEditableInput(event)` – sync contenteditable notes area to recipe data.
-  * `handlePaste(event)` – intercept paste for images and route through clipboard helper.
-  * `updateRecipeImage(base64)` – set image data on recipe and persist.
-  * `deleteImage()` – remove image from recipe.
-  * `openChatGPTTab()` – open ChatGPT in new tab (simple navigation).
-  * `searchByTag(tag)` – push search query to storage view via store.
-  * `staggerStyle(i)` – compute animation delay per ingredient row.
-  * `legacyCopyToClipboard(text)` – fallback copy helper (duplicated for recipe flow).
+    * `openAskGpt()` – show GPT question modal.
+    * `confirmAskGpt(question)` – build ask prompt, open GPT, and show notice.
+    * `norm(type)` – normalize amount type for display.
+    * `amount(item)` – compute scaled ingredient amount respecting units and fraction formatting.
+    * `unitBefore(type)` – determine if unit label should precede amount.
+    * `unitLabel(type)` – translate full unit label via i18n.
+    * `clickName(index)` – focus or select ingredient name cell depending on mode.
+    * `clickAmount(index)` – focus/select amount cell.
+    * `clickAmountType(index)` – focus/select unit cell or open selector.
+    * `clickNote(index)` – focus/select note field.
+    * `focusNext(index)` – advance focus to next ingredient controls.
+    * `addIngredient()` – append blank ingredient row and enter edit mode.
+    * `handleAmountTypeChange(newType, index)` – update unit and persist edits.
+    * `handleModeChange(newMode)` – switch between view/edit/checklist states.
+    * `switchEdit()` – toggle recipe into edit mode.
+    * `switchCheck()` – toggle checklist mode.
+    * `clearCheck()` – reset all ingredient `checked` flags.
+    * `clearNote(index)` – clear individual ingredient note.
+    * `doOriginal(index)` – sync ingredient desired amount from original ratio.
+    * `handleIngredientClick(index)` – toggle checkmarks when in checklist mode.
+    * `setDesiredFromServings()` – copy servings value into desired amount.
+    * `setDesiredFromIngredient(index)` – adjust desired amount based on ingredient ratio.
+    * `array_move(array, sourceIndex, destinationIndex)` – reorder ingredients immutably.
+    * `moveUp(index)` / `moveDown(index)` – shift ingredient position.
+    * `deleteIngredient(index)` – remove ingredient from recipe.
+    * `saveChange()` – persist overall recipe edits back to store.
+    * `showAppNotice(title, message, icon?, okText?)` – show notice modal for GPT flows.
+    * `triggerFileInput()` – click hidden image file input.
+    * `handleFileSelect(event)` – load selected image, validate, and update recipe image.
+    * `handleContentEditableInput(event)` – sync contenteditable notes area to recipe data.
+    * `handlePaste(event)` – intercept paste for images and route through clipboard helper.
+    * `updateRecipeImage(base64)` – set image data on recipe and persist.
+    * `deleteImage()` – remove image from recipe.
+    * `openChatGPTTab()` – open ChatGPT in new tab (simple navigation).
+    * `searchByTag(tag)` – push search query to storage view via store.
+    * `staggerStyle(i)` – compute animation delay per ingredient row.
+    * `legacyCopyToClipboard(text)` – fallback copy helper (duplicated for recipe flow).
 * `RecipeSelector.vue`
-  * `selectRecipe(recipe)` – emit selected recipe back to planner.
+    * `selectRecipe(recipe)` – emit selected recipe back to planner.
 * `ShoppingListModal.vue`
-  * `close()` – hide modal.
-  * `clearAll()` – uncheck every shopping list item and persist.
-  * `updateItemChecked(item)` – persist an item’s checked state to store.
-  * `toggleItemChecked(item)` – flip local checked status and schedule persistence.
-  * `formatAmount(amount)` – present numeric amount with trimming.
-  * `getRecipeNames(recipeIds)` – resolve associated recipe names for ingredient tooltip.
+    * `close()` – hide modal.
+    * `clearAll()` – uncheck every shopping list item and persist.
+    * `updateItemChecked(item)` – persist an item’s checked state to store.
+    * `toggleItemChecked(item)` – flip local checked status and schedule persistence.
+    * `formatAmount(amount)` – present numeric amount with trimming.
+    * `getRecipeNames(recipeIds)` – resolve associated recipe names for ingredient tooltip.
 * `Storage.vue`
-  * `openCreateModal()` – show create recipe dialog.
-  * `confirmCreate(name)` – create new recipe via helper and persist to store.
-  * `cancelCreate()` – hide create modal.
-  * `filterMatch(item)` – determine if recipe passes current search/tag filters.
-  * `clearFilter()` – clear search query and refocus input.
-  * `addTagToSearch(tag)` – append tag string to search filter and focus input.
-  * `open(index)` – route to recipe detail by id.
-  * `initRename(index)` – enable rename mode for recipe.
-  * `changeName(value, index)` – mutate local recipe name while editing.
-  * `rename(index)` – finalize rename by toggling edit flag.
-  * `initRemove(index, removeName)` – open delete confirmation for recipe.
-  * `cancelRemove()` – hide delete modal and reset state.
-  * `remove()` – delete selected recipe from store.
-  * `array_move(array, sourceIndex, destinationIndex)` – reorder recipes list.
-  * `moveUp(index)` / `moveDown(index)` – reposition recipe within list.
-  * `openImportJson()` – open JSON import modal (also toggled from Header via modal state).
-  * `confirmImportJson(json)` – parse/normalize import data and show diff modal if needed.
-  * `cancelImportJson()` – hide import modal and clear text.
-  * `parsePastedJson(input)` – best-effort parse of pasted JSON, extracting embedded URL when needed.
-  * `normalizeRecipe(recipe)` – clean up imported recipe structure (ids, unit migration, notes).
-  * `handleUpdateExisting()` – apply diff updates to existing recipes.
-  * `handleCreateNew()` – import entries as entirely new recipes.
-  * `handleAddAsNew()` – duplicate imported recipes regardless of ids.
-  * `handleCancelImport()` – close diff modal and clear temp data.
-  * `chooseFile()` – open file picker for manual export target.
-  * `saveFile()` – request file handle save via `fileExport` service.
-  * `loadFile()` – load JSON from chosen file and feed into import pipeline.
-  * `showToast(msg)` – temporary toast via DOM custom event.
-  * `escapeRegExp(s)` – utility for building safe regex in filter highlight.
-  * `stripUrlFromText(text, url)` – remove URL from pasted text to avoid duplication.
-  * `extractUrlFromText(text)` – split pasted string into URL + trailing content.
-  * `staggerStyle(i)` – computed style for entry animation.
+    * `openCreateModal()` – show create recipe dialog.
+    * `confirmCreate(name)` – create new recipe via helper and persist to store.
+    * `cancelCreate()` – hide create modal.
+    * `filterMatch(item)` – determine if recipe passes current search/tag filters.
+    * `clearFilter()` – clear search query and refocus input.
+    * `addTagToSearch(tag)` – append tag string to search filter and focus input.
+    * `open(index)` – route to recipe detail by id.
+    * `initRename(index)` – enable rename mode for recipe.
+    * `changeName(value, index)` – mutate local recipe name while editing.
+    * `rename(index)` – finalize rename by toggling edit flag.
+    * `initRemove(index, removeName)` – open delete confirmation for recipe.
+    * `cancelRemove()` – hide delete modal and reset state.
+    * `remove()` – delete selected recipe from store.
+    * `array_move(array, sourceIndex, destinationIndex)` – reorder recipes list.
+    * `moveUp(index)` / `moveDown(index)` – reposition recipe within list.
+    * `openImportJson()` – open JSON import modal (also toggled from Header via modal state).
+    * `confirmImportJson(json)` – parse/normalize import data and show diff modal if needed.
+    * `cancelImportJson()` – hide import modal and clear text.
+    * `parsePastedJson(input)` – best-effort parse of pasted JSON, extracting embedded URL when needed.
+    * `normalizeRecipe(recipe)` – clean up imported recipe structure (ids, unit migration, notes).
+    * `handleUpdateExisting()` – apply diff updates to existing recipes.
+    * `handleCreateNew()` – import entries as entirely new recipes.
+    * `handleAddAsNew()` – duplicate imported recipes regardless of ids.
+    * `handleCancelImport()` – close diff modal and clear temp data.
+    * `chooseFile()` – open file picker for manual export target.
+    * `saveFile()` – request file handle save via `fileExport` service.
+    * `loadFile()` – load JSON from chosen file and feed into import pipeline.
+    * `showToast(msg)` – temporary toast via DOM custom event.
+    * `escapeRegExp(s)` – utility for building safe regex in filter highlight.
+    * `stripUrlFromText(text, url)` – remove URL from pasted text to avoid duplication.
+    * `extractUrlFromText(text)` – split pasted string into URL + trailing content.
+    * `staggerStyle(i)` – computed style for entry animation.
 * `TagInput.vue`
-  * `calculateDropdownPosition()` – position suggestions dropdown relative to input.
-  * `handleFocus()` – show dropdown when input gains focus.
-  * `handleInput()` – update query and filter suggestions.
-  * `handleKeydown(event)` – keyboard interactions (Enter, Backspace, navigation).
-  * `handleBlur()` – hide dropdown after short delay.
-  * `addTag(tag)` – append tag if not already present and notify parent.
-  * `addTagFromInput()` – convert current query into a tag when valid.
-  * `removeTag(tagToRemove)` – remove existing tag and emit update.
+    * `calculateDropdownPosition()` – position suggestions dropdown relative to input.
+    * `handleFocus()` – show dropdown when input gains focus.
+    * `handleInput()` – update query and filter suggestions.
+    * `handleKeydown(event)` – keyboard interactions (Enter, Backspace, navigation).
+    * `handleBlur()` – hide dropdown after short delay.
+    * `addTag(tag)` – append tag if not already present and notify parent.
+    * `addTagFromInput()` – convert current query into a tag when valid.
+    * `removeTag(tagToRemove)` – remove existing tag and emit update.
 
 ### src/i18n
 
@@ -289,58 +291,58 @@
 ### src/services
 
 * `auth.ts`
-  * `getLocalRecipesStringified()` – fetch recipes from IndexedDB and JSON-stringify.
-  * `getLocalRecipesArray()` – fetch recipes array from IndexedDB.
-  * `ensureRecipesId()` – internal async bootstrap to guarantee ids exist and persist changes.
+    * `getLocalRecipesStringified()` – fetch recipes from IndexedDB and JSON-stringify.
+    * `getLocalRecipesArray()` – fetch recipes array from IndexedDB.
+    * `ensureRecipesId()` – internal async bootstrap to guarantee ids exist and persist changes.
 * `chatgpt.ts`
-  * `legacyCopyToClipboard(text)` – textarea-based copy fallback.
-  * `openChatGPT(prompt)` – copy prompt to clipboard (async API with fallback) and signal success.
+    * `legacyCopyToClipboard(text)` – textarea-based copy fallback.
+    * `openChatGPT(prompt)` – copy prompt to clipboard (async API with fallback) and signal success.
 * `fileExport.ts`
-  * `chooseExportFile()` – open save picker, store handle, trigger initial save.
-  * `saveExportFile()` – write recipes to chosen file handle as JSON (with `exportedAt`).
-  * `loadFromFile()` – open file picker, read JSON, and merge/replace recipes in store.
+    * `chooseExportFile()` – open save picker, store handle, trigger initial save.
+    * `saveExportFile()` – write recipes to chosen file handle as JSON (with `exportedAt`).
+    * `loadFromFile()` – open file picker, read JSON, and merge/replace recipes in store.
 * `importExport.ts`
-  * `parseTime(value)` – helper to parse ISO time or return negative infinity on failure.
-  * `mergeRecipesByExportedAt(existing, incoming)` – merge arrays preferring newer `exportedAt`.
-  * `createTestIngredientDiff()` – build sample diff payload for manual testing/demo.
-  * `analyzeImportDiff(existing, incoming)` – classify imports into updates/creates with change descriptions.
-  * `getRecipeChanges(existing, incoming)` – compute field + ingredient-level differences (used internally); includes helper arrow `normalizeName(name)` to key ingredients case-insensitively.
-  * `mergeChatGPTRecipe(existing, incoming)` – replace or append recipe from GPT import, ensuring servings default.
-  * `testSemanticIngredientDiff()` – console harness invoking `createTestIngredientDiff` and logging expectations.
+    * `parseTime(value)` – helper to parse ISO time or return negative infinity on failure.
+    * `mergeRecipesByExportedAt(existing, incoming)` – merge arrays preferring newer `exportedAt`.
+    * `createTestIngredientDiff()` – build sample diff payload for manual testing/demo.
+    * `analyzeImportDiff(existing, incoming)` – classify imports into updates/creates with change descriptions.
+    * `getRecipeChanges(existing, incoming)` – compute field + ingredient-level differences (used internally); includes helper arrow `normalizeName(name)` to key ingredients case-insensitively.
+    * `mergeChatGPTRecipe(existing, incoming)` – replace or append recipe from GPT import, ensuring servings default.
+    * `testSemanticIngredientDiff()` – console harness invoking `createTestIngredientDiff` and logging expectations.
 * `indexeddb.ts` (within `IndexedDBService`)
-  * `deepCloneSerializable(obj)` – sanitize objects of reactivity functions and Vue internals.
-  * `initDB()` – open database, handle upgrades/migrations, ensure stores exist.
-  * `getDB()` – lazy initializer returning opened database instance.
-  * `getRecipes()` – read all recipes from store.
-  * `saveRecipes(recipes)` – write entire recipes array.
-  * `getSetting(key, default)` – fetch simple key/value settings.
-  * `setSetting(key, value)` – persist setting value.
-  * `getDailyPlans()` – fetch stored plans array.
-  * `saveDailyPlan(plan)` – upsert plan record.
-  * `deleteDailyPlan(planId)` – remove plan by id.
-  * `getShoppingList(planId)` – load shopping list tied to plan id.
-  * `saveShoppingList(planId, items)` – persist shopping list array.
-  * `migrateFromLocalStorage()` – one-time migration from legacy localStorage keys.
-  * Exported helpers: `getRecipes`, `saveRecipes`, `getSetting`, `setSetting`, `migrateFromLocalStorage`, `getDailyPlans`, `saveDailyPlan`, `deleteDailyPlan`, `getShoppingList`, `saveShoppingList` reuse instance methods.
-  * Standalone helpers: `fileToBase64(file)` (read File as data URL), `isValidImageFile(file)` (type/size guard), `pasteImageFromClipboard(clipboardData?)` (clipboard API integration with fallback iteration).
+    * `deepCloneSerializable(obj)` – sanitize objects of reactivity functions and Vue internals.
+    * `initDB()` – open database, handle upgrades/migrations, ensure stores exist.
+    * `getDB()` – lazy initializer returning opened database instance.
+    * `getRecipes()` – read all recipes from store.
+    * `saveRecipes(recipes)` – write entire recipes array.
+    * `getSetting(key, default)` – fetch simple key/value settings.
+    * `setSetting(key, value)` – persist setting value.
+    * `getDailyPlans()` – fetch stored plans array.
+    * `saveDailyPlan(plan)` – upsert plan record.
+    * `deleteDailyPlan(planId)` – remove plan by id.
+    * `getShoppingList(planId)` – load shopping list tied to plan id.
+    * `saveShoppingList(planId, items)` – persist shopping list array.
+    * `migrateFromLocalStorage()` – one-time migration from legacy localStorage keys.
+    * Exported helpers: `getRecipes`, `saveRecipes`, `getSetting`, `setSetting`, `migrateFromLocalStorage`, `getDailyPlans`, `saveDailyPlan`, `deleteDailyPlan`, `getShoppingList`, `saveShoppingList` reuse instance methods.
+    * Standalone helpers: `fileToBase64(file)` (read File as data URL), `isValidImageFile(file)` (type/size guard), `pasteImageFromClipboard(clipboardData?)` (clipboard API integration with fallback iteration).
 * `notice.ts`
-  * `handlePromptNoticeOk(url, openImportJson)` – open link in new tab and run callback when notice acknowledged.
+    * `handlePromptNoticeOk(url, openImportJson)` – open link in new tab and run callback when notice acknowledged.
 * `planner.ts`
-  * `generateShoppingList(plan)` – aggregate plan ingredient quantities with serving multiplier.
-  * `getPopulatedPlan(plan)` – attach full recipe objects onto plan entries.
-  * `generateAutoMealPlanPrompt(options)` – build GPT meal-plan prompt using available recipes.
-  * `buildMealPlanPrompt(recipes, options)` – shared helper that formats plan prompt text.
-  * `parseMealPlanResponse(response, availableRecipes)` – extract JSON from GPT output and validate plan.
-  * `exportPlanToJson(plan)` – stringify plan.
-  * `importPlanFromJson(jsonString)` – parse JSON into `WeeklyPlan`, validating structure.
+    * `generateShoppingList(plan)` – aggregate plan ingredient quantities with serving multiplier.
+    * `getPopulatedPlan(plan)` – attach full recipe objects onto plan entries.
+    * `generateAutoMealPlanPrompt(options)` – build GPT meal-plan prompt using available recipes.
+    * `buildMealPlanPrompt(recipes, options)` – shared helper that formats plan prompt text.
+    * `parseMealPlanResponse(response, availableRecipes)` – extract JSON from GPT output and validate plan.
+    * `exportPlanToJson(plan)` – stringify plan.
+    * `importPlanFromJson(jsonString)` – parse JSON into `WeeklyPlan`, validating structure.
 * `prompt.ts`
-  * `buildImportRecipePrompt({ url, text, locale, fromPicture })` – compose comprehensive GPT import instructions with rules.
-  * `buildAskRecipePrompt(recipe, question, locale)` – craft follow-up prompt for modifying/asking about existing recipe JSON.
+    * `buildImportRecipePrompt({ url, text, locale, fromPicture })` – compose comprehensive GPT import instructions with rules.
+    * `buildAskRecipePrompt(recipe, question, locale)` – craft follow-up prompt for modifying/asking about existing recipe JSON.
 * `units.ts`
-  * `normalizeAmountType(input)` – map human/legacy units to canonical keys.
-  * `migrateRecipeUnits(recipe)` – normalize ingredient units in-place.
+    * `normalizeAmountType(input)` – map human/legacy units to canonical keys.
+    * `migrateRecipeUnits(recipe)` – normalize ingredient units in-place.
 * `vibrate.ts`
-  * `vibrate(duration?)` – safe navigator vibration wrapper.
+    * `vibrate(duration?)` – safe navigator vibration wrapper.
 
 ### src/store
 
@@ -1239,3 +1241,5 @@ await sql("DELETE FROM users WHERE id = 1");
 
 ```
 </ProviderContext>
+
+NEVER WRITE SQL MIGRATIONS, this is done with `npm run db:generate`!

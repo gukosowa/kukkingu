@@ -155,6 +155,19 @@
 
     <div class='mt-8'>
       <Button @click="openShareModal">{{t('Share online')}}</Button>
+      <Button class="ml-2" @click="openFriendModal">{{ t('Add friend') }}</Button>
+
+      <!-- Friends list -->
+      <div v-if="friends.length" class="mt-4 space-y-2">
+        <div
+          v-for="f in friends"
+          :key="f.token"
+          class="flex items-center justify-between bg-gray-100 rounded-lg px-3 py-2"
+        >
+          <span class="text-gray-800 truncate">{{ f.name || t('Unnamed friend') }}</span>
+          <Button color="red" :tone="300" @click="removeFriend(f.token)">{{ t('Remove') }}</Button>
+        </div>
+      </div>
     </div>
 
     <BaseDialog v-model="showShareModal" @close="closeShareModal" size="md">
@@ -172,14 +185,50 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('Your name') }}</label>
             <SInput v-model="shareName" :placeholder="t('Your name')" />
           </div>
-          <pre class="bg-gray-100 rounded-lg p-4 overflow-x-auto text-sm">
+          <pre class="bg-gray-100 rounded-lg p-4 overflow-x-auto text-sm relative">
 <code class="select-all break-all">{{ shareToken }}</code>
+<button
+  type="button"
+  class="absolute right-2 top-2 text-gray-600 hover:text-gray-900"
+  @click="copyShareToken"
+  :title="t('Copy')"
+  aria-label="Copy"
+>
+  <Icon icon="fal fa-copy" size="1rem" />
+</button>
           </pre>
+          <p class="mt-2 text-sm text-gray-600">{{ t('Tip: Use the Share button on mobile to send this token via your apps.') }}</p>
+          <Button class="mt-1" @click="shareNative">
+            <Icon icon="fal fa-share-alt" size="1rem" class="mr-1" />
+            {{ t('Share') }}
+          </Button>
         </div>
       </template>
       <template #footer>
         <div class="px-6 py-4 flex justify-end">
           <Button @click="closeShareModal">{{ t('Close') }}</Button>
+        </div>
+      </template>
+    </BaseDialog>
+
+    <BaseDialog v-model="showFriendModal" @close="closeFriendModal" size="md">
+      <template #header>
+        <div class="px-6 py-4 text-lg font-semibold">
+          {{ t('Add friend') }}
+        </div>
+      </template>
+      <template #content>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('Friend token') }}</label>
+            <SInput v-model="friendToken" :placeholder="t('Paste friends token')" />
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <div class="px-6 py-4 flex justify-end gap-2">
+          <Button @click="closeFriendModal">{{ t('Close') }}</Button>
+          <Button @click="confirmViewFriend">{{ t('Add') }}</Button>
         </div>
       </template>
     </BaseDialog>
@@ -211,12 +260,57 @@ import ModalManageImage from './ModalManageImage.vue'
 import ModalImageZoom from './ModalImageZoom.vue'
 import { storageEditMode } from '~src/store/index'
 import BaseDialog from '~components/BaseDialog.vue'
-import { getSetting, setSetting, getDailyPlans, getShoppingList } from '~src/services/indexeddb'
+import { getSetting, setSetting, getDailyPlans, getShoppingList, setFriend, getFriends, deleteFriend as deleteFriendFromDB } from '~src/services/indexeddb'
 
 // Share online modal state
 const showShareModal = ref(false)
 const shareToken = ref('')
 const shareName = ref('')
+
+// Friends state
+const friends = ref<Array<{ token: string; name: string }>>([])
+async function loadFriends() {
+  try {
+    friends.value = await getFriends()
+  } catch (_) {
+    friends.value = []
+  }
+}
+async function removeFriend(token: string) {
+  try {
+    await deleteFriendFromDB(token)
+  } catch (_) {}
+  await loadFriends()
+}
+
+// View friends recipe modal state
+const showFriendModal = ref(false)
+const friendToken = ref('')
+
+function openFriendModal() {
+  friendToken.value = ''
+  showFriendModal.value = true
+}
+function closeFriendModal() {
+  showFriendModal.value = false
+}
+async function confirmViewFriend() {
+  const token = (friendToken.value || '').trim()
+  if (!token) {
+    // Just close if empty; no extra behavior required
+    showFriendModal.value = false
+    return
+  }
+  try {
+    await setFriend(token, { name: 'to be done' })
+  } catch (e) {
+    // ignore errors per minimal requirement
+  }
+  showFriendModal.value = false
+  await loadFriends()
+}
+
+onMounted(() => { loadFriends() })
 
 watch(shareName, async (val) => {
   try { await setSetting('shareName', (val || '').toString()) } catch (_) {}
@@ -274,6 +368,59 @@ async function ensureShareToken(): Promise<string> {
   } catch (e) {
     // If IndexedDB fails, generate ephemeral token
     return generateSecureHash()
+  }
+}
+
+async function copyShareToken() {
+  const token = (shareToken.value || '').toString()
+  if (!token) {
+    showToast(t('Nothing to copy'))
+    return
+  }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(token)
+    } else {
+      const ta = document.createElement('textarea')
+      ta.value = token
+      ta.setAttribute('readonly', '')
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.focus()
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+    }
+    showToast(t('Copied to clipboard'))
+  } catch (e) {
+    console.warn('Copy share token failed', e)
+    showToast(t('Copy failed'))
+  }
+}
+
+async function shareNative() {
+  // Ensure we have a token and a short message
+  const token = (shareToken.value || '').toString() || await ensureShareToken()
+  // Keep text short as requested
+  const shortText = shareName.value
+    ? `${shareName.value}: ${t('Here is my share token')}: ${token}`
+    : `${t('Here is my share token')}: ${token}`
+
+  try {
+    if ((navigator as any).share) {
+      await (navigator as any).share({
+        title: t('My recipes'),
+        text: shortText,
+      })
+    } else {
+      // Fallback: copy to clipboard and inform user
+      await copyShareToken()
+      showToast(t('Sharing is not supported on this device'))
+    }
+  } catch (e) {
+    // User may cancel share; keep it silent but optionally inform
+    showToast(t('Share cancelled'))
   }
 }
 

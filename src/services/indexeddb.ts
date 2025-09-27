@@ -35,18 +35,20 @@ function deepCloneSerializable(obj: any): any {
 }
 
 const DB_NAME = 'KukkinguDB'
-const DB_VERSION = 5 // Add shopping lists store
+const DB_VERSION = 7 // Bump to ensure friends store is created on upgrade
 const RECIPES_STORE = 'recipes'
 const SETTINGS_STORE = 'settings'
 const DAILY_PLANS_STORE = 'dailyPlans'
 const SHOPPING_LISTS_STORE = 'shoppingLists'
+const FRIENDS_STORE = 'friends'
 
 // Database schema
 const STORES = {
   [RECIPES_STORE]: { keyPath: 'id', autoIncrement: false },
   [SETTINGS_STORE]: { keyPath: 'key', autoIncrement: false },
   [DAILY_PLANS_STORE]: { keyPath: 'id', autoIncrement: false },
-  [SHOPPING_LISTS_STORE]: { keyPath: 'planId', autoIncrement: false }
+  [SHOPPING_LISTS_STORE]: { keyPath: 'planId', autoIncrement: false },
+  [FRIENDS_STORE]: { keyPath: 'token', autoIncrement: false }
 }
 
 class IndexedDBService {
@@ -332,6 +334,74 @@ class IndexedDBService {
     })
   }
 
+  // Friends operations
+  async getFriend(token: string): Promise<{ token: string; name: string } | undefined> {
+    const db = await this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([FRIENDS_STORE], 'readonly')
+      const store = transaction.objectStore(FRIENDS_STORE)
+      const request = store.get(token)
+
+      request.onsuccess = () => {
+        if (request.result) {
+          resolve(request.result as { token: string; name: string })
+        } else {
+          resolve(undefined)
+        }
+      }
+
+      request.onerror = () => {
+        reject(request.error)
+      }
+    })
+  }
+
+  async setFriend(token: string, value: { name: string }): Promise<void> {
+    const db = await this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([FRIENDS_STORE], 'readwrite')
+      const store = transaction.objectStore(FRIENDS_STORE)
+      const request = store.put({ token, name: value.name })
+
+      request.onsuccess = () => {
+        resolve()
+      }
+
+      request.onerror = () => {
+        reject(request.error)
+      }
+    })
+  }
+
+  async getAllFriends(): Promise<Array<{ token: string; name: string }>> {
+    const db = await this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([FRIENDS_STORE], 'readonly')
+      const store = transaction.objectStore(FRIENDS_STORE)
+      const request = store.getAll()
+
+      request.onsuccess = () => {
+        resolve((request.result || []) as Array<{ token: string; name: string }>)
+      }
+
+      request.onerror = () => {
+        reject(request.error)
+      }
+    })
+  }
+
+  async deleteFriend(token: string): Promise<void> {
+    const db = await this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([FRIENDS_STORE], 'readwrite')
+      const store = transaction.objectStore(FRIENDS_STORE)
+      const request = store.delete(token)
+
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  }
+
   // Migration from localStorage
   async migrateFromLocalStorage(): Promise<void> {
     // Check if migration already happened
@@ -389,6 +459,12 @@ export const deleteDailyPlan = (planId: string) => idbService.deleteDailyPlan(pl
 // Shopping lists helper functions
 export const getShoppingList = (planId: string) => idbService.getShoppingList(planId)
 export const saveShoppingList = (planId: string, items: ShoppingListItem[]) => idbService.saveShoppingList(planId, items)
+
+// Friends helper functions
+export const getFriend = (token: string) => idbService.getFriend(token)
+export const setFriend = (token: string, value: { name: string }) => idbService.setFriend(token, value)
+export const getFriends = () => idbService.getAllFriends()
+export const deleteFriend = (token: string) => idbService.deleteFriend(token)
 
 // Image utility functions
 export const isValidImageFile = (file: File): boolean => {

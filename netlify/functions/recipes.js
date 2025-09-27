@@ -21,19 +21,26 @@ export default async (request) => {
         });
       }
 
+      const now = new Date();
+
       // Check if row exists
       const existing = await db.select().from(recipes).where(eq(recipes.share_token, share_token)).limit(1);
       if (existing.length > 0) {
-        const updateSet = { recipes: rec, shoppingLists, dailyPlans };
+        const row = existing[0];
+        const updateSet = { recipes: rec, shoppingLists, dailyPlans, updated_at: now };
         if (typeof name === 'string' && name.length > 0) {
           updateSet.name = name;
+        }
+        // If legacy row without created_at, set it now
+        if (!row.created_at) {
+          updateSet.created_at = now;
         }
         await db
           .update(recipes)
           .set(updateSet)
           .where(eq(recipes.share_token, share_token));
       } else {
-        await db.insert(recipes).values({ share_token, name: (typeof name === 'string' && name.length > 0) ? name : null, recipes: rec, shoppingLists, dailyPlans });
+        await db.insert(recipes).values({ share_token, name: (typeof name === 'string' && name.length > 0) ? name : null, recipes: rec, shoppingLists, dailyPlans, created_at: now, updated_at: now });
       }
 
       return new Response(JSON.stringify({ ok: true }), {
@@ -51,6 +58,8 @@ export default async (request) => {
         recipes: {},
         shoppingLists: {},
         dailyPlans: {},
+        created_at: new Date(),
+        updated_at: new Date(),
       });
     }
 
