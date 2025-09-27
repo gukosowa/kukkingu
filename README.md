@@ -12,6 +12,15 @@ Kukkingu is a lightweight recipe manager built with **Vue 3**, **Vite**,
 - Localized interface (Japanese & English)
 - Service worker caching for production builds
 
+## Netlify
+`npm install -g netlify-cli`
+
+## DB
+Run `npx netlify db init`
+See https://app.netlify.com/extensions/neon
+
+
+
 ## Quick Start
 
 ```bash
