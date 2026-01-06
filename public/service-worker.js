@@ -1,17 +1,31 @@
 // Service worker with Workbox; updates caches using Stale-While-Revalidate
 
-const cacheName = 'stale-with-revalidate'
-const htmlCacheName = 'network-first-html'
+const cacheName = 'stale-with-revalidate-v2'
+const htmlCacheName = 'network-first-html-v2'
 const allowedCacheNames = new Set([cacheName, htmlCacheName])
 
 // import workbox 
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js')
 const { routing, strategies } = workbox
 
+// Force immediate activation
+self.addEventListener('install', () => self.skipWaiting())
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    Promise.all([
+      invalidateOldCache(),
+      self.clients.claim()
+    ])
+  )
+})
+
 // serve navigations with NetworkFirst so updated HTML references fresh assets
 routing.registerRoute(
   ({ request }) => request.mode === 'navigate',
-  new strategies.NetworkFirst({ cacheName: htmlCacheName }),
+  new strategies.NetworkFirst({
+    cacheName: htmlCacheName,
+    networkTimeoutSeconds: 3,
+  }),
 )
 
 // implements staleWhileRevalidate for non-navigation requests
