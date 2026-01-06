@@ -666,6 +666,9 @@ const router = useRouter()
 const recipes = computed({
   get: () => {
     const list = isViewingFriend.value ? _friendRecipes.value : _recipes.value
+    if (isBulkEditMode.value) {
+      return list
+    }
     return [...list].sort((a, b) => sortJapaneseText(a.name, b.name))
   },
   set: (v) => {
@@ -722,6 +725,12 @@ const isBulkEditMode = computed({
     } else {
       storageEditMode.value = v as any
     }
+  }
+})
+
+watch(isBulkEditMode, (newValue) => {
+  if (newValue && !isViewingFriend.value) {
+    _recipes.value.sort((a, b) => sortJapaneseText(a.name, b.name))
   }
 })
 let showZoomModal = ref(false)
